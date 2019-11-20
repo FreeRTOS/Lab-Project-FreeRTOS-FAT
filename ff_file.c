@@ -2967,12 +2967,13 @@ FF_Error_t xError;
 			}
 		}
 		#endif
-		ffconfigFREE( pxFile );
 
 		if( FF_isERR( xError ) == pdFALSE )
 		{
 			xError = FF_FlushCache( pxFile->pxIOManager ); /* Ensure all modified blocks are flushed to disk! */
 		}
+
+		ffconfigFREE( pxFile );
 	}
 	while( pdFALSE );
 
