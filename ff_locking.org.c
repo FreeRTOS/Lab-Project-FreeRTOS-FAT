@@ -30,33 +30,21 @@
 
 /* Scheduler include files. */
 #include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
 #include "ff_headers.h"
 #include "event_groups.h"
 
-
-/* Scheduler include files. */
-#ifdef	__WIN32__
-	#include "MyMalloc.h"
+#ifndef configUSE_RECURSIVE_MUTEXES
+	#error configUSE_RECURSIVE_MUTEXES must be set to 1 in FreeRTOSConfig.h
 #else
-	#include "FreeRTOS.h"
-	#include "task.h"
-	#include "semphr.h"
-	#include "tcpLogging.h"
-#endif
+	#if( configUSE_RECURSIVE_MUTEXES != 1 )
+		#error configUSE_RECURSIVE_MUTEXES must be set to 1 in FreeRTOSConfig.h
+	#endif
+#endif /* configUSE_RECURSIVE_MUTEXES */
 
-#include "logbuf.h"
-#include <string.h>
-#include "bitops.h"
-#if USE_SOFT_WDT
-	#include "softWdt.h"
-#endif
-
-#include "thread_mutex.h"
-
-#include "event_groups.h"
-
-#if( FF_DO_TRACE_SEMAPHORE != 0 )
-	#include "eventLogging.h"
+#if ( INCLUDE_vTaskDelay != 1 )
+	#error Missing some FreeRTOS define
 #endif
 
 /* There are two areas which are protected with a semaphore:
@@ -69,102 +57,44 @@ The masks below are used when calling Group Event functions. */
 each time when a sector buffer is released. */
 #define FF_BUF_LOCK_EVENT_BITS    ( ( const EventBits_t ) FF_BUF_LOCK )
 
-extern void myTaskDelay (unsigned aTime);
+/*-----------------------------------------------------------*/
 
-static char cMutexWasCreated = 0;
-static pthread_mutex_t xFATMutex;
-
-static void vCreateFATMutex ()
+BaseType_t FF_TrySemaphore( void *pxSemaphore, uint32_t ulTime_ms )
 {
-	cMutexWasCreated = 1;
-	pthread_mutex_init ("FreeRTOS+FAT", &xFATMutex, 0);
-}
+BaseType_t xReturn;
 
-BaseType_t FF_HasSemaphore (void *pxSemaphore)
-{
-	// Return pdTRUE if the calling task owns the semaphore
-	if (!cMutexWasCreated) vCreateFATMutex ();
-	return pthread_has_mutex (&xFATMutex);
-}
-
-
-BaseType_t FF_SemaphoreTaken (void *pxSemaphore)
-{
-	// Return pdTRUE if the calling task owns the semaphore
-	if (!cMutexWasCreated) vCreateFATMutex ();
-	return pthread_mutex_islocked (&xFATMutex);
-}
-
-
-#if( FF_DO_TRACE_SEMAPHORE != 0 )
-static char mutex_owner[32];
-#endif
-
-BaseType_t FF_TrySemaphore( void *pxSemaphore, uint32_t ulTime_ms)
-{
-BaseType_t rc;
-	#if( FF_DO_TRACE_SEMAPHORE != 0 )
-	{
-		eventLogAdd("Pend_%s\n", pcName);
-	}
-	#endif /* FF_DO_TRACE_SEMAPHORE */
-	if (!cMutexWasCreated) vCreateFATMutex ();
-	rc = pthread_mutex_lock (&xFATMutex, ulTime_ms);
-	#if( FF_DO_TRACE_SEMAPHORE != 0 )
-	if (rc > 0) {
-		if(mutex_owner[0] != 0) {
-			logPrintf("Pend Try: %s overruled\n", mutex_owner);
-		}
-		snprintf(mutex_owner, sizeof mutex_owner, pcName);
-	}
-	#endif /* FF_DO_TRACE_SEMAPHORE */
-	return rc;
+	configASSERT( pxSemaphore );
+	xReturn = xSemaphoreTakeRecursive( ( SemaphoreHandle_t ) pxSemaphore, pdMS_TO_TICKS( ulTime_ms ) );
+	return xReturn;
 }
 /*-----------------------------------------------------------*/
 
 void FF_PendSemaphore( void *pxSemaphore )
 {
-	#if( FF_DO_TRACE_SEMAPHORE != 0 )
-	{
-		eventLogAdd("Pend_%s\n", pcName);
-	}
-	#endif /* FF_DO_TRACE_SEMAPHORE */
-
-	if (!cMutexWasCreated) vCreateFATMutex ();
-	pthread_mutex_lock (&xFATMutex, 120000);
-	#if( FF_DO_TRACE_SEMAPHORE != 0 )
-	{
-		if(mutex_owner[0] != 0) {
-			logPrintf("Pend Enter: %s overruled by %s\n", mutex_owner, pcName);
-		}
-		snprintf(mutex_owner, sizeof mutex_owner, pcName);
-	}
-	#endif /* FF_DO_TRACE_SEMAPHORE */
+	configASSERT( pxSemaphore );
+	xSemaphoreTakeRecursive( ( SemaphoreHandle_t ) pxSemaphore, portMAX_DELAY );
 }
 /*-----------------------------------------------------------*/
 
 void FF_ReleaseSemaphore( void *pxSemaphore )
 {
-	#if( FF_DO_TRACE_SEMAPHORE != 0 )
-	{
-		if(strcmp (pcName, mutex_owner) != 0) {
-			// FF_GetBuffer2 != FF_GetBuffer
-			logPrintf("Pend Exit: %s owned by %s\n", pcName, mutex_owner);
-		}
-		eventLogAdd("Exit_%s\n", pcName);
-		mutex_owner[0] = '\0';
-	}
-	#endif /* FF_DO_TRACE_SEMAPHORE */
-
-	if (cMutexWasCreated)  {
-		pthread_mutex_unlock (&xFATMutex);
-	}
+	configASSERT( pxSemaphore );
+	xSemaphoreGiveRecursive( ( SemaphoreHandle_t ) pxSemaphore );
 }
 /*-----------------------------------------------------------*/
 
 void FF_Sleep( uint32_t ulTime_ms )
 {
-	myTaskDelay (ulTime_ms);
+	vTaskDelay( pdMS_TO_TICKS( ulTime_ms ) );
+}
+/*-----------------------------------------------------------*/
+
+void FF_DeleteEvents( FF_IOManager_t *pxIOManager )
+{
+	if( pxIOManager->xEventGroup != NULL )
+	{
+		vEventGroupDelete( pxIOManager->xEventGroup );
+	}
 }
 /*-----------------------------------------------------------*/
 
@@ -252,10 +182,10 @@ void FF_Assert_Lock( FF_IOManager_t *pxIOManager, uint32_t aBits )
 
 	if( ( aBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
 	{
-		configASSERT( pxIOManager->pvFATLockHandle != NULL && pxIOManager->pvFATLockHandle == handle );
+		configASSERT( ( pxIOManager->pvFATLockHandle != NULL ) && ( pxIOManager->pvFATLockHandle == handle ) );
 
 		/* In case configASSERT() is not defined. */
-		( void ) pxIOManager; 
+		( void ) pxIOManager;
 		( void ) handle;
 	}
 }
@@ -265,10 +195,6 @@ void FF_LockFAT( FF_IOManager_t *pxIOManager )
 EventBits_t xBits;
 
 	configASSERT( FF_Has_Lock( pxIOManager, FF_FAT_LOCK ) == pdFALSE );
-	if (FF_Has_Lock( pxIOManager, FF_FAT_LOCK ) != pdFALSE )
-	{
-		return;
-	}
 
 	for( ;; )
 	{
@@ -298,15 +224,8 @@ EventBits_t xBits;
 void FF_UnlockFAT( FF_IOManager_t *pxIOManager )
 {
 	configASSERT( ( xEventGroupGetBits( pxIOManager->xEventGroup ) & FF_FAT_LOCK_EVENT_BITS ) == 0 );
-	if (FF_Has_Lock( pxIOManager, FF_FAT_LOCK ) != pdFALSE )
-	{
-		pxIOManager->pvFATLockHandle = NULL;
-		xEventGroupSetBits( pxIOManager->xEventGroup, FF_FAT_LOCK_EVENT_BITS );
-	}
-	else
-	{
-		FF_PRINTF("FF_UnlockFAT: wasn't locked by me\n");
-	}
+	pxIOManager->pvFATLockHandle = NULL;
+	xEventGroupSetBits( pxIOManager->xEventGroup, FF_FAT_LOCK_EVENT_BITS );
 }
 /*-----------------------------------------------------------*/
 

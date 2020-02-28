@@ -1,26 +1,7 @@
 /*
- * FreeRTOS+FAT Labs Build 160919a (C) 2016 Real Time Engineers ltd.
+ * FreeRTOS+FAT build 191128 - Note:  FreeRTOS+FAT is still in the lab!
+ * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Authors include James Walmsley, Hein Tibosch and Richard Barry
- *
- *******************************************************************************
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- ***                                                                         ***
- ***                                                                         ***
- ***   FREERTOS+FAT IS STILL IN THE LAB:                                     ***
- ***                                                                         ***
- ***   Be aware we are still refining the FreeRTOS+FAT design,               ***
- ***   the source code does not yet fully conform to the strict quality and  ***
- ***   style standards mandated by Real Time Engineers ltd., and the         ***
- ***   documentation and testing is not necessarily complete.                ***
- ***                                                                         ***
- ***   PLEASE REPORT EXPERIENCES USING THE SUPPORT RESOURCES FOUND ON THE    ***
- ***   URL: http://www.FreeRTOS.org/contact  Active early adopters may, at   ***
- ***   the sole discretion of Real Time Engineers Ltd., be offered versions  ***
- ***   under a license other than that described below.                      ***
- ***                                                                         ***
- ***                                                                         ***
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- *******************************************************************************
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -39,11 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * 1 tab == 4 spaces!
- *
- * http://www.FreeRTOS.org
- * http://www.FreeRTOS.org/plus
- * http://www.FreeRTOS.org/labs
+ * https://www.FreeRTOS.org
  *
  */
 
@@ -98,7 +75,7 @@ in a call to ff_truncate(). */
 	 * Add the CWD to the beginning of a relative path, and copy the resultant
 	 * absolute path into a thread local non const buffer.
 	 */
-	static const char *prvABSPath( const char *pcPath );
+	/*static*/ const char *prvABSPath( const char *pcPath );
 
 	/*
 	 * Lookup the CWD of the current task.
@@ -120,7 +97,7 @@ in a call to ff_truncate(). */
 
 	/* Only absolute paths are supported so define away the prvABSPath()
 	function. */
-	static const char *prvABSPath( const char *pcPath )
+	/*static*/ const char *prvABSPath( const char *pcPath )
 	{
 		return pcPath;
 	}
@@ -142,7 +119,7 @@ in a call to ff_truncate(). */
  * If the value represents an error, it is negative
  * The return value of this function will always be positive
  */
-static int prvFFErrorToErrno( FF_Error_t xError );
+int prvFFErrorToErrno( FF_Error_t xError );
 
 /*
  * Generate a time stamp for the file.
@@ -1770,7 +1747,7 @@ uint32_t ulLength;
 #endif /* ffconfigUSE_DELTREE */
 /*-----------------------------------------------------------*/
 
-static int prvFFErrorToErrno( FF_Error_t xError )
+int prvFFErrorToErrno( FF_Error_t xError )
 {
 	if( FF_isERR( xError ) == pdFALSE )
 	{
@@ -1850,6 +1827,24 @@ static int prvFFErrorToErrno( FF_Error_t xError )
 
 	return pdFREERTOS_ERRNO_EFAULT;
 }
+/*-----------------------------------------------------------*/
+
+#if( ffconfigHAS_CWD == 1 )
+
+	void ff_free_CWD_space( void )
+	{
+	WorkingDirectory_t *pxSpace;
+
+		/* Obtain the CWD used by the current task. */
+		pxSpace = ( WorkingDirectory_t * ) pvTaskGetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET );
+		if( pxSpace != NULL )
+		{
+			vTaskSetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET, ( void * ) NULL );
+			ffconfigFREE( pxSpace );
+		}
+	}
+
+#endif /* ffconfigHAS_CWD */
 /*-----------------------------------------------------------*/
 
 #if( ffconfigHAS_CWD == 1 )
@@ -1967,7 +1962,7 @@ static int prvFFErrorToErrno( FF_Error_t xError )
 
 #if( ffconfigHAS_CWD == 1 )
 
-	static const char *prvABSPath( const char *pcPath )
+	/*static*/ const char *prvABSPath( const char *pcPath )
 	{
 	char *pcReturn;
 	WorkingDirectory_t *pxWorkingDirectory = pxFindCWD();

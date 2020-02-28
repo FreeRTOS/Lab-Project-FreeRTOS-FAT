@@ -1,26 +1,7 @@
 /*
- * FreeRTOS+FAT Labs Build 160919a (C) 2016 Real Time Engineers ltd.
+ * FreeRTOS+FAT build 191128 - Note:  FreeRTOS+FAT is still in the lab!
+ * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Authors include James Walmsley, Hein Tibosch and Richard Barry
- *
- *******************************************************************************
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- ***                                                                         ***
- ***                                                                         ***
- ***   FREERTOS+FAT IS STILL IN THE LAB:                                     ***
- ***                                                                         ***
- ***   Be aware we are still refining the FreeRTOS+FAT design,               ***
- ***   the source code does not yet fully conform to the strict quality and  ***
- ***   style standards mandated by Real Time Engineers ltd., and the         ***
- ***   documentation and testing is not necessarily complete.                ***
- ***                                                                         ***
- ***   PLEASE REPORT EXPERIENCES USING THE SUPPORT RESOURCES FOUND ON THE    ***
- ***   URL: http://www.FreeRTOS.org/contact  Active early adopters may, at   ***
- ***   the sole discretion of Real Time Engineers Ltd., be offered versions  ***
- ***   under a license other than that described below.                      ***
- ***                                                                         ***
- ***                                                                         ***
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- *******************************************************************************
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -39,11 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * 1 tab == 4 spaces!
- *
- * http://www.FreeRTOS.org
- * http://www.FreeRTOS.org/plus
- * http://www.FreeRTOS.org/labs
+ * https://www.FreeRTOS.org
  *
  */
 
@@ -53,6 +30,8 @@
 
 /* Scheduler include files. */
 #include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
 #include "ff_headers.h"
 #include "event_groups.h"
 
@@ -84,6 +63,11 @@ BaseType_t FF_TrySemaphore( void *pxSemaphore, uint32_t ulTime_ms )
 {
 BaseType_t xReturn;
 
+	/* HT: Actually FF_TrySemaphore is never used. */
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		return 0;
+	}
 	configASSERT( pxSemaphore );
 	xReturn = xSemaphoreTakeRecursive( ( SemaphoreHandle_t ) pxSemaphore, pdMS_TO_TICKS( ulTime_ms ) );
 	return xReturn;
@@ -92,6 +76,11 @@ BaseType_t xReturn;
 
 void FF_PendSemaphore( void *pxSemaphore )
 {
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* No need to take the semaphore. */
+		return;
+	}
 	configASSERT( pxSemaphore );
 	xSemaphoreTakeRecursive( ( SemaphoreHandle_t ) pxSemaphore, portMAX_DELAY );
 }
@@ -99,6 +88,11 @@ void FF_PendSemaphore( void *pxSemaphore )
 
 void FF_ReleaseSemaphore( void *pxSemaphore )
 {
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return;
+	}
 	configASSERT( pxSemaphore );
 	xSemaphoreGiveRecursive( ( SemaphoreHandle_t ) pxSemaphore );
 }
@@ -106,6 +100,12 @@ void FF_ReleaseSemaphore( void *pxSemaphore )
 
 void FF_Sleep( uint32_t ulTime_ms )
 {
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* This sleep is used as a kind of yield.
+		Not necessary while the Scheduler does not run. */
+		return;
+	}
 	vTaskDelay( pdMS_TO_TICKS( ulTime_ms ) );
 }
 /*-----------------------------------------------------------*/
@@ -143,6 +143,11 @@ void FF_LockDirectory( FF_IOManager_t *pxIOManager )
 {
 	EventBits_t xBits;
 
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return;
+	}
 	for( ;; )
 	{
 		/* Called when a task want to make changes to a directory.
@@ -169,6 +174,11 @@ void FF_LockDirectory( FF_IOManager_t *pxIOManager )
 
 void FF_UnlockDirectory( FF_IOManager_t *pxIOManager )
 {
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return;
+	}
 	configASSERT( ( xEventGroupGetBits( pxIOManager->xEventGroup ) & FF_DIR_LOCK_EVENT_BITS ) == 0 );
 	xEventGroupSetBits( pxIOManager->xEventGroup, FF_DIR_LOCK_EVENT_BITS );
 }
@@ -178,6 +188,11 @@ int FF_Has_Lock( FF_IOManager_t *pxIOManager, uint32_t aBits )
 {
 int iReturn;
 
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return 0;
+	}
 	void *handle = xTaskGetCurrentTaskHandle();
 	if( ( aBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
 	{
@@ -199,7 +214,14 @@ int iReturn;
 
 void FF_Assert_Lock( FF_IOManager_t *pxIOManager, uint32_t aBits )
 {
-	void *handle = xTaskGetCurrentTaskHandle();
+	void *handle;
+
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return;
+	}
+	handle = xTaskGetCurrentTaskHandle();
 
 	if( ( aBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
 	{
@@ -215,6 +237,11 @@ void FF_LockFAT( FF_IOManager_t *pxIOManager )
 {
 EventBits_t xBits;
 
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return;
+	}
 	configASSERT( FF_Has_Lock( pxIOManager, FF_FAT_LOCK ) == pdFALSE );
 
 	for( ;; )
@@ -244,6 +271,11 @@ EventBits_t xBits;
 
 void FF_UnlockFAT( FF_IOManager_t *pxIOManager )
 {
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return;
+	}
 	configASSERT( ( xEventGroupGetBits( pxIOManager->xEventGroup ) & FF_FAT_LOCK_EVENT_BITS ) == 0 );
 	pxIOManager->pvFATLockHandle = NULL;
 	xEventGroupSetBits( pxIOManager->xEventGroup, FF_FAT_LOCK_EVENT_BITS );
@@ -255,6 +287,11 @@ BaseType_t FF_BufferWait( FF_IOManager_t *pxIOManager, uint32_t xWaitMS )
 EventBits_t xBits;
 BaseType_t xReturn;
 
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return pdTRUE;
+	}
 	/* This function is called when a task is waiting for a sector buffer
 	to become available. */
 	xBits = xEventGroupWaitBits( pxIOManager->xEventGroup,
@@ -277,6 +314,11 @@ BaseType_t xReturn;
 
 void FF_BufferProceed( FF_IOManager_t *pxIOManager )
 {
+	if( xTaskGetSchedulerState() != taskSCHEDULER_RUNNING )
+	{
+		/* Scheduler not yet active. */
+		return;
+	}
 	/* Wake-up all tasks that are waiting for a sector buffer to become available. */
 	xEventGroupSetBits( pxIOManager->xEventGroup, FF_BUF_LOCK_EVENT_BITS );
 }

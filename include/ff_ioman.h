@@ -1,26 +1,7 @@
 /*
- * FreeRTOS+FAT Labs Build 160919a (C) 2016 Real Time Engineers ltd.
+ * FreeRTOS+FAT build 191128 - Note:  FreeRTOS+FAT is still in the lab!
+ * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Authors include James Walmsley, Hein Tibosch and Richard Barry
- *
- *******************************************************************************
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- ***                                                                         ***
- ***                                                                         ***
- ***   FREERTOS+FAT IS STILL IN THE LAB:                                     ***
- ***                                                                         ***
- ***   Be aware we are still refining the FreeRTOS+FAT design,               ***
- ***   the source code does not yet fully conform to the strict quality and  ***
- ***   style standards mandated by Real Time Engineers ltd., and the         ***
- ***   documentation and testing is not necessarily complete.                ***
- ***                                                                         ***
- ***   PLEASE REPORT EXPERIENCES USING THE SUPPORT RESOURCES FOUND ON THE    ***
- ***   URL: http://www.FreeRTOS.org/contact  Active early adopters may, at   ***
- ***   the sole discretion of Real Time Engineers Ltd., be offered versions  ***
- ***   under a license other than that described below.                      ***
- ***                                                                         ***
- ***                                                                         ***
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- *******************************************************************************
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -39,11 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * 1 tab == 4 spaces!
- *
- * http://www.FreeRTOS.org
- * http://www.FreeRTOS.org/plus
- * http://www.FreeRTOS.org/labs
+ * https://www.FreeRTOS.org
  *
  */
 
@@ -62,7 +39,7 @@ extern "C" {
 #include <stdlib.h>							/* Use of malloc() */
 
 #ifndef PLUS_FAT_H
-	#error this header will be included from "plusfat.h"
+	#error this header will be included from "ff_headers.h"
 #endif
 
 #define FF_T_FAT12				0x0A
@@ -389,6 +366,12 @@ void FF_ReadParts( uint8_t *pucBuffer, FF_Part_t *pxParts );
  * If sector-0 happens to be a valid MBR, 1 partition will be returned
  */
 FF_Error_t FF_PartitionSearch( FF_IOManager_t *pxIOManager, FF_SPartFound_t *pPartsFound );
+
+/* HT : for debugging only. */
+BaseType_t xIsFatSector( FF_IOManager_t *pxIOManager, uint32_t ulSectorNr );
+BaseType_t xNeedLogging( FF_IOManager_t *pxIOManager );
+BaseType_t xIsRootDirSector( FF_IOManager_t *pxIOManager, uint32_t ulSectorNr );
+const char *pcSectorType( FF_IOManager_t *pxIOManager, uint32_t ulSectorNr );
 
 /* Needed to make this public/private to be used in FF_Partition/FF_Format. */
 void FF_IOMAN_InitBufferDescriptors( FF_IOManager_t *pxIOManager );

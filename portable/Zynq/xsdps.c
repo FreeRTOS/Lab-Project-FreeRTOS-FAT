@@ -1303,6 +1303,7 @@ s32 XSdPs_WritePolled(XSdPs *InstancePtr, u32 Arg, u32 BlkCnt, const u8 *Buff)
 	uint64_t ullLastTime = ullGetHighResolutionTime();
 	uint64_t ullNow;
 
+		XSdPs_ReadStatus(InstancePtr);
 		for( ;; )
 		{
 			ullNow = ullGetHighResolutionTime();
@@ -1312,6 +1313,13 @@ s32 XSdPs_WritePolled(XSdPs *InstancePtr, u32 Arg, u32 BlkCnt, const u8 *Buff)
 				break;
 			}
 		}
+		XSdPs_ReadStatus(InstancePtr);
+//		eventLogAdd("Wt %lx %lx%s", Status[0], Status[1], Status[0] != Status[1] ? " DIFF" : "");
+	}
+	else
+	{
+	u32 Status = XSdPs_ReadStatus(InstancePtr);
+//		eventLogAdd("Wt %lx", Status);
 	}
 
 	XSdPs_WriteReg16(InstancePtr->Config.BaseAddress,
