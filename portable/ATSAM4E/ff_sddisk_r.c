@@ -30,10 +30,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-/* LPC18xx includes. */
-#include "chip.h"
-#include "board.h"
-
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -44,7 +40,8 @@
 #include "ff_sddisk.h"
 #include "ff_sys.h"
 
-#include "hr_gettime.h"
+/* Atmel includes. */
+#include <sd_mmc.h>
 
 /* Misc definitions. */
 #define sdSIGNATURE 			0x41404342UL
@@ -53,41 +50,36 @@
 #define sdSECTORS_PER_MB		( sdBYTES_PER_MB / 512ull )
 #define sdIOMAN_MEM_SIZE		4096
 #define xSDCardInfo				( sd_mmc_cards[ 0 ] )
-#define sdAligned( pvAddress )	( ( ( ( size_t ) ( pvAddress ) ) & ( sizeof( size_t ) - 1 ) ) == 0 )
-
-
 
 /*-----------------------------------------------------------*/
 
-/*_RB_ Functions require comment blocks. */
-static void prvSDMMCSetupWakeup( void *pvInfo );
-static uint32_t prvSDMMCWait( void );
-static void prvSDMMCDelay_ms( uint32_t time );
-static void prvInitialiseCardInfo( void );
-static int32_t prvSDMMC_Init( void );
-static int32_t prvFFRead( uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk );
-static int32_t prvFFWrite( uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk );
+/*
+ * Return pdFALSE if the SD card is not inserted.
+ */
+static BaseType_t prvSDDetect( void );
 
-
-/*-----------------------------------------------------------*/
-
-/*_RB_ Variables require a comment block where appropriate. */
-static int32_t lSDDetected = 0;
-static mci_card_struct xCardInfo;
-static volatile int32_t lSDIOWaitExit;
-static BaseType_t xSDCardStatus;
-static SemaphoreHandle_t xSDCardSemaphore;
-static SemaphoreHandle_t xPlusFATMutex;
+/*
+ * Check if the card is present, and if so, print out some info on the card.
+ */
+static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber );
 
 /*-----------------------------------------------------------*/
 
-#warning Update to make read and write functions static and make use of the FF_Disk_t type.
+/*
+ * Mutex for partition.
+ */
+static SemaphoreHandle_t xPlusFATMutex = NULL;
+
+/*
+ * Remembers if the card is currently considered to be present.
+ */
+static BaseType_t xSDCardStatus = pdFALSE;
+
+/*-----------------------------------------------------------*/
 
 static int32_t prvFFRead( uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk )
 {
-int32_t iReturn;
-
-	/*_RB_ Many of the comments in this file apply to other functions in the file. */
+int32_t lReturnCode = FF_ERR_IOMAN_OUT_OF_BOUNDS_READ | FF_ERRFLAG, lResult;
 
 	if( ( pxDisk != NULL ) &&
 		( xSDCardStatus == pdPASS ) &&
@@ -96,41 +88,37 @@ int32_t iReturn;
 		( ulSectorNumber < pxDisk->ulNumberOfSectors ) &&
 		( ( pxDisk->ulNumberOfSectors - ulSectorNumber ) >= ulSectorCount ) )
 	{
+		lResult = sd_physical_read( ulSectorNumber, pucBuffer, ulSectorCount);
 
-		iReturn = Chip_SDMMC_ReadBlocks( LPC_SDMMC, pucBuffer, ulSectorNumber, ulSectorCount );
-
-		/*_RB_ I'm guessing 512 is a sector size, but that needs to be clear.
-		Is it defined in a header somewhere?  If so we can do a search and
-		replace in files on it as it seems to be used everywhere. */
-		if( iReturn == ( ulSectorCount * 512 ) ) /*_RB_ Signed/unsigned mismatch (twice!) */
+		if( lResult != pdFALSE )
 		{
-			iReturn = FF_ERR_NONE;
+			lReturnCode = 0L;
 		}
 		else
 		{
-			/*_RB_ Signed number used to return bitmap (again below). */
-			iReturn = ( FF_ERR_IOMAN_OUT_OF_BOUNDS_READ | FF_ERRFLAG );
+			/* Some error occurred. */
+			FF_PRINTF( "prvFFRead: %lu: %lu\n", ulSectorNumber, lResult );
 		}
 	}
 	else
 	{
-		memset( ( void * ) pucBuffer, '\0', ulSectorCount * 512 );
+		/* Make sure no random data is in the returned buffer. */
+		memset( ( void * ) pucBuffer, '\0', ulSectorCount * 512UL );
 
-		if( pxDisk->xStatus.bIsInitialised != 0 )
+		if( pxDisk->xStatus.bIsInitialised != pdFALSE )
 		{
 			FF_PRINTF( "prvFFRead: warning: %lu + %lu > %lu\n", ulSectorNumber, ulSectorCount, pxDisk->ulNumberOfSectors );
 		}
-
-		iReturn = ( FF_ERR_IOMAN_OUT_OF_BOUNDS_READ | FF_ERRFLAG );
 	}
 
-	return iReturn;
+	return lReturnCode;
 }
 /*-----------------------------------------------------------*/
 
 static int32_t prvFFWrite( uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk )
 {
-int32_t iReturn;
+int32_t lReturnCode = FF_ERR_IOMAN_OUT_OF_BOUNDS_READ | FF_ERRFLAG;
+BaseType_t xResult;
 
 	if( ( pxDisk != NULL ) &&
 		( xSDCardStatus == pdPASS ) &&
@@ -139,29 +127,27 @@ int32_t iReturn;
 		( ulSectorNumber < pxDisk->ulNumberOfSectors ) &&
 		( ( pxDisk->ulNumberOfSectors - ulSectorNumber ) >= ulSectorCount ) )
 	{
-		iReturn = Chip_SDMMC_WriteBlocks( LPC_SDMMC, pucBuffer, ulSectorNumber, ulSectorCount );
+		xResult = sd_physical_write( ulSectorNumber, pucBuffer, ulSectorCount );
 
-		if( iReturn == ( ulSectorCount * 512 ) ) /*_RB_ Signed/unsigned mismatch (twice!) */
+		if( xResult != pdFALSE )
 		{
-			iReturn = 0;
+			/* No errors. */
+			lReturnCode = 0L;
 		}
 		else
 		{
-			iReturn = ( FF_ERR_IOMAN_OUT_OF_BOUNDS_WRITE | FF_ERRFLAG );
+			FF_PRINTF( "prvFFWrite: %lu: %lu\n", ulSectorNumber, xResult  );
 		}
 	}
 	else
 	{
-		memset( ( void * ) pucBuffer, '\0', ulSectorCount * 512 );
-		if( pxDisk->xStatus.bIsInitialised )
+		if( pxDisk->xStatus.bIsInitialised != pdFALSE )
 		{
 			FF_PRINTF( "prvFFWrite: warning: %lu + %lu > %lu\n", ulSectorNumber, ulSectorCount, pxDisk->ulNumberOfSectors );
 		}
-
-		iReturn = ( FF_ERR_IOMAN_OUT_OF_BOUNDS_WRITE | FF_ERRFLAG );
 	}
 
-	return iReturn;
+	return lReturnCode;
 }
 /*-----------------------------------------------------------*/
 
@@ -182,25 +168,35 @@ FF_Disk_t *FF_SDDiskInit( const char *pcName )
 FF_Error_t xFFError;
 BaseType_t xPartitionNumber = 0;
 FF_CreationParameters_t xParameters;
-FF_Disk_t * pxDisk;
+FF_Disk_t *pxDisk;
 
-	xSDCardStatus = prvSDMMC_Init();
-	if( xSDCardStatus == pdPASS )
+	xSDCardStatus = prvSDMMCInit( 0 );
+
+	if( xSDCardStatus != pdPASS )
 	{
-		pxDisk = ( FF_Disk_t * ) pvPortMalloc( sizeof( *pxDisk ) );
-
-		if( pxDisk != NULL )
+		FF_PRINTF( "FF_SDDiskInit: prvSDMMCInit failed\n" );
+		pxDisk = NULL;
+	}
+	else
+	{
+		pxDisk = ( FF_Disk_t * )pvPortMalloc( sizeof( *pxDisk ) );
+		if( pxDisk == NULL )
 		{
-
+			FF_PRINTF( "FF_SDDiskInit: Malloc failed\n" );
+		}
+		else
+		{
 			/* Initialise the created disk structure. */
 			memset( pxDisk, '\0', sizeof( *pxDisk ) );
 
+			/* The Atmel MMC driver sets capacity as a number of KB.
+			Divide by two to get the number of 512-byte sectors. */
+			pxDisk->ulNumberOfSectors = xSDCardInfo.capacity << 1;
 
-			if( xPlusFATMutex == NULL)
+			if( xPlusFATMutex == NULL )
 			{
 				xPlusFATMutex = xSemaphoreCreateRecursiveMutex();
 			}
-			pxDisk->ulNumberOfSectors = xCardInfo.card_info.blocknr;
 			pxDisk->ulSignature = sdSIGNATURE;
 
 			if( xPlusFATMutex != NULL)
@@ -225,7 +221,7 @@ FF_Disk_t * pxDisk;
 
 				if( pxDisk->pxIOManager == NULL )
 				{
-					FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManger: %s\n", ( const char * ) FF_GetErrMessage( xFFError ) );
+					FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManger: %s\n", (const char*)FF_GetErrMessage( xFFError ) );
 					FF_SDDiskDelete( pxDisk );
 					pxDisk = NULL;
 				}
@@ -251,22 +247,13 @@ FF_Disk_t * pxDisk;
 				}	/* if( pxDisk->pxIOManager != NULL ) */
 			}	/* if( xPlusFATMutex != NULL) */
 		}	/* if( pxDisk != NULL ) */
-		else
-		{
-			FF_PRINTF( "FF_SDDiskInit: Malloc failed\n" );
-		}
 	}	/* if( xSDCardStatus == pdPASS ) */
-	else
-	{
-		FF_PRINTF( "FF_SDDiskInit: prvSDMMC_Init failed\n" );
-		pxDisk = NULL;
-	}
 
 	return pxDisk;
 }
 /*-----------------------------------------------------------*/
 
-BaseType_t FF_SDDiskFormat( FF_Disk_t *pxDisk, BaseType_t xPartitionNumber )
+BaseType_t FF_SDDiskFormat( FF_Disk_t *pxDisk, BaseType_t aPart )
 {
 FF_Error_t xError;
 BaseType_t xReturn = pdFAIL;
@@ -280,7 +267,7 @@ BaseType_t xReturn = pdFAIL;
 	else
 	{
 		/* Format the drive - try FAT32 with large clusters. */
-		xError = FF_Format( pxDisk, xPartitionNumber, pdFALSE, pdFALSE);
+		xError = FF_Format( pxDisk, aPart, pdFALSE, pdFALSE);
 
 		if( FF_isERR( xError ) )
 		{
@@ -289,12 +276,13 @@ BaseType_t xReturn = pdFAIL;
 		else
 		{
 			FF_PRINTF( "FF_SDDiskFormat: OK, now remounting\n" );
-			pxDisk->xStatus.bPartitionNumber = xPartitionNumber;
+			pxDisk->xStatus.bPartitionNumber = aPart;
 			xError = FF_SDDiskMount( pxDisk );
 			FF_PRINTF( "FF_SDDiskFormat: rc %08x\n", ( unsigned )xError );
 			if( FF_isERR( xError ) == pdFALSE )
 			{
 				xReturn = pdPASS;
+				FF_SDDiskShowPartition( pxDisk );
 			}
 		}
 	}
@@ -303,7 +291,43 @@ BaseType_t xReturn = pdFAIL;
 }
 /*-----------------------------------------------------------*/
 
-/* Get a pointer to IOMAN, which can be used for all FreeRTOS+FAT functions */
+BaseType_t FF_SDDiskUnmount( FF_Disk_t *pxDisk )
+{
+FF_Error_t xFFError;
+BaseType_t xReturn = pdPASS;
+
+	if( ( pxDisk != NULL ) && ( pxDisk->xStatus.bIsMounted != pdFALSE ) )
+	{
+		pxDisk->xStatus.bIsMounted = pdFALSE;
+		xFFError = FF_Unmount( pxDisk );
+
+		if( FF_isERR( xFFError ) )
+		{
+			FF_PRINTF( "FF_SDDiskUnmount: rc %08x\n", ( unsigned )xFFError );
+			xReturn = pdFAIL;
+		}
+		else
+		{
+			FF_PRINTF( "Drive unmounted\n" );
+		}
+	}
+
+	return xReturn;
+}
+/*-----------------------------------------------------------*/
+
+BaseType_t FF_SDDiskReinit( FF_Disk_t *pxDisk )
+{
+BaseType_t xStatus = prvSDMMCInit( 0 ); /* Hard coded index. */
+
+	/*_RB_ parameter not used. */
+	( void ) pxDisk;
+
+	FF_PRINTF( "FF_SDDiskReinit: rc %08x\n", ( unsigned ) xStatus );
+	return xStatus;
+}
+/*-----------------------------------------------------------*/
+
 BaseType_t FF_SDDiskMount( FF_Disk_t *pxDisk )
 {
 FF_Error_t xFFError;
@@ -321,7 +345,6 @@ BaseType_t xReturn;
 	{
 		pxDisk->xStatus.bIsMounted = pdTRUE;
 		FF_PRINTF( "****** FreeRTOS+FAT initialized %lu sectors\n", pxDisk->pxIOManager->xPartition.ulTotalSectors );
-		FF_SDDiskShowPartition( pxDisk );
 		xReturn = pdPASS;
 	}
 
@@ -430,103 +453,100 @@ BaseType_t xReturn = pdPASS;
 }
 /*-----------------------------------------------------------*/
 
-void SDIO_IRQHandler( void )
+BaseType_t FF_SDDiskDetect( FF_Disk_t *pxDisk )
 {
-BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+BaseType_t xIsPresent;
+void *pvSemaphore;
 
-	/* All SD based register handling is done in the callback function. The SDIO
-	interrupt is not enabled as part of this driver and needs to be
-	enabled/disabled in the callbacks or application as needed. This is to allow
-	flexibility with IRQ handling for applications and RTOSes. */
-
-	/* Set wait exit flag to tell wait function we are ready. In an RTOS, this
-	would trigger wakeup of a thread waiting for the IRQ. */
-	NVIC_DisableIRQ( SDIO_IRQn );
-	xSemaphoreGiveFromISR( xSDCardSemaphore, &xHigherPriorityTaskWoken );
-	lSDIOWaitExit = 1;
-	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-}
-/*-----------------------------------------------------------*/
-
-/* Sets up the SD event driven wakeup */
-static void prvSDMMCSetupWakeup( void *pvInfo )
-{
-uint32_t *ulWaitStatus = ( uint32_t * ) pvInfo;
-
-	/* Wait for IRQ - for an RTOS, you would pend on an event here with a IRQ
-	based wakeup. */
-	/*_RB_ Don't understand why this is spinning on a block time of 0.  Is it
-	really meant to be != pdFALSE? */
-	while( xSemaphoreTake( xSDCardSemaphore, 0 ) != pdFALSE )
+	if( ( pxDisk != NULL ) &&
+		( pxDisk->pxIOManager ) )
 	{
+		pvSemaphore = pxDisk->pxIOManager->pvSemaphore;
+	}
+	else
+	{
+		pvSemaphore = NULL;
 	}
 
-	NVIC_ClearPendingIRQ( SDIO_IRQn );
-	lSDIOWaitExit = 0;
-	Chip_SDIF_SetIntMask( LPC_SDMMC, *ulWaitStatus );
-	NVIC_EnableIRQ( SDIO_IRQn );
-}
-/*-----------------------------------------------------------*/
-
-static uint32_t prvSDMMCWait( void )
-{
-uint32_t ulStatus;
-
-	/*_RB_ 2000 needs to be defined and use pdMS_TO_TICKS so the delay period
-	remains constant no matter how the end user sets configTICK_RATE_MS. */
-	xSemaphoreTake( xSDCardSemaphore, 2000 );
-
-	ulStatus = Chip_SDIF_GetIntStatus( LPC_SDMMC );
-	if( ( ( ulStatus & MCI_INT_CMD_DONE ) == 0 ) || ( lSDIOWaitExit == 0 ) )
+	/*_RB_ Can these NULL checks be moved inside the FF_nnnSemaphore() functions? */
+	/*_HT_ I'm afraid not, both functions start with configASSERT( pxSemaphore ); */
+	if( pvSemaphore != NULL )
 	{
-		FF_PRINTF( "Wait SD: int32_t %ld ulStatus 0x%02lX\n", lSDIOWaitExit, ulStatus );
+		FF_PendSemaphore( pvSemaphore );
 	}
 
-	return ulStatus;
-}
-/*-----------------------------------------------------------*/
+	xIsPresent = prvSDDetect();
 
-static void prvSDMMCDelay_ms( uint32_t ulTime )
-{
-	/* In an RTOS, the thread would sleep allowing other threads to run.
-	For standalone operation, just spin on a timer */
-	vTaskDelay( pdMS_TO_TICKS( ulTime ) );
-}
-/*-----------------------------------------------------------*/
-
-static int32_t prvSDMMC_Init( void )
-{
-int32_t lSDCardStatus;
-
-	if( xSDCardSemaphore == NULL )
+	if( pvSemaphore != NULL )
 	{
-		xSDCardSemaphore = xSemaphoreCreateBinary();
-		configASSERT( xSDCardSemaphore );
-		xSemaphoreGive( xSDCardSemaphore );
+		FF_ReleaseSemaphore( pvSemaphore );
 	}
 
-	prvInitialiseCardInfo();
-	NVIC_SetPriority( SDIO_IRQn, configSD_INTERRUPT_PRIORITY );
-
-	/*_RB_ Board_SDMMC_Init() is library specific code that is also specific to
-	the target development board.The SDMMC peripheral should be initialised from
-	the application code before this code is called. */
-	Board_SDMMC_Init();
-	Chip_SDIF_Init( LPC_SDMMC );
-	lSDDetected = !Chip_SDIF_CardNDetect( LPC_SDMMC );
-
-	Chip_SDIF_PowerOn( LPC_SDMMC );
-	lSDCardStatus = Chip_SDMMC_Acquire( LPC_SDMMC, &xCardInfo );
-	FF_PRINTF( "Acquire: %ld\n", lSDCardStatus );
-
-	return lSDCardStatus;
+	return xIsPresent;
 }
 /*-----------------------------------------------------------*/
 
-static void prvInitialiseCardInfo( void )
+static BaseType_t prvSDDetect( void )
 {
-	memset( &xCardInfo, 0, sizeof( xCardInfo ) );
-	xCardInfo.card_info.evsetup_cb = prvSDMMCSetupWakeup;
-	xCardInfo.card_info.waitfunc_cb = prvSDMMCWait;
-	xCardInfo.card_info.msdelay_func = prvSDMMCDelay_ms;
+static BaseType_t xWasPresent;
+BaseType_t xIsPresent;
+sd_mmc_err_t xSDPresence;
+
+	if( xWasPresent == pdFALSE )
+	{
+		/* Try to initialize SD MMC stack */
+		sd_mmc_init();
+		xSDPresence = sd_mmc_check( 0 );
+		if( ( xSDPresence == SD_MMC_OK ) || ( xSDPresence == SD_MMC_INIT_ONGOING ) )
+		{
+			xIsPresent = pdTRUE;
+		}
+		else
+		{
+			xIsPresent = pdFALSE;
+		}
+	}
+	else
+	{
+		/* See if the card is still present. */
+		xSDPresence = sd_mmc_check_status(0);
+		if( xSDPresence == SD_MMC_OK )
+		{
+			xIsPresent = pdTRUE;
+		}
+		else
+		{
+			xIsPresent = pdFALSE;
+		}
+	}
+	xWasPresent = xIsPresent;
+
+	return xIsPresent;
 }
+/*-----------------------------------------------------------*/
+
+static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
+{
+BaseType_t xReturn;
+
+	/* 'xDriveNumber' not yet in use. */
+	( void ) xDriveNumber;
+
+	/* Check if the SD card is plugged in the slot */
+	if( prvSDDetect() == pdFALSE )
+	{
+		FF_PRINTF( "No SD card detected\n" );
+		xReturn = pdFAIL;
+	}
+	else
+	{
+		FF_PRINTF( "HAL_SD_Init: type: %s Capacity: %lu MB\n",
+			xSDCardInfo.type & CARD_TYPE_HC ? "SDHC" : "SD",
+			( xSDCardInfo.capacity << 1 ) / 2048 );
+
+		xReturn = pdPASS;
+	}
+
+	return xReturn;
+}
+/*-----------------------------------------------------------*/

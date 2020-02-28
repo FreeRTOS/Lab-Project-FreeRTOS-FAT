@@ -1,26 +1,7 @@
 /*
- * FreeRTOS+FAT Labs Build 160919a (C) 2016 Real Time Engineers ltd.
+ * FreeRTOS+FAT build 191128 - Note:  FreeRTOS+FAT is still in the lab!
+ * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Authors include James Walmsley, Hein Tibosch and Richard Barry
- *
- *******************************************************************************
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- ***                                                                         ***
- ***                                                                         ***
- ***   FREERTOS+FAT IS STILL IN THE LAB:                                     ***
- ***                                                                         ***
- ***   Be aware we are still refining the FreeRTOS+FAT design,               ***
- ***   the source code does not yet fully conform to the strict quality and  ***
- ***   style standards mandated by Real Time Engineers ltd., and the         ***
- ***   documentation and testing is not necessarily complete.                ***
- ***                                                                         ***
- ***   PLEASE REPORT EXPERIENCES USING THE SUPPORT RESOURCES FOUND ON THE    ***
- ***   URL: http://www.FreeRTOS.org/contact  Active early adopters may, at   ***
- ***   the sole discretion of Real Time Engineers Ltd., be offered versions  ***
- ***   under a license other than that described below.                      ***
- ***                                                                         ***
- ***                                                                         ***
- ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
- *******************************************************************************
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -39,11 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * 1 tab == 4 spaces!
- *
- * http://www.FreeRTOS.org
- * http://www.FreeRTOS.org/plus
- * http://www.FreeRTOS.org/labs
+ * https://www.FreeRTOS.org
  *
  */
 
@@ -62,14 +39,6 @@
 #if( ffconfigUNICODE_UTF16_SUPPORT != 0 )
 #include <wchar.h>
 #endif
-
-/* _HT_ the default value for 'ffconfigFILE_EXTEND_FLUSHES_BUFFERS'
-equals 1, and it should be defined in FreeRTOSFATConfigDefaults.h. */
-#ifndef ffconfigFILE_EXTEND_FLUSHES_BUFFERS
-	#define ffconfigFILE_EXTEND_FLUSHES_BUFFERS   1
-#endif
-
-/*-----------------------------------------------------------*/
 
 static FF_Error_t FF_Truncate( FF_FILE *pxFile, BaseType_t bClosing );
 
@@ -2369,7 +2338,7 @@ FF_Error_t xResult;
 FF_Error_t FF_Seek( FF_FILE *pxFile, int32_t lOffset, BaseType_t xOrigin )
 {
 FF_Error_t xError;
-uint32_t ulPosition;
+uint32_t ulPosition = 0ul;
 
 	xError = FF_CheckValid( pxFile );
 
@@ -2967,12 +2936,10 @@ FF_Error_t xError;
 			}
 		}
 		#endif
-
 		if( FF_isERR( xError ) == pdFALSE )
 		{
 			xError = FF_FlushCache( pxFile->pxIOManager ); /* Ensure all modified blocks are flushed to disk! */
 		}
-
 		ffconfigFREE( pxFile );
 	}
 	while( pdFALSE );

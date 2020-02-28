@@ -2642,7 +2642,7 @@ static HAL_SD_ErrorTypedef SD_PowerON(SD_HandleTypeDef *hsd)
 
 	  if( ( count == 0 ) || ( validvoltage != 0 ) )
 	  {
-		FF_PRINTF("Voltage resp: %08x\n", response);
+		FF_PRINTF("Voltage resp: %08x\n", ( unsigned ) response);
 	  }
 
       count++;
@@ -2855,7 +2855,7 @@ static HAL_SD_ErrorTypedef SD_CmdResp1Error(SD_HandleTypeDef *hsd, uint8_t SD_CM
   /* Check response received is of desired command */
   if(SDIO_GetCommandResponse(hsd->Instance) != SD_CMD)
   {
-	FF_PRINTF( "RESPCMD[1] = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_CMD );
+	FF_PRINTF( "RESPCMD[1] = %08x cmd = %02x\n", ( unsigned ) hsd->Instance->RESPCMD, SD_CMD );
     errorstate = SD_ILLEGAL_CMD;
 
     return errorstate;
@@ -3079,7 +3079,7 @@ static HAL_SD_ErrorTypedef SD_CmdResp6Error(SD_HandleTypeDef *hsd, uint8_t SD_CM
   /* Check response received is of desired command */
   if(SDIO_GetCommandResponse(hsd->Instance) != SD_CMD)
   {
-	FF_PRINTF( "RESPCMD[2] = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_CMD );
+	FF_PRINTF( "RESPCMD[2] = %08x cmd = %02x\n", ( unsigned ) hsd->Instance->RESPCMD, SD_CMD );
     errorstate = SD_ILLEGAL_CMD;
 
     return errorstate;
@@ -3105,7 +3105,7 @@ static HAL_SD_ErrorTypedef SD_CmdResp6Error(SD_HandleTypeDef *hsd, uint8_t SD_CM
 
   if((response_r1 & SD_R6_ILLEGAL_CMD) == SD_R6_ILLEGAL_CMD)
   {
-	FF_PRINTF( "response_r1 = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_R6_ILLEGAL_CMD );
+	FF_PRINTF( "response_r1 = %08x cmd = %02x\n", ( unsigned ) hsd->Instance->RESPCMD, ( unsigned ) SD_R6_ILLEGAL_CMD );
     return(SD_ILLEGAL_CMD);
   }
 
@@ -3425,7 +3425,7 @@ static HAL_SD_ErrorTypedef SD_IsCardProgramming(SD_HandleTypeDef *hsd, uint8_t *
   /* Check response received is of desired command */
   if((uint32_t)SDIO_GetCommandResponse(hsd->Instance) != SD_CMD_SEND_STATUS)
   {
-   FF_PRINTF( "RESPCMD[3] = %08x cmd = %02x\n", hsd->Instance->RESPCMD, SD_CMD_SEND_STATUS );
+   FF_PRINTF( "RESPCMD[3] = %08x cmd = %02x\n", ( unsigned ) hsd->Instance->RESPCMD, SD_CMD_SEND_STATUS );
    errorstate = SD_ILLEGAL_CMD;
 
     return errorstate;
