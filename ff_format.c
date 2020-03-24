@@ -115,6 +115,9 @@
 
 #define RESV_COUNT					32
 
+#define MX_LBA_TO_MOVE_FAT			8192uL
+#define SIZE_512_MB					0x100000uL
+
 #ifdef ffconfigMIN_CLUSTERS_FAT32
 	#define MIN_CLUSTER_COUNT_FAT32		ffconfigMIN_CLUSTERS_FAT32
 #else
@@ -289,7 +292,9 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 		}
 	}
 
-	if( ( ucFATType == FF_T_FAT32 ) && ( ulSectorCount >= 0x100000UL ) )	/* Larger than 0.5 GB */
+	if( ( ucFATType == FF_T_FAT32 ) &&
+		( ulSectorCount >= SIZE_512_MB ) &&
+		( pxMyPartition->ulStartLBA < MX_LBA_TO_MOVE_FAT ) )
 	{
 	uint32_t ulRemaining;
 		/*
@@ -298,7 +303,7 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 		 * See e.g. here:
 		 * http://3gfp.com/wp/2014/07/formatting-sd-cards-for-speed-and-lifetime/
 		 */
-		ulFATReservedSectors = 8192 - ulHiddenSectors;
+		ulFATReservedSectors = MX_LBA_TO_MOVE_FAT - ulHiddenSectors;
 		ulNonDataSectors = ulFATReservedSectors + iFAT16RootSectors;
 
 		ulRemaining = (ulNonDataSectors + 2 * ulSectorsPerFAT) % 128;
