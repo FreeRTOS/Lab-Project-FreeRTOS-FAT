@@ -40,6 +40,7 @@ extern "C" {
 #include "FreeRTOSFATConfig.h"
 #include "FreeRTOSFATConfigDefaults.h"
 #include "ff_error.h"
+#include "ff_string.h"
 #include "ff_ioman.h"
 #include "ff_fat.h"
 #include "ff_fatdef.h"
@@ -48,7 +49,6 @@ extern "C" {
 #include "ff_crc.h"
 #include "ff_file.h"
 #include "ff_dir.h"
-#include "ff_string.h"
 #include "ff_format.h"
 #include "ff_locking.h"
 

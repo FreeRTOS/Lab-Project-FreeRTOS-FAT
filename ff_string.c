@@ -51,7 +51,7 @@
  */
 
 #if( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-	void FF_cstrntowcs( FF_T_WCHAR *wcsDest, const int8_t *szpSource, uint32_t ulLength )
+	void FF_cstrntowcs( FF_T_WCHAR *wcsDest, const char *szpSource, uint32_t ulLength )
 	{
 		while( ( *szpSource != '\0' )  && ( ulLength-- != 0 ) )
 		{
@@ -63,7 +63,7 @@
 /*-----------------------------------------------------------*/
 
 #if( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-	void FF_cstrtowcs( FF_T_WCHAR *wcsDest, const int8_t *szpSource )
+	void FF_cstrtowcs( FF_T_WCHAR *wcsDest, const char *szpSource )
 	{
 		while( *szpSource != '\0' )
 		{
@@ -75,7 +75,7 @@
 /*-----------------------------------------------------------*/
 
 #if( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-	void FF_wcstocstr( int8_t *szpDest, const FF_T_WCHAR *wcsSource )
+	void FF_wcstocstr( char *szpDest, const FF_T_WCHAR *wcsSource )
 	{
 		while( *wcsSource != '\0' )
 		{
@@ -87,7 +87,7 @@
 /*-----------------------------------------------------------*/
 
 #if( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-	void FF_wcsntocstr( int8_t *szpDest, const FF_T_WCHAR *wcsSource, uint32_t ulLength )
+	void FF_wcsntocstr( char *szpDest, const FF_T_WCHAR *wcsSource, uint32_t ulLength )
 	{
 		while( ( *wcsSource != '\0' ) && ( ulLength-- != 0 ) )
 		{
@@ -610,7 +610,7 @@
 		}
 		else if( ulSize < 2 )
 		{
-			lReturn FF_ERR_UNICODE_DEST_TOO_SMALL | FF_UTF32CTOUTF16C;	/* Not enough UTF-16 units to record this character. */
+			lReturn = FF_ERR_UNICODE_DEST_TOO_SMALL | FF_UTF32CTOUTF16C;	/* Not enough UTF-16 units to record this character. */
 		}
 		else if( utf32char < 0x00200000 )
 		{
