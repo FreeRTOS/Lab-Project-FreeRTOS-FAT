@@ -640,7 +640,7 @@ BaseType_t xFound;
 
 #if( ffconfigUNICODE_UTF16_SUPPORT != 0 )
 	FF_T_WCHAR mytoken[ ffconfigMAX_FILENAME ];
-	FF_T_WCHAR *token;
+	FF_T_WCHAR *pcToken;
 #else
 	char mytoken[ ffconfigMAX_FILENAME ];
 	char *pcToken;
