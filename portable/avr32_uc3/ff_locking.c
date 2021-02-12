@@ -168,6 +168,15 @@ void FF_Sleep( uint32_t ulTime_ms )
 }
 /*-----------------------------------------------------------*/
 
+void FF_DeleteEvents( FF_IOManager_t *pxIOManager )
+{
+	if( pxIOManager->xEventGroup != NULL )
+	{
+		vEventGroupDelete( pxIOManager->xEventGroup );
+	}
+}
+/*-----------------------------------------------------------*/
+
 BaseType_t FF_CreateEvents( FF_IOManager_t *pxIOManager )
 {
 BaseType_t xResult;

@@ -401,6 +401,7 @@ const FF_Buffer_t *pxLastBuffer = &( pxIOManager->pxBuffers[ pxIOManager->usCach
 
 			if( pxMatchingBuffer->usNumHandles == 0 )
 			{
+				/* Copy the read & write flags. */
 				pxMatchingBuffer->ucMode = ( ucMode & FF_MODE_RD_WR );
 				if( ( ucMode & FF_MODE_WRITE ) != 0 )
 				{
@@ -413,7 +414,8 @@ const FF_Buffer_t *pxLastBuffer = &( pxIOManager->pxBuffers[ pxIOManager->usCach
 				break;
 			}
 
-			pxMatchingBuffer = NULL;	/* Sector is already in use, keep yielding until its available! */
+			/* Sector is already in use in a different mode, keep yielding until its available! */
+			pxMatchingBuffer = NULL;
 		}
 		else
 		{
