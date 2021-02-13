@@ -45,7 +45,6 @@
 	#include "task.h"	/* For FreeRTOS date/time function */
 #endif
 
-
 /*=========================================================================================== */
 
 #define	OFS_PART_ACTIVE_8             0x000 /* 0x01BE 0x80 if active */
@@ -216,14 +215,14 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 	if( ucFATType == FF_T_FAT32 )
 	{
 		/* In FAT32, 4 bytes are needed to store the address (LBA) of a cluster.
-		Each FAT sector of 512 bytes can contain 512 / 4 = 128 entries. */
-		ulClustersPerFATSector = 128u;
+		 * A FAT sector of 512 bytes can contain 512 / 4 = 128 entries. */
+		ulClustersPerFATSector = pxDisk->pxIOManager->usSectorSize / sizeof(uint32_t);
 	}
 	else
 	{
 		/* In FAT16, 2 bytes are needed to store the address (LBA) of a cluster.
-		Each FAT sector of 512 bytes can contain 512 / 2 = 256 entries. */
-		ulClustersPerFATSector = 256u;
+		 * A FAT sector of 512 bytes can contain 512 / 2 = 256 entries. */
+		ulClustersPerFATSector = pxDisk->pxIOManager->usSectorSize / sizeof(uint16_t);
 	}
 
 	FF_PRINTF( "FF_Format: Secs %lu Rsvd %lu Hidden %lu Root %lu Data %lu\n",
@@ -318,7 +317,7 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 	}
 	ulClusterBeginLBA	= ulHiddenSectors + ulFATReservedSectors + 2 * ulSectorsPerFAT;
 
-	pucSectorBuffer = ( uint8_t * ) ffconfigMALLOC( 512 );
+	pucSectorBuffer = ( uint8_t * ) ffconfigMALLOC( pxDisk->pxIOManager->usSectorSize );
 	if( pucSectorBuffer == NULL )
 	{
 		return FF_ERR_NOT_ENOUGH_MEMORY | FF_MODULE_FORMAT;
@@ -326,12 +325,12 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 
 /*  ======================================================================================= */
 
-	memset( pucSectorBuffer, '\0', 512 );
+	memset( pucSectorBuffer, '\0', pxDisk->pxIOManager->usSectorSize );
 
 	memcpy( pucSectorBuffer + OFS_BPB_jmpBoot_24, "\xEB\x00\x90" "FreeRTOS", 11 );   /* Includes OFS_BPB_OEMName_64 */
 
-	FF_putShort( pucSectorBuffer, OFS_BPB_BytsPerSec_16, 512 );   /* 0x00B / Only 512, 1024, 2048 or 4096 */
-	FF_putShort( pucSectorBuffer, OFS_BPB_ResvdSecCnt_16, ( uint32_t ) ulFATReservedSectors ); /*  0x00E / 1 (FAT12/16) or 32 (FAT32) */
+    FF_putShort(pucSectorBuffer, OFS_BPB_BytsPerSec_16, pxDisk->pxIOManager->usSectorSize);         /* 0x00B / Only 512, 1024, 2048 or 4096 */
+	FF_putShort( pucSectorBuffer, OFS_BPB_ResvdSecCnt_16, ( uint32_t ) ulFATReservedSectors );      /*  0x00E / 1 (FAT12/16) or 32 (FAT32) */
 
 	FF_putChar( pucSectorBuffer, OFS_BPB_NumFATs_8, 2);          /* 0x010 / 2 recommended */
 	FF_putShort( pucSectorBuffer, OFS_BPB_RootEntCnt_16, ( uint32_t ) ( iFAT16RootSectors * 512 ) / 32 ); /* 0x011 / 512 (FAT12/16) or 0 (FAT32) */
@@ -385,8 +384,8 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 			memcpy( pucSectorBuffer + OFS_BPB_16_FilSysType_64, "FAT16   ", 8 );           /* 0x036 / "FAT12   " */
 		}
 
-		pucSectorBuffer[510] = 0x55;
-		pucSectorBuffer[511] = 0xAA;
+		pucSectorBuffer[FF_FAT_MBR_SIGNATURE + 0] = 0x55;
+		pucSectorBuffer[FF_FAT_MBR_SIGNATURE + 1] = 0xAA;
 
 		FF_BlockWrite( pxIOManager, ulHiddenSectors, 1, pucSectorBuffer, 0u );
 		if (ucFATType == FF_T_FAT32)
@@ -396,7 +395,7 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 
 		if( ucFATType == FF_T_FAT32 )
 		{
-			memset( pucSectorBuffer, '\0', 512 );
+			memset( pucSectorBuffer, '\0', pxDisk->pxIOManager->usSectorSize );
 
 			FF_putLong( pucSectorBuffer, OFS_FSI_32_LeadSig, 0x41615252 );  /* to validate that this is in fact an FSInfo sector. */
 			/* OFS_FSI_32_Reserved1		0x004 / 480 times 0 */
@@ -412,8 +411,8 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 		}
 
 		fatBeginLBA = ulHiddenSectors + ulFATReservedSectors;
-		memset( pucSectorBuffer, '\0', 512 );
-		switch( ucFATType )
+		memset( pucSectorBuffer, '\0', pxDisk->pxIOManager->usSectorSize );
+	switch( ucFATType )
 		{
 			case FF_T_FAT16:
 				FF_putShort( pucSectorBuffer, 0, 0xFFF8 ); /* First FAT entry. */
@@ -435,7 +434,7 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 		{
 		int32_t addr;
 
-			memset( pucSectorBuffer, '\0', 512 );
+			memset( pucSectorBuffer, '\0', pxDisk->pxIOManager->usSectorSize );
 			for( addr = fatBeginLBA+1;
 				 addr < ( fatBeginLBA + ( int32_t ) ulSectorsPerFAT );
 				 addr++ )
@@ -487,7 +486,7 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 				FF_BlockWrite( pxIOManager, ( uint32_t ) lAddress, 1, pucSectorBuffer, 0u );
 				if( lAddress == dirBegin )
 				{
-					memset( pucSectorBuffer, '\0', 512 );
+					memset( pucSectorBuffer, '\0', pxDisk->pxIOManager->usSectorSize );
 				}
 			}
 		}
@@ -697,8 +696,8 @@ FF_Error_t FF_Partition( FF_Disk_t *pxDisk, FF_PartitionParameters_t *pParams )
 				}
 			}
 			pucBuffer = pxSectorBuffer->pucBuffer;
-			memset ( pucBuffer, 0, 512 );
-			memcpy ( pucBuffer + OFS_BPB_jmpBoot_24, "\xEB\x00\x90" "FreeRTOS", 11 );   /* Includes OFS_BPB_OEMName_64 */
+			memset( pucBuffer, 0, pxIOManager->usSectorSize );
+			memcpy( pucBuffer + OFS_BPB_jmpBoot_24, "\xEB\x00\x90" "FreeRTOS", 11 );   /* Includes OFS_BPB_OEMName_64 */
 
 			ulPartitionOffset = OFS_PTABLE_PART_0;
 			for( xPartitionNumber = 0; xPartitionNumber < ffconfigMAX_PARTITIONS; xPartitionNumber++, ulPartitionOffset += 16 )
@@ -712,8 +711,8 @@ FF_Error_t FF_Partition( FF_Disk_t *pxDisk, FF_PartitionParameters_t *pParams )
 				FF_putLong (pucBuffer, ulPartitionOffset + OFS_PART_STARTING_LBA_32,     writeParts[ xPartitionNumber ].ulStartLBA );	/* 0x008 / 0x01C6 This is important */
 				FF_putLong (pucBuffer, ulPartitionOffset + OFS_PART_LENGTH_32,           writeParts[ xPartitionNumber ].ulSectorCount );/* 0x00C / 0x01CA Equal to total sectors */
 			}
-			pucBuffer[510] = 0x55;
-			pucBuffer[511] = 0xAA;
+			pucBuffer[FF_FAT_MBR_SIGNATURE + 0] = 0x55;
+			pucBuffer[FF_FAT_MBR_SIGNATURE + 1] = 0xAA;
 
 			FF_ReleaseBuffer(pxIOManager, pxSectorBuffer );
 			FF_FlushCache( pxIOManager );
@@ -731,7 +730,7 @@ FF_Error_t FF_Partition( FF_Disk_t *pxDisk, FF_PartitionParameters_t *pParams )
 		}
 
 		pucBuffer = pxSectorBuffer->pucBuffer;
-		memset (pucBuffer, 0, 512 );
+		memset (pucBuffer, 0, pxIOManager->usSectorSize );
 		memcpy (pucBuffer + OFS_BPB_jmpBoot_24, "\xEB\x00\x90" "FreeRTOS", 11 );   /* Includes OFS_BPB_OEMName_64 */
 		ulPartitionOffset = OFS_PTABLE_PART_0;
 
@@ -747,8 +746,8 @@ FF_Error_t FF_Partition( FF_Disk_t *pxDisk, FF_PartitionParameters_t *pParams )
 			FF_putLong(  pucBuffer, ulPartitionOffset + OFS_PART_LENGTH_32,           pxPartitions[ xPartitionNumber ].ulSectorCount );	/* 0x00C / 0x01CA Equal to total sectors */
 			ulPartitionOffset += 16;
 		}
-		pucBuffer[ 510 ] = 0x55;
-		pucBuffer[ 511 ] = 0xAA;
+		pucBuffer[FF_FAT_MBR_SIGNATURE + 0] = 0x55;
+		pucBuffer[FF_FAT_MBR_SIGNATURE + 1] = 0xAA;
 
 		FF_ReleaseBuffer( pxIOManager, pxSectorBuffer );
 		FF_FlushCache( pxIOManager );

@@ -207,7 +207,7 @@ BaseType_t xResult = -1;
 		{
 			for( xIndex = 0; xIndex < FF_MAX_ENTRIES_PER_DIRECTORY; xIndex++ )
 			{
-				/* Call FF_FetchEntryWithContext only once for every 512-byte block */
+				/* Call FF_FetchEntryWithContext only once for every block (usually 512 bytes) */
 				if( ( xIndex == 0 ) ||
 					( pucEntryBuffer >= xFetchContext.pxBuffer->pucBuffer + ( FF_SIZEOF_SECTOR - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
 				{
