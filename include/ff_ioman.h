@@ -64,7 +64,6 @@ for clearing sectors. */
 #define FF_BUF_MAX_HANDLES		0xFFFF		/* Maximum number handles sharing a buffer. (16 bit integer, we don't want to overflow it!) */
 
 #define FF_MAX_ENTRIES_PER_DIRECTORY	0xFFFF
-#define FF_SIZEOF_SECTOR				512
 #define FF_SIZEOF_DIRECTORY_ENTRY		32
 
 #ifndef pdTRUE_SIGNED

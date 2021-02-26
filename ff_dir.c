@@ -209,7 +209,7 @@ BaseType_t xResult = -1;
 			{
 				/* Call FF_FetchEntryWithContext only once for every block (usually 512 bytes) */
 				if( ( xIndex == 0 ) ||
-					( pucEntryBuffer >= xFetchContext.pxBuffer->pucBuffer + ( FF_SIZEOF_SECTOR - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
+					( pucEntryBuffer >= xFetchContext.pxBuffer->pucBuffer + ( pxIOManager->usSectorSize - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
 				{
 					*pxError = FF_FetchEntryWithContext( pxIOManager, ( uint32_t ) xIndex, &xFetchContext, NULL );
 					if( FF_isERR( *pxError ) )
@@ -341,7 +341,7 @@ uint32_t xResult = 0ul;
 		for( pxDirEntry->usCurrentItem = 0; pxDirEntry->usCurrentItem < FF_MAX_ENTRIES_PER_DIRECTORY; pxDirEntry->usCurrentItem++ )
 		{
 			if( ( src == NULL ) ||
-				( src >= xFetchContext.pxBuffer->pucBuffer + ( FF_SIZEOF_SECTOR - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
+				( src >= xFetchContext.pxBuffer->pucBuffer + ( pxIOManager->usSectorSize - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
 			{
 				xError = FF_FetchEntryWithContext( pxIOManager, pxDirEntry->usCurrentItem, &xFetchContext, NULL );
 
@@ -1648,7 +1648,7 @@ const uint8_t *pucEntryBuffer = NULL;
 		for( ; pxDirEntry->usCurrentItem < FF_MAX_ENTRIES_PER_DIRECTORY; pxDirEntry->usCurrentItem++ )
 		{
 			if( ( pucEntryBuffer == NULL ) ||
-				( pucEntryBuffer >= ( pxDirEntry->xFetchContext.pxBuffer->pucBuffer + ( FF_SIZEOF_SECTOR - FF_SIZEOF_DIRECTORY_ENTRY ) ) ) )
+				( pucEntryBuffer >= ( pxDirEntry->xFetchContext.pxBuffer->pucBuffer + ( pxIOManager->usSectorSize - FF_SIZEOF_DIRECTORY_ENTRY ) ) ) )
 			{
 				xError = FF_FetchEntryWithContext( pxIOManager, pxDirEntry->usCurrentItem, &( pxDirEntry->xFetchContext ), NULL );
 
@@ -1660,7 +1660,7 @@ const uint8_t *pucEntryBuffer = NULL;
 				if( pucEntryBuffer == NULL )
 				{
 					pucEntryBuffer = pxDirEntry->xFetchContext.pxBuffer->pucBuffer +
-						( FF_SIZEOF_DIRECTORY_ENTRY * ( pxDirEntry->usCurrentItem % ( FF_SIZEOF_SECTOR/FF_SIZEOF_DIRECTORY_ENTRY ) ) );
+						( FF_SIZEOF_DIRECTORY_ENTRY * ( pxDirEntry->usCurrentItem % ( pxIOManager->usSectorSize/FF_SIZEOF_DIRECTORY_ENTRY ) ) );
 				}
 				else
 				{
@@ -1743,7 +1743,7 @@ const uint8_t *pucEntryBuffer = NULL;
 								/* xFetchContext/usCurrentItem have changed.  Update
 								'pucEntryBuffer' to point to the current buffer position. */
 								pucEntryBuffer = pxDirEntry->xFetchContext.pxBuffer->pucBuffer +
-									( FF_SIZEOF_DIRECTORY_ENTRY * ( pxDirEntry->usCurrentItem % ( FF_SIZEOF_SECTOR/FF_SIZEOF_DIRECTORY_ENTRY ) ) );
+									( FF_SIZEOF_DIRECTORY_ENTRY * ( pxDirEntry->usCurrentItem % ( pxIOManager->usSectorSize/FF_SIZEOF_DIRECTORY_ENTRY ) ) );
 							}
 							else
 							{
@@ -1852,7 +1852,7 @@ uint32_t ulDirCluster = pxFindParams->ulDirCluster;
 		for ( ; uxEntry < FF_MAX_ENTRIES_PER_DIRECTORY; uxEntry++ )
 		{
 			if( ( pucEntryBuffer == NULL ) ||
-				( pucEntryBuffer >= xFetchContext.pxBuffer->pucBuffer + ( FF_SIZEOF_SECTOR - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
+				( pucEntryBuffer >= xFetchContext.pxBuffer->pucBuffer + ( pxIOManager->usSectorSize - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
 			{
 				xError = FF_FetchEntryWithContext( pxIOManager, uxEntry, &xFetchContext, NULL );
 				if( FF_GETERROR( xError ) == FF_ERR_DIR_END_OF_DIR )
@@ -1870,7 +1870,7 @@ uint32_t ulDirCluster = pxFindParams->ulDirCluster;
 				if( pucEntryBuffer == NULL )
 				{
 					pucEntryBuffer = xFetchContext.pxBuffer->pucBuffer +
-						( FF_SIZEOF_DIRECTORY_ENTRY * ( uxEntry % ( FF_SIZEOF_SECTOR / FF_SIZEOF_DIRECTORY_ENTRY ) ) );
+						( FF_SIZEOF_DIRECTORY_ENTRY * ( uxEntry % ( pxIOManager->usSectorSize / FF_SIZEOF_DIRECTORY_ENTRY ) ) );
 				}
 				else
 				{
@@ -3218,7 +3218,7 @@ uint8_t	pucEntryBuffer[ FF_SIZEOF_DIRECTORY_ENTRY ];
 				for( xIndex = 0; xIndex < FF_MAX_ENTRIES_PER_DIRECTORY; xIndex++ )
 				{
 					if( ( pucEntryBuffer == NULL ) ||
-						( pucEntryBuffer >= xFetchContext.pxBuffer->pucBuffer + ( FF_SIZEOF_SECTOR - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
+						( pucEntryBuffer >= xFetchContext.pxBuffer->pucBuffer + ( pxIOManager->usSectorSize - FF_SIZEOF_DIRECTORY_ENTRY ) ) )
 					{
 						xError = FF_FetchEntryWithContext( pxIOManager, ( uint32_t ) xIndex, &xFetchContext, NULL );
 						if( FF_isERR( xError ) )
