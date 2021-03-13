@@ -152,15 +152,11 @@ void FF_LockDirectory( FF_IOManager_t *pxIOManager )
 	{
 		/* Called when a task want to make changes to a directory.
 		First it waits for the desired bit to come high. */
-		xEventGroupWaitBits( pxIOManager->xEventGroup,
+		xBits = xEventGroupWaitBits( pxIOManager->xEventGroup,
 			FF_DIR_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-			( EventBits_t )0,       /* xClearOnExit */
+			pdTRUE,                 /* xClearOnExit */
 			pdFALSE,                /* xWaitForAllBits n.a. */
 			pdMS_TO_TICKS( 10000UL ) );
-
-		/* The next operation will only succeed for 1 task at a time,
-		because it is an atomary test & set operation: */
-		xBits = xEventGroupClearBits( pxIOManager->xEventGroup, FF_DIR_LOCK_EVENT_BITS );
 
 		if( ( xBits & FF_DIR_LOCK_EVENT_BITS ) != 0 )
 		{
@@ -248,15 +244,11 @@ EventBits_t xBits;
 	{
 		/* Called when a task want to make changes to the FAT area.
 		First it waits for the desired bit to come high. */
-		xEventGroupWaitBits( pxIOManager->xEventGroup,
+		xBits = xEventGroupWaitBits( pxIOManager->xEventGroup,
 			FF_FAT_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-			( EventBits_t )0,       /* xClearOnExit */
+			pdTRUE,                 /* xClearOnExit */
 			pdFALSE,                /* xWaitForAllBits n.a. */
 			pdMS_TO_TICKS( 10000UL ) );
-
-		/* The next operation will only succeed for 1 task at a time,
-		because it is an atomary test & set operation: */
-		xBits = xEventGroupClearBits( pxIOManager->xEventGroup, FF_FAT_LOCK_EVENT_BITS );
 
 		if( ( xBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
 		{
@@ -296,7 +288,7 @@ BaseType_t xReturn;
 	to become available. */
 	xBits = xEventGroupWaitBits( pxIOManager->xEventGroup,
 		FF_BUF_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-		FF_BUF_LOCK_EVENT_BITS, /* xClearOnExit */
+		pdTRUE,                 /* xClearOnExit */
 		pdFALSE,                /* xWaitForAllBits n.a. */
 		pdMS_TO_TICKS( xWaitMS ) );
 	if( ( xBits & FF_BUF_LOCK_EVENT_BITS ) != 0 )
@@ -319,7 +311,7 @@ void FF_BufferProceed( FF_IOManager_t *pxIOManager )
 		/* Scheduler not yet active. */
 		return;
 	}
-	/* Wake-up all tasks that are waiting for a sector buffer to become available. */
+	/* Wake-up a task that is waiting for a sector buffer to become available. */
 	xEventGroupSetBits( pxIOManager->xEventGroup, FF_BUF_LOCK_EVENT_BITS );
 }
 /*-----------------------------------------------------------*/
