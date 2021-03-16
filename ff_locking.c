@@ -57,6 +57,13 @@ The masks below are used when calling Group Event functions. */
 each time when a sector buffer is released. */
 #define FF_BUF_LOCK_EVENT_BITS    ( ( const EventBits_t ) FF_BUF_LOCK )
 
+#define FF_TIME_TO_WAIT_FOR_EVENT_TICKS
+	/* The maximum time to wait for a event group bit to come high,
+	 * which gives access to a "critical section": either directories,
+	 * or the FAT. */
+	#define FF_TIME_TO_WAIT_FOR_EVENT_TICKS  pdMS_TO_TICKS( 10000UL )
+#endif
+
 /*-----------------------------------------------------------*/
 
 BaseType_t FF_TrySemaphore( void *pxSemaphore, uint32_t ulTime_ms )
@@ -157,7 +164,7 @@ void FF_LockDirectory( FF_IOManager_t *pxIOManager )
 			FF_DIR_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
 			pdTRUE,                 /* xClearOnExit */
 			pdFALSE,                /* xWaitForAllBits n.a. */
-			pdMS_TO_TICKS( 10000UL ) );
+			FF_TIME_TO_WAIT_FOR_EVENT_TICKS );
 
 		if( ( xBits & FF_DIR_LOCK_EVENT_BITS ) != 0 )
 		{
@@ -250,7 +257,7 @@ EventBits_t xBits;
 			FF_FAT_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
 			pdTRUE,                 /* xClearOnExit */
 			pdFALSE,                /* xWaitForAllBits n.a. */
-			pdMS_TO_TICKS( 10000UL ) );
+			FF_TIME_TO_WAIT_FOR_EVENT_TICKS );
 
 		if( ( xBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
 		{
