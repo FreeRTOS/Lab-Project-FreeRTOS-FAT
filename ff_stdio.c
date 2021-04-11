@@ -97,6 +97,7 @@ in a call to ff_truncate(). */
 
 	/* Only absolute paths are supported so define away the prvABSPath()
 	function. */
+	/*static*/ const char *prvABSPath( const char *pcPath );
 	/*static*/ const char *prvABSPath( const char *pcPath )
 	{
 		return pcPath;
