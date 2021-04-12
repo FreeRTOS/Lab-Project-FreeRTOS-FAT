@@ -2518,7 +2518,7 @@ uint32_t ulCluster;
 				}
 				#elif ( ffconfigUNICODE_UTF8_SUPPORT != 0 )
 				{
-					NamePtr = ( int8_t * ) ( usUtf16Name + 13 * ( xNumLFNs - 1 ) );
+					NamePtr = ( char * ) ( usUtf16Name + 13 * ( xNumLFNs - 1 ) );
 				}
 				#else
 				{
