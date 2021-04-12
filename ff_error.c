@@ -34,10 +34,6 @@
  **/
 #include <stdio.h>
 
-/* _HT_ with the new GNU settings, the prototype of [v]snprintf()
-is not included in stdio.h Don't know why. */
-int snprintf( char *, size_t, const char *, ... );
-
 #include "ff_headers.h"
 
 #if !defined( ARRAY_SIZE )
