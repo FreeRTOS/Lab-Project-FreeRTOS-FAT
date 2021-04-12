@@ -55,6 +55,26 @@ in a call to ff_truncate(). */
 
 /*-----------------------------------------------------------*/
 
+/*
+ * Add the CWD to the beginning of a relative path, and copy the resultant
+ * absolute path into a thread local non const buffer.
+ */
+/*static*/ const char *prvABSPath( const char *pcPath );
+
+/*
+ * Translate a +FAT error to a value compatible with errno.h
+ * If the value represents an error, it is negative
+ * The return value of this function will always be positive
+ */
+int prvFFErrorToErrno( FF_Error_t xError );
+
+/*
+ * Generate a time stamp for the file.
+ */
+#if( ffconfigTIME_SUPPORT == 1 )
+	static uint32_t prvFileTime( FF_SystemTime_t *pxTime );
+#endif
+
 #if( ffconfigHAS_CWD == 1 )
 
 	/* FreeRTOS+FAT requires two thread local storage pointers.  One for errno
@@ -70,12 +90,6 @@ in a call to ff_truncate(). */
 		char pcCWD[ ffconfigMAX_FILENAME ];		/* The current working directory. */
 		char pcFileName[ ffconfigMAX_FILENAME ];	/* The created absolute path. */
 	} WorkingDirectory_t;
-
-	/*
-	 * Add the CWD to the beginning of a relative path, and copy the resultant
-	 * absolute path into a thread local non const buffer.
-	 */
-	/*static*/ const char *prvABSPath( const char *pcPath );
 
 	/*
 	 * Lookup the CWD of the current task.
@@ -97,7 +111,6 @@ in a call to ff_truncate(). */
 
 	/* Only absolute paths are supported so define away the prvABSPath()
 	function. */
-	/*static*/ const char *prvABSPath( const char *pcPath );
 	/*static*/ const char *prvABSPath( const char *pcPath )
 	{
 		return pcPath;
@@ -113,20 +126,6 @@ in a call to ff_truncate(). */
 	 * WITH CARE.
 	 */
 	static int ff_deltree_recurse( char *pcPath );
-#endif
-
-/*
- * Translate a +FAT error to a value compatible with errno.h
- * If the value represents an error, it is negative
- * The return value of this function will always be positive
- */
-int prvFFErrorToErrno( FF_Error_t xError );
-
-/*
- * Generate a time stamp for the file.
- */
-#if( ffconfigTIME_SUPPORT == 1 )
-	static uint32_t prvFileTime( FF_SystemTime_t *pxTime );
 #endif
 
 /*-----------------------------------------------------------*/
