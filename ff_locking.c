@@ -57,6 +57,13 @@ The masks below are used when calling Group Event functions. */
 each time when a sector buffer is released. */
 #define FF_BUF_LOCK_EVENT_BITS    ( ( const EventBits_t ) FF_BUF_LOCK )
 
+#define FF_TIME_TO_WAIT_FOR_EVENT_TICKS
+	/* The maximum time to wait for a event group bit to come high,
+	 * which gives access to a "critical section": either directories,
+	 * or the FAT. */
+	#define FF_TIME_TO_WAIT_FOR_EVENT_TICKS  pdMS_TO_TICKS( 10000UL )
+#endif
+
 /*-----------------------------------------------------------*/
 
 BaseType_t FF_TrySemaphore( void *pxSemaphore, uint32_t ulTime_ms )
@@ -151,16 +158,13 @@ void FF_LockDirectory( FF_IOManager_t *pxIOManager )
 	for( ;; )
 	{
 		/* Called when a task want to make changes to a directory.
-		First it waits for the desired bit to come high. */
-		xEventGroupWaitBits( pxIOManager->xEventGroup,
+		It waits for the desired bit to come high, and clears the
+		bit so that other tasks can not take it. */
+		xBits = xEventGroupWaitBits( pxIOManager->xEventGroup,
 			FF_DIR_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-			( EventBits_t )0,       /* xClearOnExit */
+			pdTRUE,                 /* xClearOnExit */
 			pdFALSE,                /* xWaitForAllBits n.a. */
-			pdMS_TO_TICKS( 10000UL ) );
-
-		/* The next operation will only succeed for 1 task at a time,
-		because it is an atomary test & set operation: */
-		xBits = xEventGroupClearBits( pxIOManager->xEventGroup, FF_DIR_LOCK_EVENT_BITS );
+			FF_TIME_TO_WAIT_FOR_EVENT_TICKS );
 
 		if( ( xBits & FF_DIR_LOCK_EVENT_BITS ) != 0 )
 		{
@@ -247,16 +251,13 @@ EventBits_t xBits;
 	for( ;; )
 	{
 		/* Called when a task want to make changes to the FAT area.
-		First it waits for the desired bit to come high. */
-		xEventGroupWaitBits( pxIOManager->xEventGroup,
+		It waits for the desired bit to come high, and clears the
+		bit so that other tasks can not take it. */
+		xBits = xEventGroupWaitBits( pxIOManager->xEventGroup,
 			FF_FAT_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-			( EventBits_t )0,       /* xClearOnExit */
+			pdTRUE,                 /* xClearOnExit */
 			pdFALSE,                /* xWaitForAllBits n.a. */
-			pdMS_TO_TICKS( 10000UL ) );
-
-		/* The next operation will only succeed for 1 task at a time,
-		because it is an atomary test & set operation: */
-		xBits = xEventGroupClearBits( pxIOManager->xEventGroup, FF_FAT_LOCK_EVENT_BITS );
+			FF_TIME_TO_WAIT_FOR_EVENT_TICKS );
 
 		if( ( xBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
 		{
@@ -293,10 +294,11 @@ BaseType_t xReturn;
 		return pdTRUE;
 	}
 	/* This function is called when a task is waiting for a sector buffer
-	to become available. */
+	to become available.  Each time when a sector buffer becomes available,
+	the bit will be set ( see FF_BufferProceed() here below ). */
 	xBits = xEventGroupWaitBits( pxIOManager->xEventGroup,
 		FF_BUF_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-		FF_BUF_LOCK_EVENT_BITS, /* xClearOnExit */
+		pdTRUE,                 /* xClearOnExit */
 		pdFALSE,                /* xWaitForAllBits n.a. */
 		pdMS_TO_TICKS( xWaitMS ) );
 	if( ( xBits & FF_BUF_LOCK_EVENT_BITS ) != 0 )
@@ -319,7 +321,7 @@ void FF_BufferProceed( FF_IOManager_t *pxIOManager )
 		/* Scheduler not yet active. */
 		return;
 	}
-	/* Wake-up all tasks that are waiting for a sector buffer to become available. */
+	/* Wake-up a task that is waiting for a sector buffer to become available. */
 	xEventGroupSetBits( pxIOManager->xEventGroup, FF_BUF_LOCK_EVENT_BITS );
 }
 /*-----------------------------------------------------------*/
