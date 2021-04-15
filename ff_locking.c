@@ -57,7 +57,7 @@ The masks below are used when calling Group Event functions. */
 each time when a sector buffer is released. */
 #define FF_BUF_LOCK_EVENT_BITS    ( ( const EventBits_t ) FF_BUF_LOCK )
 
-#define FF_TIME_TO_WAIT_FOR_EVENT_TICKS
+#ifndef FF_TIME_TO_WAIT_FOR_EVENT_TICKS
 	/* The maximum time to wait for a event group bit to come high,
 	 * which gives access to a "critical section": either directories,
 	 * or the FAT. */
