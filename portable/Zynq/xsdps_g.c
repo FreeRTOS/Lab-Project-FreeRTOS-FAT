@@ -30,23 +30,24 @@
 *
 ******************************************************************************/
 /*****************************************************************************/
+
 /**
-*
-* @file xsdps_g.c
-*
-* This file contains a configuration table that specifies the configuration of
-* SD devices in the system.
-*
-* <pre>
-* MODIFICATION HISTORY:
-*
-* Ver   Who    Date     Changes
-* ----- ---    -------- -----------------------------------------------
-* 1.00a hk/sg  10/17/13 Initial release
-*
-* </pre>
-*
-******************************************************************************/
+ *
+ * @file xsdps_g.c
+ *
+ * This file contains a configuration table that specifies the configuration of
+ * SD devices in the system.
+ *
+ * <pre>
+ * MODIFICATION HISTORY:
+ *
+ * Ver   Who    Date     Changes
+ * ----- ---    -------- -----------------------------------------------
+ * 1.00a hk/sg  10/17/13 Initial release
+ *
+ * </pre>
+ *
+ ******************************************************************************/
 
 
 
@@ -54,16 +55,16 @@
 #include "xsdps.h"
 
 /*
-* The configuration table for devices
-*/
+ * The configuration table for devices
+ */
 
 XSdPs_Config XSdPs_ConfigTable[] =
 {
-	{
-		XPAR_XSDPS_0_DEVICE_ID,
-		XPAR_XSDPS_0_BASEADDR,
-		XPAR_XSDPS_0_SDIO_CLK_FREQ_HZ,
-		0,
-		0
-	}
+    {
+        XPAR_XSDPS_0_DEVICE_ID,
+        XPAR_XSDPS_0_BASEADDR,
+        XPAR_XSDPS_0_SDIO_CLK_FREQ_HZ,
+        0,
+        0
+    }
 };
