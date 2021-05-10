@@ -24,27 +24,28 @@
 *
 ******************************************************************************/
 /*****************************************************************************/
+
 /**
-*
-* @file xsdps_g.c
-* @addtogroup sdps_v3_8
-* @{
-*
-* This file contains a configuration table that specifies the configuration of
-* SD devices in the system.
-*
-* <pre>
-* MODIFICATION HISTORY:
-*
-* Ver   Who    Date     Changes
-* ----- ---    -------- -----------------------------------------------
-* 1.00a hk/sg  10/17/13 Initial release
-* 3.6   mn     07/06/18 Add initialization macros in sdps
-*       mn     07/13/18 Add initializer macro for HasEMIO
-*
-* </pre>
-*
-******************************************************************************/
+ *
+ * @file xsdps_g.c
+ * @addtogroup sdps_v3_8
+ * @{
+ *
+ * This file contains a configuration table that specifies the configuration of
+ * SD devices in the system.
+ *
+ * <pre>
+ * MODIFICATION HISTORY:
+ *
+ * Ver   Who    Date     Changes
+ * ----- ---    -------- -----------------------------------------------
+ * 1.00a hk/sg  10/17/13 Initial release
+ * 3.6   mn     07/06/18 Add initialization macros in sdps
+ *       mn     07/13/18 Add initializer macro for HasEMIO
+ *
+ * </pre>
+ *
+ ******************************************************************************/
 
 
 
@@ -52,26 +53,26 @@
 #include "xsdps.h"
 
 /*
-* The configuration table for devices
-*/
+ * The configuration table for devices
+ */
 
-#define XPAR_XSDPS_0_BUS_WIDTH			0	// XSDPS_4_BIT_WIDTH
-#define XPAR_XSDPS_0_MIO_BANK			0
-#define XPAR_XSDPS_0_HAS_EMIO			0
-#define XPAR_XSDPS_0_IS_CACHE_COHERENT	1	// 0 Tables are located in uncached memory
+#define XPAR_XSDPS_0_BUS_WIDTH            0 /* XSDPS_4_BIT_WIDTH */
+#define XPAR_XSDPS_0_MIO_BANK             0
+#define XPAR_XSDPS_0_HAS_EMIO             0
+#define XPAR_XSDPS_0_IS_CACHE_COHERENT    1 /* 0 Tables are located in uncached memory */
 
 XSdPs_Config XSdPs_ConfigTable[] =
 {
-	{
-		XPAR_XSDPS_0_DEVICE_ID,
-		XPAR_XSDPS_0_BASEADDR,
-		XPAR_XSDPS_0_SDIO_CLK_FREQ_HZ,
-		XPAR_XSDPS_0_HAS_CD,
-		XPAR_XSDPS_0_HAS_WP,
-		XPAR_XSDPS_0_BUS_WIDTH,
-		XPAR_XSDPS_0_MIO_BANK,
-		XPAR_XSDPS_0_HAS_EMIO,
-		XPAR_XSDPS_0_IS_CACHE_COHERENT
-	}
+    {
+        XPAR_XSDPS_0_DEVICE_ID,
+        XPAR_XSDPS_0_BASEADDR,
+        XPAR_XSDPS_0_SDIO_CLK_FREQ_HZ,
+        XPAR_XSDPS_0_HAS_CD,
+        XPAR_XSDPS_0_HAS_WP,
+        XPAR_XSDPS_0_BUS_WIDTH,
+        XPAR_XSDPS_0_MIO_BANK,
+        XPAR_XSDPS_0_HAS_EMIO,
+        XPAR_XSDPS_0_IS_CACHE_COHERENT
+    }
 };
 /** @} */

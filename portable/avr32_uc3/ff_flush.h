@@ -1,7 +1,6 @@
 /*
- * FreeRTOS+FAT build 191128 - Note:  FreeRTOS+FAT is still in the lab!
- * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Authors include James Walmsley, Hein Tibosch and Richard Barry
+ * FreeRTOS+FAT V2.3.3
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,28 +20,31 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
  *
  */
 
-#if	!defined(__FF_FLUSH_H__)
+#if !defined( __FF_FLUSH_H__ )
 
-#define	__FF_FLUSH_H__
+    #define __FF_FLUSH_H__
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
+    #ifdef  __cplusplus
+        extern "C" {
+    #endif
 
-// HT addition: call FF_FlushCache and in addition call cache_write_flush (see secCache.cpp)
-FF_Error_t FF_FlushWrites( FF_IOManager_t *pxIOManager, BaseType_t xForced );
+/* HT addition: call FF_FlushCache and in addition call cache_write_flush (see secCache.cpp) */
+    FF_Error_t FF_FlushWrites( FF_IOManager_t * pxIOManager,
+                               BaseType_t xForced );
 
-#define	FLUSH_DISABLE	1
-#define	FLUSH_ENABLE	0
+    #define FLUSH_DISABLE    1
+    #define FLUSH_ENABLE     0
 
-// HT addition: prevent flushing temporarily FF_StopFlush(pIoMan, true)
-FF_Error_t FF_StopFlush( FF_IOManager_t *pxIOManager, BaseType_t xFlag );
-#ifdef	__cplusplus
-}	// extern "C"
-#endif
+/* HT addition: prevent flushing temporarily FF_StopFlush(pIoMan, true) */
+    FF_Error_t FF_StopFlush( FF_IOManager_t * pxIOManager,
+                             BaseType_t xFlag );
+    #ifdef  __cplusplus
+        } /* extern "C" */
+    #endif
 
 
-#endif	// !defined(__FF_FLUSH_H__)
+#endif /* !defined(__FF_FLUSH_H__) */

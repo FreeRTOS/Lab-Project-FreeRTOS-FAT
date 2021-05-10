@@ -1,7 +1,6 @@
 /*
- * FreeRTOS+FAT build 191128 - Note:  FreeRTOS+FAT is still in the lab!
- * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Authors include James Walmsley, Hein Tibosch and Richard Barry
+ * FreeRTOS+FAT V2.3.3
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,6 +20,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
  *
  */
 
@@ -34,9 +34,12 @@
 
 #define _FF_CRC_H_
 
-uint8_t					FF_GetCRC8( uint8_t *pbyData, uint32_t stLength );
-uint16_t				FF_GetCRC16( uint8_t *pbyData, uint32_t stLength );
-uint32_t				FF_GetCRC32( uint8_t *pbyData, uint32_t stLength );
-extern const uint32_t	crc32_table[256];
+uint8_t FF_GetCRC8( uint8_t * pbyData,
+                    uint32_t stLength );
+uint16_t FF_GetCRC16( uint8_t * pbyData,
+                      uint32_t stLength );
+uint32_t FF_GetCRC32( uint8_t * pbyData,
+                      uint32_t stLength );
+extern const uint32_t crc32_table[ 256 ];
 
-#endif
+#endif /* ifndef _FF_CRC_H_ */
