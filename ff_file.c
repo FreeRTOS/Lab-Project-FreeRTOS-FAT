@@ -61,6 +61,9 @@ static uint32_t FF_SetCluster( FF_FILE * pxFile,
                                FF_Error_t * pxError );
 static uint32_t FF_FileLBA( FF_FILE * pxFile );
 
+static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
+								 uint32_t ulSize );
+
 /*-----------------------------------------------------------*/
 
 /**
@@ -1440,6 +1443,28 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
                 }
             }
         #endif /* ffconfigFILE_EXTEND_FLUSHES_BUFFERS */
+
+		if( pxFile->ulFilePointer == pxFile->ulFileSize )
+		{
+			/* Writing at the end of a file, while new clusters have just been added.
+			 * Make sure that the fields 'ulCurrentCluster' and 'ulAddrCurrentCluster' are
+			 * set correctly.
+			 */
+			FF_Error_t xTempError = FF_ERR_NONE;
+			uint32_t ulNewCluster = FF_getClusterChainNumber( pxIOManager, pxFile->ulFilePointer, 1 );
+
+			FF_LockFAT( pxIOManager );
+			{
+				pxFile->ulAddrCurrentCluster = FF_TraverseFAT( pxIOManager, pxFile->ulObjectCluster, ulNewCluster, &( xTempError ) );
+				pxFile->ulCurrentCluster = ulNewCluster;
+			}
+			FF_UnlockFAT( pxIOManager );
+
+			if( FF_isERR( xError ) == pdFALSE )
+			{
+				xError = xTempError;
+			}
+		}
     } /* if( ulTotalClustersNeeded > pxFile->ulChainLength ) */
 
     return xError;
@@ -1457,7 +1482,7 @@ static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
 
     while( ulCount != 0 )
     {
-        if( ( ulCount - 1 ) > 0 )
+		if( ulCount > 1U )
         {
             ulSequentialClusters =
                 FF_GetSequentialClusters( pxFile->pxIOManager, pxFile->ulAddrCurrentCluster, ulCount - 1, &xError );
@@ -1467,6 +1492,10 @@ static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
                 break;
             }
         }
+		else
+		{
+			/* Handling the last cluster which is a single one. */
+		}
 
         ulSectors = ( ulSequentialClusters + 1 ) * pxFile->pxIOManager->xPartition.ulSectorsPerCluster;
         ulItemLBA = FF_Cluster2LBA( pxFile->pxIOManager, pxFile->ulAddrCurrentCluster );
