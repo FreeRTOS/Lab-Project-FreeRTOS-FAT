@@ -72,6 +72,12 @@
                           BaseType_t xPreferFAT16,
                           BaseType_t xSmallClusters );
 
+    FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
+                              BaseType_t xPartitionNumber,
+                              BaseType_t xPreferFAT16,
+                              BaseType_t xSmallClusters,
+                              const char * pcVolumeName );
+
 /* Private : */
 
     #ifdef  __cplusplus

@@ -1076,8 +1076,8 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
 
         /* Check MBR (Master Boot Record) or
          * PBR (Partition Boot Record) signature. */
-        if( ( FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE ) != 0x55 ) &&
-            ( FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE ) != 0xAA ) )
+        if( ( FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE ) != 0x55 ) ||
+            ( FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE + 1 ) != 0xAA ) )
         {
             /* No MBR, but is it a PBR ?
              * Partition Boot Record */
