@@ -349,7 +349,7 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
     FF_Error_t xReturn;
     char pcName[ 12 ];
 
-    strncpy( pcName, pcVolumeName, sizeof pcName - 1 );
+    ( void ) strncpy( pcName, pcVolumeName, sizeof( pcName ) - 1 );
     pcName[ sizeof( pcName ) - 1 ] = 0;
 
     /* Clear all fields that aren't set explicitely. */
