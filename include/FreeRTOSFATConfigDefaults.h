@@ -347,6 +347,10 @@
     #define ffconfigMAX_PARTITIONS    4
 #endif
 
+#if ( ffconfigMAX_PARTITIONS < 1 ) || ( ffconfigMAX_PARTITIONS > 8 )
+    #error ffconfigMAX_PARTITIONS must be between 1 and 8
+#endif
+
 #if !defined( ffconfigMAX_FILE_SYS )
 
 /* Defines how many drives can be combined in total.  Should be set to at
@@ -460,6 +464,13 @@
     }
 #endif
 
+#ifndef ffconfigFAT_USES_STAT
+    /* When enabled, the library keeps statistics about the use of cache
+	 * buffers.  This can be useful while configuring or optimising the
+	 * cache size. */
+	#define ffconfigFAT_USES_STAT     0
+#endif
+
 #ifndef ffconfigUSE_NOTIFY
 
 /* When defined, the driver will call a user hook "callFileEvents()"
@@ -493,5 +504,9 @@
     #define ffconfigNOT_USED_FOR_NOW    0
 #endif
 
+#ifndef FF_NOSTRCASECMP
+	/* When zero, the function 'strcasecmp()' will be dfined. */
+	#define FF_NOSTRCASECMP    0
+#endif
 
 #endif /* ifndef FF_DEFAULTCONFIG_H */

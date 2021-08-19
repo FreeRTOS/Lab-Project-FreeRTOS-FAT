@@ -604,7 +604,10 @@ int32_t FF_BlockRead( FF_IOManager_t * pxIOManager,
                 FF_ReleaseSemaphore( pxIOManager->pvSemaphore );
             }
 
-            if( FF_GETERROR( slRetVal ) != FF_ERR_DRIVER_BUSY )
+            /* Do not use 'FF_GETERROR()' here because FF_ERR_DRIVER_BUSY
+             * is a full 32-bit error code, containing module, function and
+             * the actual error code.  See 'ff_error.h' for definitions. */
+            if( slRetVal != ( int32_t ) FF_ERR_DRIVER_BUSY )
             {
                 break;
             }
@@ -653,7 +656,10 @@ int32_t FF_BlockWrite( FF_IOManager_t * pxIOManager,
                 FF_ReleaseSemaphore( pxIOManager->pvSemaphore );
             }
 
-            if( FF_GETERROR( slRetVal ) != FF_ERR_DRIVER_BUSY )
+            /* Do not use 'FF_GETERROR()' here because FF_ERR_DRIVER_BUSY
+             * is a full 32-bit error code, containing module, function and
+             * the actual error code.  See 'ff_error.h' for definitions. */
+            if( slRetVal != ( int32_t ) FF_ERR_DRIVER_BUSY )
             {
                 break;
             }
