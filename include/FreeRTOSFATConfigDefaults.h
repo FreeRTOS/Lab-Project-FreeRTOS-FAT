@@ -460,4 +460,38 @@
     }
 #endif
 
+#ifndef ffconfigUSE_NOTIFY
+
+/* When defined, the driver will call a user hook "callFileEvents()"
+ * for certain events: creation, change, and deletion of a file or
+ * directory.
+ * For instance: it can be useful to get an event as soon as a set-up
+ * file has changed, or when a lock-file has been placed or removed.
+ */
+    #define ffconfigUSE_NOTIFY    0
+#endif
+
+#ifndef ffconfigDEV_SUPPORT
+
+/* A rarely used feature of FreeRTOS+FAT which lets files behave
+ * as 'devices'. */
+    #define ffconfigDEV_SUPPORT    0
+#endif
+
+#ifndef USE_SOFT_WDT
+
+/* When true. a user-provided function `clearWDT()` will be called
+ * during a long action. */
+    #define USE_SOFT_WDT    0
+#endif
+
+#ifndef ffconfigNOT_USED_FOR_NOW
+
+/* This macro was once used for debugging.
+ * When defined as 1, the function 'FF_Utf16ctoUtf32c()'
+ * will be compiled */
+    #define ffconfigNOT_USED_FOR_NOW    0
+#endif
+
+
 #endif /* ifndef FF_DEFAULTCONFIG_H */

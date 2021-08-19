@@ -128,7 +128,14 @@
 /* The errno is stored in a thread local buffer. */
     static portINLINE void stdioSET_ERRNO( int iErrno )
     {
-        vTaskSetThreadLocalStoragePointer( NULL, ffconfigCWD_THREAD_LOCAL_INDEX, ( void * ) ( iErrno ) );
+        /* Local storage pointers can only store pointers. This function
+         * wants to store a signed errno value, which needs a cast. */
+        /* Cast from an integer to a signed value of a pointer size. */
+        intptr_t xErrno = ( intptr_t ) iErrno;
+        /* Cast from a numeric value to a pointer. */
+        void * pvValue = ( void * ) ( xErrno );
+
+        vTaskSetThreadLocalStoragePointer( NULL, ffconfigCWD_THREAD_LOCAL_INDEX, pvValue );
     }
 
     static portINLINE int stdioGET_ERRNO( void )
@@ -136,7 +143,12 @@
         void * pvResult;
 
         pvResult = pvTaskGetThreadLocalStoragePointer( ( TaskHandle_t ) NULL, ffconfigCWD_THREAD_LOCAL_INDEX );
-        return ( int ) pvResult;
+        /* Cast from a pointer to a number of the same size. */
+        intptr_t xErrno = ( intptr_t ) pvResult;
+        /* Cast it to an integer. */
+        int iValue = ( int ) ( xErrno );
+
+        return iValue;
     }
 
     #if ( ( configNUM_THREAD_LOCAL_STORAGE_POINTERS - ffconfigCWD_THREAD_LOCAL_INDEX ) < 3 )
@@ -148,7 +160,14 @@
  */
     static portINLINE void stdioSET_FF_ERROR( FF_Error_t iFF_ERROR )
     {
-        vTaskSetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET, ( void * ) ( iFF_ERROR ) );
+        /* Cast it to an unsigned long. */
+        uint32_t ulError = ( uint32_t ) iFF_ERROR;
+        /* Cast it to a number with the size of a pointer. */
+        uintptr_t uxErrno = ( uintptr_t ) ulError;
+        /* Cast it to a void pointer. */
+        void * pvValue = ( void * ) ( uxErrno );
+
+        vTaskSetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET, pvValue );
     }
 
 /*
@@ -160,7 +179,12 @@
         void * pvResult;
 
         pvResult = pvTaskGetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET );
-        return ( FF_Error_t ) pvResult;
+        /* Cast it to an integer with the same size as a pointer. */
+        intptr_t uxErrno = ( intptr_t ) pvResult;
+        /* Cast it to a int32_t. */
+        FF_Error_t xError = ( FF_Error_t ) uxErrno;
+
+        return xError;
     }
 
 /*-----------------------------------------------------------
