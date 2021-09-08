@@ -79,9 +79,9 @@ typedef struct _FF_FILE
     struct _FF_FILE * pxNext; /* Pointer to the next file object in the linked list. */
 } FF_FILE;
 
-#define FF_VALID_FLAG_INVALID     0x00000001
-#define FF_VALID_FLAG_DELETED     0x00000002
-#define FF_VALID_FLAG_EXTENDED    0x00000004
+#define FF_VALID_FLAG_INVALID     0x00000001U
+#define FF_VALID_FLAG_DELETED     0x00000002U
+#define FF_VALID_FLAG_EXTENDED    0x00000004U
 
 /*---------- PROTOTYPES */
 /* PUBLIC (Interfaces): */
