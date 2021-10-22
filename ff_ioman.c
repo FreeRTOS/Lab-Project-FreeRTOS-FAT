@@ -842,7 +842,7 @@ static BaseType_t prvIsValidMedia( uint8_t media )
     BaseType_t xResult;
 
     /*
-     * 0xF8 is the standard value for “fixed” (non-removable) media. For
+     * 0xF8 is the standard value for Â“fixedÂ” (non-removable) media. For
      * removable media, 0xF0 is frequently used. The legal values for this
      * field are 0xF0, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, and
      * 0xFF. The only other important point is that whatever value is put

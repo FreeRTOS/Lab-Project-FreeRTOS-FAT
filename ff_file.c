@@ -1450,19 +1450,22 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
              * Make sure that the fields 'ulCurrentCluster' and 'ulAddrCurrentCluster' are
              * set correctly.
              */
-            FF_Error_t xTempError = FF_ERR_NONE;
-            uint32_t ulNewCluster = FF_getClusterChainNumber( pxIOManager, pxFile->ulFilePointer, 1 );
-
-            FF_LockFAT( pxIOManager );
+            if( ( pxFile->ulValidFlags & FF_VALID_FLAG_EXTENDED ) == 0U )
             {
-                pxFile->ulAddrCurrentCluster = FF_TraverseFAT( pxIOManager, pxFile->ulObjectCluster, ulNewCluster, &( xTempError ) );
-                pxFile->ulCurrentCluster = ulNewCluster;
-            }
-            FF_UnlockFAT( pxIOManager );
+                pxFile->ulValidFlags |= FF_VALID_FLAG_EXTENDED;
+                FF_Error_t xTempError = FF_ERR_NONE;
+                uint32_t ulNewCluster = FF_getClusterChainNumber( pxIOManager, pxFile->ulFilePointer, 1 );
+                FF_LockFAT( pxIOManager );
+                {
+                    pxFile->ulAddrCurrentCluster = FF_TraverseFAT( pxIOManager, pxFile->ulObjectCluster, ulNewCluster, &( xTempError ) );
+                    pxFile->ulCurrentCluster = ulNewCluster;
+                }
+                FF_UnlockFAT( pxIOManager );
 
-            if( FF_isERR( xError ) == pdFALSE )
-            {
-                xError = xTempError;
+                if( FF_isERR( xError ) == pdFALSE )
+                {
+                    xError = xTempError;
+                }
             }
         }
     } /* if( ulTotalClustersNeeded > pxFile->ulChainLength ) */
