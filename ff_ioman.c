@@ -605,8 +605,9 @@ int32_t FF_BlockRead( FF_IOManager_t * pxIOManager,
             }
 
             /* Do not use 'FF_GETERROR()' here because FF_ERR_DRIVER_BUSY
-             * is a full 32-bit error code. */
-            if( slRetVal != FF_ERR_DRIVER_BUSY )
+             * is a full 32-bit error code, containing module, function and
+             * the actual error code.  See 'ff_error.h' for definitions. */
+            if( slRetVal != ( int32_t ) FF_ERR_DRIVER_BUSY )
             {
                 break;
             }
@@ -656,8 +657,9 @@ int32_t FF_BlockWrite( FF_IOManager_t * pxIOManager,
             }
 
             /* Do not use 'FF_GETERROR()' here because FF_ERR_DRIVER_BUSY
-             * is a full 32-bit error code. */
-            if( slRetVal != FF_ERR_DRIVER_BUSY )
+             * is a full 32-bit error code, containing module, function and
+             * the actual error code.  See 'ff_error.h' for definitions. */
+            if( slRetVal != ( int32_t ) FF_ERR_DRIVER_BUSY )
             {
                 break;
             }
@@ -840,7 +842,7 @@ static BaseType_t prvIsValidMedia( uint8_t media )
     BaseType_t xResult;
 
     /*
-     * 0xF8 is the standard value for “fixed” (non-removable) media. For
+     * 0xF8 is the standard value for Â“fixedÂ” (non-removable) media. For
      * removable media, 0xF0 is frequently used. The legal values for this
      * field are 0xF0, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, and
      * 0xFF. The only other important point is that whatever value is put

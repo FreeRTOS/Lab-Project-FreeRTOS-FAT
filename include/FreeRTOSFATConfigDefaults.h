@@ -347,6 +347,10 @@
     #define ffconfigMAX_PARTITIONS    4
 #endif
 
+#if ( ffconfigMAX_PARTITIONS < 1 ) || ( ffconfigMAX_PARTITIONS > 8 )
+    #error ffconfigMAX_PARTITIONS must be between 1 and 8
+#endif
+
 #if !defined( ffconfigMAX_FILE_SYS )
 
 /* Defines how many drives can be combined in total.  Should be set to at
@@ -458,6 +462,51 @@
     {
         ( void ) pcFormat;
     }
+#endif
+
+#ifndef ffconfigFAT_USES_STAT
+    /* When enabled, the library keeps statistics about the use of cache
+	 * buffers.  This can be useful while configuring or optimising the
+	 * cache size. */
+	#define ffconfigFAT_USES_STAT     0
+#endif
+
+#ifndef ffconfigUSE_NOTIFY
+
+/* When defined, the driver will call a user hook "callFileEvents()"
+ * for certain events: creation, change, and deletion of a file or
+ * directory.
+ * For instance: it can be useful to get an event as soon as a set-up
+ * file has changed, or when a lock-file has been placed or removed.
+ */
+    #define ffconfigUSE_NOTIFY    0
+#endif
+
+#ifndef ffconfigDEV_SUPPORT
+
+/* A rarely used feature of FreeRTOS+FAT which lets files behave
+ * as 'devices'. */
+    #define ffconfigDEV_SUPPORT    0
+#endif
+
+#ifndef USE_SOFT_WDT
+
+/* When true. a user-provided function `clearWDT()` will be called
+ * during a long action. */
+    #define USE_SOFT_WDT    0
+#endif
+
+#ifndef ffconfigNOT_USED_FOR_NOW
+
+/* This macro was once used for debugging.
+ * When defined as 1, the function 'FF_Utf16ctoUtf32c()'
+ * will be compiled */
+    #define ffconfigNOT_USED_FOR_NOW    0
+#endif
+
+#ifndef FF_NOSTRCASECMP
+	/* When zero, the function 'strcasecmp()' will be dfined. */
+	#define FF_NOSTRCASECMP    0
 #endif
 
 #endif /* ifndef FF_DEFAULTCONFIG_H */

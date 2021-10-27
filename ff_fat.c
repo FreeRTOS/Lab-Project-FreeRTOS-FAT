@@ -1060,7 +1060,7 @@ FF_Error_t FF_putFATEntry( FF_IOManager_t * pxIOManager,
         {
             /* There is no free cluster any more. */
             ulCluster = 0;
-            xError = FF_FINDFREECLUSTER | FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE;
+            xError = ( FF_Error_t ) ( FF_FINDFREECLUSTER | FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE );
         }
 
         *pxError = xError;

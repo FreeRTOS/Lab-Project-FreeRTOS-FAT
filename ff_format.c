@@ -807,8 +807,10 @@ static FF_Error_t prvPartitionExtended( struct xPartitionSet * pxSet,
     unsigned extendedLBA = pParams->ulHiddenSectors;
     /* Where to write the table */
     uint32_t ulLBA = 0;
-    /* Contents of the table */
-    FF_Part_t writeParts[ 4 ];
+
+    /* Contents of the table. There must be space for 4 primary,
+     * and 4 logical partitions. */
+    FF_Part_t writeParts[ 8 ];
     BaseType_t xPartitionNumber;
     FF_Buffer_t * pxSectorBuffer;
     uint8_t * pucBuffer;
@@ -916,11 +918,11 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 {
     FF_Error_t xReturn = FF_ERR_NONE;
     struct xPartitionSet xSet;
-    BaseType_t xNeedExtended; /* When more than 4 partitions are requested, extended partitions are needed. */
-    uint32_t ulAvailable;     /* The number of sectors available. */
+    BaseType_t xNeedExtended;    /* When more than 4 partitions are requested, extended partitions are needed. */
+    uint32_t ulAvailable;        /* The number of sectors available. */
     BaseType_t xPartitionNumber;
-    uint32_t ulSummedSizes;   /* Summed sizes as a percentage or as number of sectors. */
-    uint32_t ulReservedSpace; /**< Space needed for the extended partitions. */
+    uint32_t ulSummedSizes = 0U; /* Summed sizes as a percentage or as number of sectors. */
+    uint32_t ulReservedSpace;    /**< Space needed for the extended partitions. */
 
     memset( &( xSet ), 0, sizeof( xSet ) );
 
