@@ -64,7 +64,7 @@ typedef struct
     uint32_t ulAddrCurrentCluster;
     uint32_t ulDirCluster;
     uint16_t usCurrentItem;
-    /* Sill uip two bytes to make the next struct 32-bit aligned. */
+    /* Insert 2 bytes to make the next struct 32-bit aligned. */
     uint16_t usFillerBytes;
     /* End Book Keeping. */
 
