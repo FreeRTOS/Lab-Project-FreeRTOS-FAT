@@ -1489,8 +1489,14 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     pxFindData->xDirectoryEntry.xCreateTime.Hour = ( uint16_t ) xTimeStruct.tm_hour;            /* Hour (0 - 23). */
                     pxFindData->xDirectoryEntry.xCreateTime.Minute = ( uint16_t ) xTimeStruct.tm_min;           /* Min (0 - 59). */
                     pxFindData->xDirectoryEntry.xCreateTime.Second = ( uint16_t ) xTimeStruct.tm_sec;           /* Second (0 - 59). */
-                    pxFindData->xDirectoryEntry.xModifiedTime = pxFindData->xDirectoryEntry.xCreateTime;        /* Date and Time Modified. */
-                    pxFindData->xDirectoryEntry.xAccessedTime = pxFindData->xDirectoryEntry.xCreateTime;        /* Date of Last Access. */
+                    /* Date and Time Modified. */
+                    memcpy( &( pxFindData->xDirectoryEntry.xModifiedTime ),
+                            &( pxFindData->xDirectoryEntry.xCreateTime ),
+                            sizeof pxFindData->xDirectoryEntry.xModifiedTime );
+                    /* Date of Last Access. */
+                    memcpy( &( pxFindData->xDirectoryEntry.xAccessedTime ),
+                            &( pxFindData->xDirectoryEntry.xCreateTime ),
+                            sizeof pxFindData->xDirectoryEntry.xAccessedTime );
                 }
             }
         #endif /* ffconfigTIME_SUPPORT */
