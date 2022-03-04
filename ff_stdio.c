@@ -1492,7 +1492,7 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     /* Date and Time Modified. */
                     memcpy( &( pxFindData->xDirectoryEntry.xModifiedTime ),
                             &( pxFindData->xDirectoryEntry.xCreateTime ),
-                            sizeof pxFindData->xDirectoryEntry.xModifiedTime );
+                            sizeof( pxFindData->xDirectoryEntry.xModifiedTime ) );
                     /* Date of Last Access. */
                     memcpy( &( pxFindData->xDirectoryEntry.xAccessedTime ),
                             &( pxFindData->xDirectoryEntry.xCreateTime ),
