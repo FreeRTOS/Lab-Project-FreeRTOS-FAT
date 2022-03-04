@@ -1496,7 +1496,7 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     /* Date of Last Access. */
                     memcpy( &( pxFindData->xDirectoryEntry.xAccessedTime ),
                             &( pxFindData->xDirectoryEntry.xCreateTime ),
-                            sizeof pxFindData->xDirectoryEntry.xAccessedTime );
+                            sizeof( pxFindData->xDirectoryEntry.xAccessedTime ) );
                 }
             }
         #endif /* ffconfigTIME_SUPPORT */
