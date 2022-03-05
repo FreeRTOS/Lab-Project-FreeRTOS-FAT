@@ -289,6 +289,9 @@
         FF_Partition_t xPartition;   /* A partition description. */
         FF_Buffer_t * pxBuffers;     /* Pointer to an array of buffer descriptors. */
         void * pvSemaphore;          /* Pointer to a Semaphore object. (For buffer description modifications only!). */
+        #if ( ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE == 1 )
+            void * pvSemaphoreOpen;  /* A semaphore to protect FF_Open() against race conditions. */
+        #endif
         void * FirstFile;            /* Pointer to the first File object. */
         void * xEventGroup;          /* An event group, used for locking FAT, DIR and Buffers. Replaces ucLocks. */
         uint8_t * pucCacheMem;       /* Pointer to a block of memory for the cache. */

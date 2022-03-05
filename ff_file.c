@@ -243,6 +243,15 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         char pcFileName[ ffconfigMAX_FILENAME ];
     #endif
 
+    #if ( ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE == 1 )
+        {
+            if( ( ucMode & FF_MODE_CREATE ) != 0U )
+            {
+                FF_PendSemaphore( pxIOManager->pvSemaphoreOpen );
+            }
+        }
+    #endif
+
     memset( &xFindParams, '\0', sizeof( xFindParams ) );
 
     /* Inform the functions that the entry will be created if not found. */
@@ -462,6 +471,15 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 
         pxFile = NULL;
     }
+
+    #if ( ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE == 1 )
+        {
+            if( ( ucMode & FF_MODE_CREATE ) != 0U )
+            {
+                FF_ReleaseSemaphore( pxIOManager->pvSemaphoreOpen );
+            }
+        }
+    #endif
 
     if( pxError != NULL )
     {
