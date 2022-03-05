@@ -465,10 +465,11 @@
 #endif
 
 #ifndef ffconfigFAT_USES_STAT
-    /* When enabled, the library keeps statistics about the use of cache
-	 * buffers.  This can be useful while configuring or optimising the
-	 * cache size. */
-	#define ffconfigFAT_USES_STAT     0
+
+/* When enabled, the library keeps statistics about the use of cache
+ * buffers.  This can be useful while configuring or optimising the
+ * cache size. */
+    #define ffconfigFAT_USES_STAT    0
 #endif
 
 #ifndef ffconfigUSE_NOTIFY
@@ -504,9 +505,19 @@
     #define ffconfigNOT_USED_FOR_NOW    0
 #endif
 
+
+#ifndef ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE
+
+/* When FF_Open() is called to create a file, protect the entire function
+ * with a dedicated semaphore called FF_IOManager_t::pvSemaphoreOpen.
+ * As the race condition occurs rarely, it will be disabled.
+ */
+    #define ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE    0
+#endif
+
 #ifndef FF_NOSTRCASECMP
-	/* When zero, the function 'strcasecmp()' will be dfined. */
-	#define FF_NOSTRCASECMP    0
+    /* When zero, the function 'strcasecmp()' will be dfined. */
+    #define FF_NOSTRCASECMP    0
 #endif
 
 #endif /* ifndef FF_DEFAULTCONFIG_H */
