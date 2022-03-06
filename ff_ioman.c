@@ -1509,7 +1509,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
         }
 
         pxPartition->ulClusterBeginLBA = pxPartition->ulFATBeginLBA + ( pxPartition->ucNumFATS * pxPartition->ulSectorsPerFAT );
-        #if ( ffconfigWRITE_FREE_COUNT != 0 )
+        #if ( ffconfigWRITE_FREE_COUNT != 0 ) || ( ffconfigFSINFO_TRUSTED != 0 )
             {
                 pxPartition->ulFSInfoLBA = pxPartition->ulBeginLBA + FF_getShort( pxBuffer->pucBuffer, 48 );
             }
