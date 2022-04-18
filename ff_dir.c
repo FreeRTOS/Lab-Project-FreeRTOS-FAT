@@ -1723,7 +1723,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
                     {
                         /* Valid Dir found, copy the wildCard to filename! */
                         STRNCPY( pxDirEntry->pcWildCard, ++pcWildCard, ffconfigMAX_FILENAME - 1 );
-                        pxDirEntry->pcWildCard[ sizeof( pxDirEntry->pcWildCard ) - 1 ] = 0;
+                        pxDirEntry->pcWildCard[ ffconfigMAX_FILENAME - 1 ] = 0;
 
                         if( pxDirEntry->pcWildCard[ xIndex - 1 ] == ':' )
                         {
@@ -2656,7 +2656,7 @@ int32_t FF_FindShortName( FF_IOManager_t * pxIOManager,
                         else
                         {
                             wcsncpy( usUtf16Name, pcName, ffconfigMAX_FILENAME - 1 );
-                            usUtf16Name[ sizeof( usUtf16Name ) - 1 ] = 0;
+                            usUtf16Name[ ffconfigMAX_FILENAME - 1 ] = 0;
                         }
                     }
                 #else /* if WCHAR_MAX <= 0xFFFF */
@@ -3124,7 +3124,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     memset( &xMyFile, '\0', sizeof( xMyFile ) );
 
     STRNCPY( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME  - 1 );
-    xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
+    xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
     xMyFile.ulObjectCluster = FF_CreateClusterChain( pxIOManager, &xError );
 
@@ -3300,7 +3300,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
         }
 
         STRNCPY( xMyDirectory.pcFileName, pcDirName, ffconfigMAX_FILENAME - 1 );
-        xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
+        xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
         xMyDirectory.ulFileSize = 0;
         xMyDirectory.ucAttrib = FF_FAT_ATTR_DIR;
