@@ -1722,13 +1722,8 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
                     if( pxDirEntry->ulDirCluster != 0 )
                     {
                         /* Valid Dir found, copy the wildCard to filename! */
-                        #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-                            wcsncpy( pxDirEntry->pcWildCard, ++pcWildCard, ffconfigMAX_FILENAME - 1 );
-                            pxDirEntry->pcWildCard[ sizeof( pxDirEntry->pcWildCard ) - 1 ] = 0;
-                        #else
-                            strncpy( pxDirEntry->pcWildCard, ++pcWildCard, ffconfigMAX_FILENAME - 1 );
-                            pxDirEntry->pcWildCard[ sizeof( pxDirEntry->pcWildCard ) - 1 ] = 0;
-                        #endif
+                        STRNCPY( pxDirEntry->pcWildCard, ++pcWildCard, ffconfigMAX_FILENAME - 1 );
+                        pxDirEntry->pcWildCard[ sizeof( pxDirEntry->pcWildCard ) - 1 ] = 0;
 
                         if( pxDirEntry->pcWildCard[ xIndex - 1 ] == ':' )
                         {
@@ -3128,17 +3123,8 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
 
     memset( &xMyFile, '\0', sizeof( xMyFile ) );
 
-    #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-        {
-            wcsncpy( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME - 1 );
-            xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
-        }
-    #else
-        {
-            strncpy( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME  - 1 );
-            xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
-        }
-    #endif
+    STRNCPY( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME  - 1 );
+    xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
 
     xMyFile.ulObjectCluster = FF_CreateClusterChain( pxIOManager, &xError );
 
@@ -3313,17 +3299,8 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
             break;
         }
 
-        #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-            {
-                wcsncpy( xMyDirectory.pcFileName, pcDirName, ffconfigMAX_FILENAME - 1 );
-                xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
-            }
-        #else
-            {
-                strncpy( xMyDirectory.pcFileName, pcDirName, ffconfigMAX_FILENAME - 1 );
-                xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
-            }
-        #endif
+        STRNCPY( xMyDirectory.pcFileName, pcDirName, ffconfigMAX_FILENAME - 1 );
+        xMyFile.pcFileName[ sizeof( xMyFile.pcFileName ) - 1 ] = 0;
 
         xMyDirectory.ulFileSize = 0;
         xMyDirectory.ucAttrib = FF_FAT_ATTR_DIR;
