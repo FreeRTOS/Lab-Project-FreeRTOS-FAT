@@ -436,7 +436,8 @@
 /* Sets the maximum length for file names, including the path.
  * Note that the value of this define is directly related to the maximum stack
  * use of the +FAT library. In some API's, a character buffer of size
- * 'ffconfigMAX_FILENAME' will be declared on stack. */
+ * 'ffconfigMAX_FILENAME' will be declared on stack. As such, this value should
+ * include space for the null byte. */
     #define ffconfigMAX_FILENAME    129
 #endif
 

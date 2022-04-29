@@ -283,7 +283,8 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         }
 
         /* Copy the file name, i.e. the string that comes after the last separator. */
-        STRNCPY( pcFileName, pcPath + xIndex + 1, ffconfigMAX_FILENAME );
+        STRNCPY( pcFileName, pcPath + xIndex + 1, ffconfigMAX_FILENAME - 1 );
+        pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
         if( xIndex == 0 )
         {
@@ -957,7 +958,8 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                     }
 
                     /* Copy the base name of the destination file. */
-                    STRNCPY( xMyFile.pcFileName, ( szDestinationFile + xIndex + 1 ), ffconfigMAX_FILENAME );
+                    STRNCPY( xMyFile.pcFileName, ( szDestinationFile + xIndex + 1 ), ffconfigMAX_FILENAME - 1 );
+                    xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
                     if( xIndex == 0 )
                     {
@@ -2853,7 +2855,8 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
             xIndex--;
         }
 
-        STRNCPY( pcFileName, ( pcPath + xIndex + 1 ), ffconfigMAX_FILENAME );
+        STRNCPY( pcFileName, ( pcPath + xIndex + 1 ), ffconfigMAX_FILENAME - 1 );
+        pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
         if( xIndex == 0 )
         {
@@ -2950,7 +2953,8 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
         xIndex--;
     }
 
-    STRNCPY( pcFileName, ( pcPath + xIndex + 1 ), ffconfigMAX_FILENAME );
+    STRNCPY( pcFileName, ( pcPath + xIndex + 1 ), ffconfigMAX_FILENAME - 1 );
+    pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
     if( xIndex == 0 )
     {
