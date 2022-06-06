@@ -3300,7 +3300,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
         }
 
         STRNCPY( xMyDirectory.pcFileName, pcDirName, ffconfigMAX_FILENAME - 1 );
-        xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
+        xMyDirectory.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
         xMyDirectory.ulFileSize = 0;
         xMyDirectory.ucAttrib = FF_FAT_ATTR_DIR;
