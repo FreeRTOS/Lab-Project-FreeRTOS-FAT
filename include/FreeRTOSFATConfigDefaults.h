@@ -122,7 +122,7 @@
  * - UTF-8  (ffconfigUNICODE_UTF8_SUPPORT = 1)
  * - UTF-16 (ffconfigUNICODE_UTF16_SUPPORT = 1)
  */
-#if ( ffconfigUNICODE_UTF16_SUPPORT == 0 )
+#if !defined( ffconfigUNICODE_UTF16_SUPPORT )
 
 /* Only used when ffconfigLFN_SUPPORT is set to 1.
  *
