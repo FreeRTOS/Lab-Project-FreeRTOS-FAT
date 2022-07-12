@@ -573,16 +573,13 @@
  *         is managed by polling mode.
  * @param  hsd: SD handle
  * @param  pReadBuffer: pointer to the buffer that will contain the received data
- * @param  ReadAddr: Address from where data is to be read
- * @param  BlockSize: SD card Data block size
- * @note   BlockSize must be 512 bytes.
+ * @param  ReadAddr: Address from where data is to be read as a byte-offset.
  * @param  NumberOfBlocks: Number of SD blocks to read
  * @retval SD Card error state
  */
     HAL_SD_ErrorTypedef HAL_SD_ReadBlocks( SD_HandleTypeDef * hsd,
                                            uint32_t * pReadBuffer,
                                            uint64_t ReadAddr,
-                                           uint32_t BlockSize,
                                            uint32_t NumberOfBlocks )
     {
         SDIO_CmdInitTypeDef sdmmc_cmdinitstructure;
@@ -590,14 +587,14 @@
         HAL_SD_ErrorTypedef errorstate = SD_OK;
         uint32_t count = 0, * tempbuff = ( uint32_t * ) pReadBuffer;
         __IO uint32_t * pulFIFO = &( hsd->Instance->FIFO );
+        const uint32_t BlockSize = 512U;
 
         /* Initialize data control register */
         hsd->Instance->DCTRL = 0;
 
         if( hsd->CardType == HIGH_CAPACITY_SD_CARD )
         {
-            BlockSize = 512;
-            ReadAddr /= 512;
+            ReadAddr /= BlockSize;
         }
 
         /* Set Block Size for Card */
@@ -756,15 +753,12 @@
  * @param  hsd: SD handle
  * @param  pWriteBuffer: pointer to the buffer that will contain the data to transmit
  * @param  WriteAddr: Address from where data is to be written
- * @param  BlockSize: SD card Data block size
- * @note   BlockSize must be 512 bytes.
  * @param  NumberOfBlocks: Number of SD blocks to write
  * @retval SD Card error state
  */
     HAL_SD_ErrorTypedef HAL_SD_WriteBlocks( SD_HandleTypeDef * hsd,
                                             uint32_t * pWriteBuffer,
                                             uint64_t WriteAddr,
-                                            uint32_t BlockSize,
                                             uint32_t NumberOfBlocks )
     {
         SDIO_CmdInitTypeDef sdmmc_cmdinitstructure;
@@ -778,14 +772,14 @@
         __IO uint32_t * pulFIFO = &( hsd->Instance->FIFO );
         uint32_t ulEndFags;
         uint32_t ulHasHWFlowControl;
+        const uint32_t BlockSize = 512U;
 
         /* Initialize data control register */
         hsd->Instance->DCTRL = 0;
 
         if( hsd->CardType == HIGH_CAPACITY_SD_CARD )
         {
-            BlockSize = 512;
-            WriteAddr /= 512;
+            WriteAddr /= BlockSize;
         }
 
         /* Set Block Size for Card */
@@ -997,20 +991,23 @@
  * @param  hsd: SD handle
  * @param  pReadBuffer: Pointer to the buffer that will contain the received data
  * @param  ReadAddr: Address from where data is to be read
- * @param  BlockSize: SD card Data block size
- * @note   BlockSize must be 512 bytes.
  * @param  NumberOfBlocks: Number of blocks to read.
  * @retval SD Card error state
  */
     HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA( SD_HandleTypeDef * hsd,
                                                uint32_t * pReadBuffer,
                                                uint64_t ReadAddr,
-                                               uint32_t BlockSize,
                                                uint32_t NumberOfBlocks )
     {
         SDIO_CmdInitTypeDef sdmmc_cmdinitstructure;
         SDIO_DataInitTypeDef sdmmc_datainitstructure;
         HAL_SD_ErrorTypedef errorstate = SD_OK;
+        const uint32_t BlockSize = 512U;
+
+        if( hsd->CardType == HIGH_CAPACITY_SD_CARD )
+        {
+            ReadAddr /= BlockSize;
+        }
 
         /* Initialize data control register */
         hsd->Instance->DCTRL = 0;
@@ -1050,12 +1047,6 @@
 
         /* Enable the DMA Stream */
         HAL_DMA_Start_IT( hsd->hdmarx, ( uint32_t ) &hsd->Instance->FIFO, ( uint32_t ) pReadBuffer, ( uint32_t ) ( BlockSize * NumberOfBlocks ) / 4 );
-
-        if( hsd->CardType == HIGH_CAPACITY_SD_CARD )
-        {
-            BlockSize = 512;
-            ReadAddr /= 512;
-        }
 
         /* Set Block Size for Card */
         sdmmc_cmdinitstructure.Argument = ( uint32_t ) BlockSize;
@@ -1115,21 +1106,24 @@
  * @param  hsd: SD handle
  * @param  pWriteBuffer: pointer to the buffer that will contain the data to transmit
  * @param  WriteAddr: Address from where data is to be read
- * @param  BlockSize: the SD card Data block size
- * @note   BlockSize must be 512 bytes.
  * @param  NumberOfBlocks: Number of blocks to write
  * @retval SD Card error state
  */
     HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_DMA( SD_HandleTypeDef * hsd,
                                                 uint32_t * pWriteBuffer,
                                                 uint64_t WriteAddr,
-                                                uint32_t BlockSize,
                                                 uint32_t NumberOfBlocks )
     {
         SDIO_CmdInitTypeDef sdmmc_cmdinitstructure;
 /*SDIO_DataInitTypeDef sdmmc_datainitstructure;*/
         HAL_SD_ErrorTypedef errorstate = SD_OK;
         uint32_t tmpreg;
+        const uint32_t BlockSize = 512U;
+
+        if( hsd->CardType == HIGH_CAPACITY_SD_CARD )
+        {
+            WriteAddr /= BlockSize;
+        }
 
         /* Initialize data control register */
         hsd->Instance->DCTRL = 0;
@@ -1171,12 +1165,6 @@
 
         /* Enable SDIO DMA transfer */
         __HAL_SD_SDIO_DMA_ENABLE( hsd );
-
-        if( hsd->CardType == HIGH_CAPACITY_SD_CARD )
-        {
-            BlockSize = 512;
-            WriteAddr /= 512;
-        }
 
         /* Set Block Size for Card */
         sdmmc_cmdinitstructure.Argument = ( uint32_t ) BlockSize;

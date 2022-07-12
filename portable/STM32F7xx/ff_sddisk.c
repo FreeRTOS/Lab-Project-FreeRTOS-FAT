@@ -96,6 +96,8 @@
 
 #ifdef STM32F7xx
 
+    #define SRAM1_MAX_SIZE    ( 368U * 1024U )
+
 /* This driver was originally developed for STM32F4xx.
  * With a few defines it can also be used for STM32F7xx : */
 /* The Instance of the MMC peripheral. */
@@ -242,8 +244,8 @@ static __attribute__( ( section( ".first_data" ) ) ) uint8_t pucDMABuffer[ 512 ]
         /* Is D-cache enabled? */
         if( ( SCB->CCR & ( uint32_t ) SCB_CCR_DC_Msk ) != 0U )
         {
-            /* Is this a cacheable area? */
-            if( ( ulAddress >= RAMDTCM_BASE + 0x10000 ) && ( ulAddress < RAMDTCM_BASE + 0x4CC00 ) )
+            /* Is this a cacheable area, meaning, it it in SRAM1? */
+            if( ( ulAddress >= SRAM1_BASE ) && ( ulAddress < ( SRAM1_BASE + SRAM1_MAX_SIZE ) ) )
             {
                 xReturn = pdTRUE;
             }
@@ -280,7 +282,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
 
         #if ( SDIO_USES_DMA == 0 )
             {
-                sd_result = HAL_SD_ReadBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, 512U, ulSectorCount );
+                sd_result = HAL_SD_ReadBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, ulSectorCount );
             }
         #else
             {
@@ -288,7 +290,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
                 if( ( ( ( size_t ) pucBuffer ) & CACHE_LINE_BITS ) == 0U )
                 {
                     /* The buffer is word-aligned, call DMA read directly. */
-                    sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, 512U, ulSectorCount );
+                    sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, ulSectorCount );
 
                     if( sd_result == SD_OK )
                     {
@@ -310,7 +312,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
                     for( ulSector = 0; ulSector < ulSectorCount; ulSector++ )
                     {
                         ullReadAddr = ( uint64_t ) 512U * ( ( uint64_t ) ulSectorNumber + ( uint64_t ) ulSector );
-                        sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullReadAddr, 512U, 1U );
+                        sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullReadAddr, 1U );
 
                         if( sd_result == SD_OK )
                         {
@@ -378,7 +380,7 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
 
         #if ( SDIO_USES_DMA == 0 )
             {
-                sd_result = HAL_SD_WriteBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, 512U, ulSectorCount );
+                sd_result = HAL_SD_WriteBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, ulSectorCount );
             }
         #else
             {
@@ -391,7 +393,7 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
                         prvCacheClean( ( uint32_t * ) pucBuffer, 512U * ulSectorCount );
                     }
 
-                    sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, 512U, ulSectorCount );
+                    sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, ulSectorCount );
 
                     if( sd_result == SD_OK )
                     {
@@ -416,7 +418,7 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
                             prvCacheClean( ( uint32_t * ) pucDMABuffer, 512U );
                         }
 
-                        sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullWriteAddr, 512U, 1 );
+                        sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullWriteAddr, 1 );
 
                         if( sd_result == SD_OK )
                         {

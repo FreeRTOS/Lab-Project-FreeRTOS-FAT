@@ -668,12 +668,10 @@
     HAL_SD_ErrorTypedef HAL_SD_ReadBlocks( SD_HandleTypeDef * hsd,
                                            uint32_t * pReadBuffer,
                                            uint64_t ReadAddr,
-                                           uint32_t BlockSize,
                                            uint32_t NumberOfBlocks );
     HAL_SD_ErrorTypedef HAL_SD_WriteBlocks( SD_HandleTypeDef * hsd,
                                             uint32_t * pWriteBuffer,
                                             uint64_t WriteAddr,
-                                            uint32_t BlockSize,
                                             uint32_t NumberOfBlocks );
     HAL_SD_ErrorTypedef HAL_SD_Erase( SD_HandleTypeDef * hsd,
                                       uint64_t startaddr,
@@ -694,12 +692,10 @@
     HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA( SD_HandleTypeDef * hsd,
                                                uint32_t * pReadBuffer,
                                                uint64_t ReadAddr,
-                                               uint32_t BlockSize,
                                                uint32_t NumberOfBlocks );
     HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_DMA( SD_HandleTypeDef * hsd,
                                                 uint32_t * pWriteBuffer,
                                                 uint64_t WriteAddr,
-                                                uint32_t BlockSize,
                                                 uint32_t NumberOfBlocks );
     HAL_SD_ErrorTypedef HAL_SD_CheckWriteOperation( SD_HandleTypeDef * hsd,
                                                     uint32_t Timeout );
