@@ -195,7 +195,6 @@ s32 XSdPs_Get_BusWidth( XSdPs * InstancePtr,
                         u8 * SCR )
 {
     s32 Status;
-//    u32 StatusReg;
     u16 BlkCnt;
     u16 BlkSize;
     s32 LoopCnt;

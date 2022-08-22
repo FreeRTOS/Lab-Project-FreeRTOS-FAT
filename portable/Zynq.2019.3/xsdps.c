@@ -441,7 +441,6 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
     u32 CSD[ 4 ];
     u32 Arg;
     u8 ReadReg;
-//    u32 BlkLen, DeviceSize, Mult;
 
     Xil_AssertNonvoid( InstancePtr != NULL );
     Xil_AssertNonvoid( InstancePtr->IsReady == XIL_COMPONENT_IS_READY );
