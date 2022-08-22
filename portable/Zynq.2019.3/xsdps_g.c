@@ -55,11 +55,18 @@
 /*
  * The configuration table for devices
  */
-
+#ifndef XPAR_XSDPS_0_BUS_WIDTH
 #define XPAR_XSDPS_0_BUS_WIDTH            0 /* XSDPS_4_BIT_WIDTH */
+#endif
+#ifndef XPAR_XSDPS_0_MIO_BANK
 #define XPAR_XSDPS_0_MIO_BANK             0
+#endif
+#ifndef XPAR_XSDPS_0_HAS_EMIO
 #define XPAR_XSDPS_0_HAS_EMIO             0
+#endif
+#ifndef XPAR_XSDPS_0_IS_CACHE_COHERENT
 #define XPAR_XSDPS_0_IS_CACHE_COHERENT    1 /* 0 Tables are located in uncached memory */
+#endif
 
 XSdPs_Config XSdPs_ConfigTable[] =
 {

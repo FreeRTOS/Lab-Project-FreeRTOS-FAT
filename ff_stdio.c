@@ -88,7 +88,7 @@ int prvFFErrorToErrno( FF_Error_t xError );
     typedef struct WORKING_DIR
     {
         char pcCWD[ ffconfigMAX_FILENAME ];      /* The current working directory. */
-        char pcFileName[ ffconfigMAX_FILENAME ]; /* The created absolute path. */
+        char pcFileName[ ffconfigMAX_FILENAME+1 ]; /* The created absolute path. */
     } WorkingDirectory_t;
 
 /*

@@ -441,7 +441,7 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
     u32 CSD[ 4 ];
     u32 Arg;
     u8 ReadReg;
-    u32 BlkLen, DeviceSize, Mult;
+//    u32 BlkLen, DeviceSize, Mult;
 
     Xil_AssertNonvoid( InstancePtr != NULL );
     Xil_AssertNonvoid( InstancePtr->IsReady == XIL_COMPONENT_IS_READY );
@@ -480,7 +480,7 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
         goto RETURN_PATH;
     }
 
-    FF_PRINTF( "CMD0 : %d\n", Status );
+    FF_PRINTF( "CMD0 : %ld\n", Status );
 
     /*
      * CMD8; response expected
@@ -488,7 +488,7 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
      */
     Status = XSdPs_CmdTransfer( InstancePtr, CMD8,
                                 XSDPS_CMD8_VOL_PATTERN, 0U );
-    FF_PRINTF( "CMD8 : %d\n", Status );
+    FF_PRINTF( "CMD8 : %ld\n", Status );
 
     if( ( Status != XST_SUCCESS ) && ( Status != XSDPS_CT_ERROR ) )
     {

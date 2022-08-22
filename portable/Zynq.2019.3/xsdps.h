@@ -290,6 +290,9 @@ s32 XSdPs_Get_Mmc_ExtCsd( XSdPs * InstancePtr,
 s32 XSdPs_Set_Mmc_ExtCsd( XSdPs * InstancePtr,
                           u32 Arg );
 void XSdPs_Idle( XSdPs * InstancePtr );
+s32 XSdPs_Wait_For( XSdPs * InstancePtr,
+                    u32 Mask,
+                    u32 Wait );
     #if defined( ARMR5 ) || defined( __aarch64__ ) || defined( ARMA53_32 ) || defined( __MICROBLAZE__ )
     void XSdPs_Identify_UhsMode( XSdPs * InstancePtr,
                                  u8 * ReadBuff );

@@ -407,7 +407,7 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 
     if( ( xPartition < 0 ) || ( xPartition >= ffconfigMAX_PARTITIONS ) )
     {
-        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %d ( max %d )\n", xPartition, ffconfigMAX_PARTITIONS - 1 );
+        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %ld ( max %d )\n", xPartition, ffconfigMAX_PARTITIONS - 1 );
         xReturn = NULL;
     }
     else if( pxCacheMemories[ xPartition ] == NULL )
