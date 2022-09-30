@@ -419,10 +419,10 @@ BaseType_t FF_RAMDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "Partition Nr   %8u\n", pxDisk->xStatus.bPartitionNumber );
         FF_PRINTF( "Type           %8u (%s)\n", pxIOManager->xPartition.ucType, pcTypeName );
         FF_PRINTF( "VolLabel       '%8s' \n", pxIOManager->xPartition.pcVolumeLabel );
-        FF_PRINTF( "TotalSectors   %8lu\n", pxIOManager->xPartition.ulTotalSectors );
-        FF_PRINTF( "SecsPerCluster %8lu\n", pxIOManager->xPartition.ulSectorsPerCluster );
-        FF_PRINTF( "Size           %8lu KB\n", ulTotalSizeKB );
-        FF_PRINTF( "FreeSize       %8lu KB ( %d perc free )\n", ulFreeSizeKB, iPercentageFree );
+        FF_PRINTF( "TotalSectors   %8lu\n", (unsigned long) pxIOManager->xPartition.ulTotalSectors );
+        FF_PRINTF( "SecsPerCluster %8lu\n", (unsigned long) pxIOManager->xPartition.ulSectorsPerCluster );
+        FF_PRINTF( "Size           %8lu KB\n", (unsigned long) ulTotalSizeKB );
+        FF_PRINTF( "FreeSize       %8lu KB ( %d perc free )\n", (unsigned long) ulFreeSizeKB, iPercentageFree );
     }
 
     return xReturn;
