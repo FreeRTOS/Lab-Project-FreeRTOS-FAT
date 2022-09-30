@@ -208,6 +208,4 @@ target_link_libraries( freertos_plus_fat
 add_subdirectory(portable)
 add_subdirectory(test)
 
-
-
 FetchContent_MakeAvailable(freertos_kernel)
