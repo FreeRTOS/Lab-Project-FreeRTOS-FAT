@@ -81,6 +81,8 @@ elseif((FREERTOS_PLUS_FAT_PORT STREQUAL "A_CUSTOM_PORT") AND (NOT TARGET freerto
         "     PRIVATE\n"
         "       ff_sddisk.c)\n"
         "   target_link_libraries(freertos_plus_fat_port\n"
+        "     PUBLIC\n"
+        "       freertos_plus_fat_port_common\n"
         "     PRIVATE\n"
         "       freertos_kernel\n"
         "       freertos_plus_fat)")
