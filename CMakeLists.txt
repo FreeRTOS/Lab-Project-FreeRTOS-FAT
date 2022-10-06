@@ -43,10 +43,10 @@ set(FREERTOS_PLUS_FAT_PORT_LIST
 if(NOT FREERTOS_PLUS_FAT_PORT)
     # Attempt to detect the system.
     if(UNIX)
-        message(STATUS "Detected UNIX/Posix system setting FREERTOS_PLUS_TCP_NETWORK_IF = POSIX")
+        message(STATUS "Detected UNIX/Posix system setting FREERTOS_PLUS_FAT_PORT = POSIX")
         set(FREERTOS_PLUS_FAT_PORT POSIX)
     elseif(MINGW)
-        message(STATUS "Detected Windows MinGW system setting FREERTOS_PLUS_TCP_NETWORK_IF = WIN_MGW")
+        message(STATUS "Detected Windows MinGW system setting FREERTOS_PLUS_FAT_PORT = WIN_MGW")
         set(FREERTOS_PLUS_FAT_PORT WIN_PCAP)
     endif()
 endif()
