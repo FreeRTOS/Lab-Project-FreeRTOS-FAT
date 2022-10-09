@@ -153,7 +153,6 @@
  *
  ******************************************************************************/
 
-
 #ifndef SDPS_H_
     #define SDPS_H_
 
@@ -304,9 +303,28 @@ void XSdPs_Idle( XSdPs * InstancePtr );
                                       u32 CardType );
     #endif /* if defined( ARMR5 ) || defined( __aarch64__ ) || defined( ARMA53_32 ) || defined( __MICROBLAZE__ ) */
 
+/* Make sure that the stored status is in ulSDInterruptStatus[] is cleared.
+ * ulMask are the status bits that should come high: either CC or CC|TC. */
+void XSdPs_ClearInterrupt( XSdPs * InstancePtr,
+                           uint32_t ulMask );
+
+/* Wait for an interrupt and return the 32 bits of the status register.
+ * A return value of 0 means: time-out. */
+u32 XSdPs_WaitInterrupt( XSdPs * InstancePtr,
+                         u32 ulMask,
+                         u32 ulWait );
+
+s32 XSdPs_Wait_For( XSdPs * InstancePtr,
+                    u32 Mask,
+                    u32 Wait );
+u32 XSdPs_ReadStatus( XSdPs * InstancePtr );
+
+u32 UNSTUFF_BITS( u32 * ulResponse,
+                  int iFirst,
+                  int iSize );
     #ifdef __cplusplus
     }
     #endif
 
-#endif /* SD_H_ */
+#endif /* SDPS_H_ */
 /** @} */
