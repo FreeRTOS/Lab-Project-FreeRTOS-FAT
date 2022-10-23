@@ -206,8 +206,8 @@
 /**
  * @brief  Initializes the SDIO according to the specified
  *         parameters in the SDIO_InitTypeDef and create the associated handle.
- * @param  SDIOx: Pointer to SDIO register base
- * @param  Init: SDIO initialization structure
+ * @param  SDIOx Pointer to SDIO register base
+ * @param  Init SDIO initialization structure
  * @retval HAL status
  */
     HAL_StatusTypeDef SDIO_Init( SDIO_TypeDef * SDIOx,
@@ -260,7 +260,7 @@
 
 /**
  * @brief  Read data (word) from Rx FIFO in blocking mode (polling)
- * @param  SDIOx: Pointer to SDIO register base
+ * @param  SDIOx Pointer to SDIO register base
  * @retval HAL status
  */
     uint32_t SDIO_ReadFIFO( SDIO_TypeDef * SDIOx )
@@ -271,8 +271,8 @@
 
 /**
  * @brief  Write data (word) to Tx FIFO in blocking mode (polling)
- * @param  SDIOx: Pointer to SDIO register base
- * @param  pWriteData: pointer to data to write
+ * @param  SDIOx Pointer to SDIO register base
+ * @param  pWriteData pointer to data to write
  * @retval HAL status
  */
     HAL_StatusTypeDef SDIO_WriteFIFO( SDIO_TypeDef * SDIOx,
@@ -305,7 +305,7 @@
 
 /**
  * @brief  Set SDIO Power state to ON.
- * @param  SDIOx: Pointer to SDIO register base
+ * @param  SDIOx Pointer to SDIO register base
  * @retval HAL status
  */
     HAL_StatusTypeDef SDIO_PowerState_ON( SDIO_TypeDef * SDIOx )
@@ -318,7 +318,7 @@
 
 /**
  * @brief  Set SDIO Power state to OFF.
- * @param  SDIOx: Pointer to SDIO register base
+ * @param  SDIOx Pointer to SDIO register base
  * @retval HAL status
  */
     HAL_StatusTypeDef SDIO_PowerState_OFF( SDIO_TypeDef * SDIOx )
@@ -331,7 +331,7 @@
 
 /**
  * @brief  Get SDIO Power state.
- * @param  SDIOx: Pointer to SDIO register base
+ * @param  SDIOx Pointer to SDIO register base
  * @retval Power status of the controller. The returned value can be one of the
  *         following values:
  *            - 0x00: Power OFF
@@ -346,8 +346,8 @@
 /**
  * @brief  Configure the SDIO command path according to the specified parameters in
  *         SDIO_CmdInitTypeDef structure and send the command
- * @param  SDIOx: Pointer to SDIO register base
- * @param  SDIO_CmdInitStruct: pointer to a SDIO_CmdInitTypeDef structure that contains
+ * @param  SDIOx Pointer to SDIO register base
+ * @param  SDIO_CmdInitStruct pointer to a SDIO_CmdInitTypeDef structure that contains
  *         the configuration information for the SDIO command
  * @retval HAL status
  */
@@ -379,7 +379,7 @@
 
 /**
  * @brief  Return the command index of last command for which response received
- * @param  SDIOx: Pointer to SDIO register base
+ * @param  SDIOx Pointer to SDIO register base
  * @retval Command index of the last command response received
  */
     uint8_t SDIO_GetCommandResponse( SDIO_TypeDef * SDIOx )
@@ -390,7 +390,7 @@
 
 /**
  * @brief  Return the response received from the card for the last command
- * @param  SDIO_RESP: Specifies the SDIO response register.
+ * @param  SDIO_RESP Specifies the SDIO response register.
  *          This parameter can be one of the following values:
  *            @arg SDIO_RESP1: Response Register 1
  *            @arg SDIO_RESP2: Response Register 2
@@ -414,8 +414,8 @@
 /**
  * @brief  Configure the SDIO data path according to the specified
  *         parameters in the SDIO_DataInitTypeDef.
- * @param  SDIOx: Pointer to SDIO register base
- * @param  SDIO_DataInitStruct : pointer to a SDIO_DataInitTypeDef structure
+ * @param  SDIOx Pointer to SDIO register base
+ * @param  SDIO_DataInitStruct  pointer to a SDIO_DataInitTypeDef structure
  *         that contains the configuration information for the SDIO command.
  * @retval HAL status
  */
@@ -453,7 +453,7 @@
 
 /**
  * @brief  Returns number of remaining data bytes to be transferred.
- * @param  SDIOx: Pointer to SDIO register base
+ * @param  SDIOx Pointer to SDIO register base
  * @retval Number of remaining data bytes to be transferred
  */
     uint32_t SDIO_GetDataCounter( SDIO_TypeDef * SDIOx )
@@ -463,7 +463,7 @@
 
 /**
  * @brief  Get the FIFO data
- * @param  SDIOx: Pointer to SDIO register base
+ * @param  SDIOx Pointer to SDIO register base
  * @retval Data received
  */
     uint32_t SDIO_GetFIFOCount( SDIO_TypeDef * SDIOx )
@@ -474,7 +474,7 @@
 
 /**
  * @brief  Sets one of the two options of inserting read wait interval.
- * @param  SDIO_ReadWaitMode: SD I/O Read Wait operation mode.
+ * @param  SDIO_ReadWaitMode SD I/O Read Wait operation mode.
  *          This parameter can be:
  *            @arg SDIO_READ_WAIT_MODE_CLK: Read Wait control by stopping SDIOCLK
  *            @arg SDIO_READ_WAIT_MODE_DATA2: Read Wait control using SDIO_DATA2

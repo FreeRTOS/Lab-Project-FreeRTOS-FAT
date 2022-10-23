@@ -606,8 +606,8 @@
 
 /**
  * @brief  Enable the SDIO device interrupt.
- * @param  __INSTANCE__ : Pointer to SDIO register base
- * @param  __INTERRUPT__ : specifies the SDIO interrupt sources to be enabled.
+ * @param  __INSTANCE__  Pointer to SDIO register base
+ * @param  __INTERRUPT__  specifies the SDIO interrupt sources to be enabled.
  *         This parameter can be one or a combination of the following values:
  *            @arg SDIO_IT_CCRCFAIL: Command response received (CRC check failed) interrupt
  *            @arg SDIO_IT_DCRCFAIL: Data block sent/received (CRC check failed) interrupt
@@ -640,8 +640,8 @@
 
 /**
  * @brief  Disable the SDIO device interrupt.
- * @param  __INSTANCE__ : Pointer to SDIO register base
- * @param  __INTERRUPT__ : specifies the SDIO interrupt sources to be disabled.
+ * @param  __INSTANCE__  Pointer to SDIO register base
+ * @param  __INTERRUPT__  specifies the SDIO interrupt sources to be disabled.
  *          This parameter can be one or a combination of the following values:
  *            @arg SDIO_IT_CCRCFAIL: Command response received (CRC check failed) interrupt
  *            @arg SDIO_IT_DCRCFAIL: Data block sent/received (CRC check failed) interrupt
@@ -674,8 +674,8 @@
 
 /**
  * @brief  Checks whether the specified SDIO flag is set or not.
- * @param  __INSTANCE__ : Pointer to SDIO register base
- * @param  __FLAG__: specifies the flag to check.
+ * @param  __INSTANCE__  Pointer to SDIO register base
+ * @param  __FLAG__ specifies the flag to check.
  *          This parameter can be one of the following values:
  *            @arg SDIO_FLAG_CCRCFAIL: Command response received (CRC check failed)
  *            @arg SDIO_FLAG_DCRCFAIL: Data block sent/received (CRC check failed)
@@ -708,8 +708,8 @@
 
 /**
  * @brief  Clears the SDIO pending flags.
- * @param  __INSTANCE__ : Pointer to SDIO register base
- * @param  __FLAG__: specifies the flag to clear.
+ * @param  __INSTANCE__  Pointer to SDIO register base
+ * @param  __FLAG__ specifies the flag to clear.
  *          This parameter can be one or a combination of the following values:
  *            @arg SDIO_FLAG_CCRCFAIL: Command response received (CRC check failed)
  *            @arg SDIO_FLAG_DCRCFAIL: Data block sent/received (CRC check failed)
@@ -730,8 +730,8 @@
 
 /**
  * @brief  Checks whether the specified SDIO interrupt has occurred or not.
- * @param  __INSTANCE__ : Pointer to SDIO register base
- * @param  __INTERRUPT__: specifies the SDIO interrupt source to check.
+ * @param  __INSTANCE__  Pointer to SDIO register base
+ * @param  __INTERRUPT__ specifies the SDIO interrupt source to check.
  *          This parameter can be one of the following values:
  *            @arg SDIO_IT_CCRCFAIL: Command response received (CRC check failed) interrupt
  *            @arg SDIO_IT_DCRCFAIL: Data block sent/received (CRC check failed) interrupt
@@ -764,8 +764,8 @@
 
 /**
  * @brief  Clears the SDIO's interrupt pending bits.
- * @param  __INSTANCE__ : Pointer to SDIO register base
- * @param  __INTERRUPT__: specifies the interrupt pending bit to clear.
+ * @param  __INSTANCE__  Pointer to SDIO register base
+ * @param  __INTERRUPT__ specifies the interrupt pending bit to clear.
  *          This parameter can be one or a combination of the following values:
  *            @arg SDIO_IT_CCRCFAIL: Command response received (CRC check failed) interrupt
  *            @arg SDIO_IT_DCRCFAIL: Data block sent/received (CRC check failed) interrupt

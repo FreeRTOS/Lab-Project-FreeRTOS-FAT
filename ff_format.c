@@ -219,9 +219,9 @@ static portINLINE uint32_t ulMin32( uint32_t a,
 
 /**
  * @brief: Decide whether FAT32 or FAT16 shall be used and try to find an optimum cluster size.
- * @param[in] pxSet: A set of parameters describing this format session.
- * @param[in] xPreferFAT16: When pdTRUE, it will use FAT16 in stead of FAT32.
- * @param[in] xSmallClusters: When pdTRUE, it will make the cluster size as small as possible.
+ * @param[in] pxSet A set of parameters describing this format session.
+ * @param[in] xPreferFAT16 When pdTRUE, it will use FAT16 in stead of FAT32.
+ * @param[in] xSmallClusters When pdTRUE, it will make the cluster size as small as possible.
  * @return A standard +FAT error code ( not an errno ).
  * @note In order to get the best speed, use pdFALSE, pdFALSE: to get FAT32 with large clusters.
  */
@@ -304,7 +304,7 @@ static FF_Error_t prvFormatGetClusterSize( struct xFormatSet * pxSet,
 
 /**
  * @brief: Optimise FAT location: for bigger disks, let the FAT start at 4MB.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  */
 static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
 {
@@ -340,7 +340,7 @@ static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
 
 /**
  * @brief: Write the so-called BIOS Parameter Block ( BPB ). It describes the FAT partition.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
@@ -427,8 +427,8 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
 
 /**
  * @brief: Initialise and clear the File Allocation Table ( FAT ).
- * @param[in] pxSet: A set of parameters describing this format session.
- * @param[in] lFatBeginLBA: The number of first sector of the FAT.
+ * @param[in] pxSet A set of parameters describing this format session.
+ * @param[in] lFatBeginLBA The number of first sector of the FAT.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvFormatInitialiseFAT( struct xFormatSet * pxSet,
@@ -489,7 +489,7 @@ static FF_Error_t prvFormatInitialiseFAT( struct xFormatSet * pxSet,
 
 /**
  * @brief: Initialise and clear the root directory.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvFormatInitialiseRootDir( struct xFormatSet * pxSet,
@@ -535,10 +535,10 @@ static FF_Error_t prvFormatInitialiseRootDir( struct xFormatSet * pxSet,
 
 /**
  * @brief Now deprecated, please use the new function 'FF_FormatDisk()'.
- * @param[in] pxDisk: The disk object.
- * @param[in] xPartitionNumber: the numer of the partitioned that must be FAT-formatted.
- * @param[in] xPreferFAT16: When pdTRUE, it will use FAT16 in stead of FAT32.
- * @param[in] xSmallClusters: When pdTRUE, it will make the cluster size as small as possible.
+ * @param[in] pxDisk The disk object.
+ * @param[in] xPartitionNumber the numer of the partitioned that must be FAT-formatted.
+ * @param[in] xPreferFAT16 When pdTRUE, it will use FAT16 in stead of FAT32.
+ * @param[in] xSmallClusters When pdTRUE, it will make the cluster size as small as possible.
  * @return A standard +FAT error code ( not an errno ).
  */
 FF_Error_t FF_Format( FF_Disk_t * pxDisk,
@@ -555,11 +555,11 @@ FF_Error_t FF_Format( FF_Disk_t * pxDisk,
 /**
  * @brief Format a partition of a disk, either as FAT16 or FAT32. It assumes that
  *        is has already been partitioned.
- * @param[in] pxDisk: The disk object.
- * @param[in] xPartitionNumber: the numer of the partitioned that must be FAT-formatted.
- * @param[in] xPreferFAT16: When pdTRUE, it will use FAT16 in stead of FAT32.
- * @param[in] xSmallClusters: When pdTRUE, it will make the cluster size as small as possible.
- * @param[in] pcVolumeName: A  string of 11 characters representing the name of the disk.
+ * @param[in] pxDisk The disk object.
+ * @param[in] xPartitionNumber the numer of the partitioned that must be FAT-formatted.
+ * @param[in] xPreferFAT16 When pdTRUE, it will use FAT16 in stead of FAT32.
+ * @param[in] xSmallClusters When pdTRUE, it will make the cluster size as small as possible.
+ * @param[in] pcVolumeName A  string of 11 characters representing the name of the disk.
  * @return A standard +FAT error code ( not an errno ).
  */
 FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
@@ -744,7 +744,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
 
 /**
  * @brief Create primary and extended partitions.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvPartitionPrimary( struct xPartitionSet * pxSet )
@@ -793,8 +793,8 @@ static FF_Error_t prvPartitionPrimary( struct xPartitionSet * pxSet )
 
 /**
  * @brief Create primary and extended partitions.
- * @param[in] pxSet: A set of parameters describing this format session.
- * @param[in] pParams: A set of variables describing the partitions.
+ * @param[in] pxSet A set of parameters describing this format session.
+ * @param[in] pParams A set of variables describing the partitions.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvPartitionExtended( struct xPartitionSet * pxSet,
@@ -909,8 +909,8 @@ static FF_Error_t prvPartitionExtended( struct xPartitionSet * pxSet,
 
 /**
  * @brief Create/initialise the partitions of a disk.
- * @param[in] pxDisk : The definition of the disk.
- * @param[in] pParams : A description of how the partitions shall be formatted.
+ * @param[in] pxDisk  The definition of the disk.
+ * @param[in] pParams  A description of how the partitions shall be formatted.
  * @return A standard +FAT error code ( not an errno ).
  */
 FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
