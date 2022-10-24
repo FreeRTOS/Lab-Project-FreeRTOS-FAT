@@ -9,6 +9,33 @@ The [standard C library style API](https://www.freertos.org/FreeRTOS-Plus/FreeRT
 For more details, please visit [FreeRTOS+FAT](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/index.html) page. 
 
 ## To consume FreeRTOS+FAT
+
+### Consume with CMake
+If using CMake, it is recommended to use this repository using FetchContent.
+Add the following into your project's main or a subdirectory's `CMakeLists.txt`:
+
+```cmake
+FetchContent_Declare( freertos_plus_fat
+  GIT_REPOSITORY https://github.com/FreeRTOS/Lab-Project-FreeRTOS-FAT.git
+  GIT_TAG        master #Note: Best practice to use specific git-hash or tagged version
+  GIT_SUBMODULES "" # Don't grab any submodules since not latest
+)
+
+# ...
+
+set( FREERTOS_PLUS_FAT_DEV_SUPPORT OFF CACHE BOOL "" FORCE)
+# Select the native compile PORT
+set( FREERTOS_PLUS_FAT_PORT "POSIX" CACHE STRING "" FORCE)
+# Select the cross-compile PORT
+if (CMAKE_CROSSCOMPILING)
+  # Eg. Zynq 2019_3 version of port
+  set(FREERTOS_PLUS_FAT_PORT "ZYNQ_2019_3" CACHE STRING "" FORCE)
+endif()
+
+FetchContent_MakeAvailable(freertos_plus_fat)
+```
+
+### Consuming stand-alone
 It is recommended to use this repository as a submodule. Please refer to [Git Tools — Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). 
 
 ## Notes

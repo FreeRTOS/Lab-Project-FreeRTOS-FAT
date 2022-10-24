@@ -1,0 +1,110 @@
+name: CI Checks
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  # Currently no unit tests
+  # Currently no spell-check
+
+  formatting:
+    # Use only 18.04 since we want the uncrustify version to
+    # be 0.66.1_f to ensure proper formatting.
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Uncrustify
+        run: sudo apt-get install uncrustify
+      - name: Run Uncrustify
+        run: |
+          uncrustify --version
+          find . -iname "*.[hc]" -exec uncrustify --check -c tools/uncrustify.cfg {} +
+          if [ "$?" = "0" ]; then
+            exit 0
+          else
+            echo -e "\033[31;1;43mFormatting check (using Uncrustify) failed...\033[0m"
+            echo -e "\033[32;3mTo have the code uncrustified for you, please comment '/bot run uncrustify' (without the quotes) on the Pull Request.\033[0m"
+            exit 1
+          fi
+      - name: Check For Trailing Whitespace
+        run: |
+          set +e
+          grep --exclude="README.md" -rnI -e "[[:blank:]]$" .
+          if [ "$?" = "0" ]; then
+            echo "Files have trailing whitespace."
+            exit 1
+          else
+            exit 0
+          fi
+
+  doxygen:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run doxygen build
+        uses: FreeRTOS/CI-CD-Github-Actions/doxygen@main
+        with:
+          path: ./
+
+  build-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build checks (Default configuration)
+        run: |
+          cmake -S . -B build/ -DFREERTOS_PLUS_FAT_TEST_CONFIGURATION=DEFAULT_CONF
+          make -C build/
+
+  complexity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: sudo apt-get install complexity
+      - name: Install Uncrustify
+        run: sudo apt-get install uncrustify
+      - name: Complexity
+        run: |
+          COMPLEXITY_PARAMS="--scores --threshold=10 --horrid-threshold=283"
+          TEMP_DIR=./temp
+          mkdir -p ${TEMP_DIR}
+          for SOURCE_FILE in source/portable/BufferManagement/*.c source/*.c
+          do
+              TARGET_DIR=${TEMP_DIR}/`dirname ${SOURCE_FILE}`
+              TARGET_FILE=${TARGET_DIR}/`basename ${SOURCE_FILE}`
+              mkdir -p ${TARGET_DIR}
+              uncrustify -c tools/uncrustify.complexity.cfg -f ${SOURCE_FILE} > ${TARGET_FILE}
+          done
+          find ${TEMP_DIR} -iname '*.c' | xargs complexity ${COMPLEXITY_PARAMS}
+          RESULT=$?
+          rm -rf ${TEMP_DIR}
+          if [ "${RESULT}" = "0" ]; then
+              echo "All is good."
+              exit 0
+          else
+              echo "Sources are too complex, rc = " ${RESULT}
+              exit 1
+          fi
+
+  git-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Checkout awslabs/git-secrets
+        uses: actions/checkout@v2
+        with:
+          repository: awslabs/git-secrets
+          ref: master
+          path: git-secrets
+      - name: Install git-secrets
+        run: cd git-secrets && sudo make install && cd ..
+      - name: Run git-secrets
+        run: |
+          git-secrets --register-aws
+          git-secrets --scan

@@ -25,6 +25,7 @@
  */
 
 #ifndef FF_DEFAULTCONFIG_H
+#define FF_DEFAULTCONFIG_H
 
 /* The error numbers defined in this file will be moved to the core FreeRTOS
  * code in future versions of FreeRTOS - at which time the following header file

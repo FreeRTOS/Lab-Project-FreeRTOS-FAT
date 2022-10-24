@@ -4,7 +4,7 @@ cmake_policy(SET CMP0076 NEW) # full paths
 
 ########################################################################
 # Project Details
-project(FreeRTOS-Plus-TCP
+project(FreeRTOS-Plus-FAT
         VERSION 0.0.1
         DESCRIPTION "FreeRTOS DOS Compatible Embedded FAT File System"
         HOMEPAGE_URL https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/index.html
@@ -15,6 +15,7 @@ if( ${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR} )
 message( FATAL_ERROR "In-source build is not allowed. Please build in a separate directory, such as ${PROJECT_SOURCE_DIR}/build." )
 endif()
 
+########################################################################
 # Options
 
 # Optional:  FREERTOS_PLUS_FAT_DEV_SUPPORT 
@@ -88,6 +89,40 @@ elseif((FREERTOS_PLUS_FAT_PORT STREQUAL "A_CUSTOM_PORT") AND (NOT TARGET freerto
         "       freertos_plus_fat)")
 endif()
 
+
+# Select the appropriate Build Test configuration
+# This is only used when freertos_config is not defined, otherwise the build test will be performed
+# on the config defined in the freertos_config
+set(FREERTOS_PLUS_FAT_TEST_CONFIGURATION "CUSTOM" CACHE STRING "FreeRTOS Plus FAT Build Test configuration")
+set(FREERTOS_PLUS_FAT_TEST_CONFIGURATION_LIST
+    CUSTOM       # Custom (external) configuration -eg from a top-level project
+    DEFAULT_CONF # Default (typical) configuration)
+)
+if(NOT FREERTOS_PLUS_FAT_TEST_CONFIGURATION IN_LIST FREERTOS_PLUS_FAT_TEST_CONFIGURATION_LIST)
+    message(FATAL_ERROR "Invalid FREERTOS_PLUS_FAT_TEST_CONFIGURATION value '${FREERTOS_PLUS_FAT_TEST_CONFIGURATION}' should be one of: ${FREERTOS_PLUS_FAT_TEST_CONFIGURATION_LIST}")
+else()
+    message(STATUS "Using FreeRTOS-Plus-FAT Test Configuration : ${FREERTOS_PLUS_FAT_TEST_CONFIGURATION}")
+    if (NOT FREERTOS_PLUS_FAT_TEST_CONFIGURATION STREQUAL "CUSTOM")
+        message(WARNING "FreeRTOS-Kernel configuration settings are configured by FreeRTOS-Plus-FAT")
+    endif()
+endif()
+
+
+########################################################################
+# External Dependencies
+# Note: For backwards compatibility - still have .gitmodules defining submodules
+# To support fetching content in a higher level project see
+#   README.md `Consume with CMake`
+# This will allow you to upgrade submodules and have one common submodule for
+# all your builds despite multiple submodules having different versions.
+include(FetchContent)
+
+FetchContent_Declare( freertos_kernel
+  GIT_REPOSITORY https://github.com/phelter/FreeRTOS-Kernel.git #https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+  GIT_TAG        feature/fixing-clang-gnu-compiler-warnings #master
+)
+
+########################################################################
 add_library( freertos_plus_fat STATIC )
 
 target_sources( freertos_plus_fat
@@ -171,3 +206,8 @@ target_link_libraries( freertos_plus_fat
 )
 
 add_subdirectory(portable)
+add_subdirectory(test)
+
+
+
+FetchContent_MakeAvailable(freertos_kernel)
