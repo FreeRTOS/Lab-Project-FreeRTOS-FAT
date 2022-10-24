@@ -195,7 +195,6 @@ s32 XSdPs_Get_BusWidth( XSdPs * InstancePtr,
                         u8 * SCR )
 {
     s32 Status;
-    u32 StatusReg;
     u16 BlkCnt;
     u16 BlkSize;
     s32 LoopCnt;
@@ -432,7 +431,6 @@ s32 XSdPs_Get_BusSpeed( XSdPs * InstancePtr,
                         u8 * ReadBuff )
 {
     s32 Status;
-    u32 StatusReg;
     u32 Arg;
     u16 BlkCnt;
     u16 BlkSize;
@@ -511,7 +509,6 @@ s32 XSdPs_Get_Status( XSdPs * InstancePtr,
                       u8 * SdStatReg )
 {
     s32 Status;
-    u32 StatusReg;
     u16 BlkCnt;
     u16 BlkSize;
 
@@ -960,7 +957,6 @@ s32 XSdPs_Get_Mmc_ExtCsd( XSdPs * InstancePtr,
                           u8 * ReadBuff )
 {
     s32 Status;
-    u32 StatusReg;
     u32 Arg = 0U;
     u16 BlkCnt;
     u16 BlkSize;
@@ -1040,7 +1036,6 @@ s32 XSdPs_Set_Mmc_ExtCsd( XSdPs * InstancePtr,
                           u32 Arg )
 {
     s32 Status;
-    u32 StatusReg;
 
     Status = XSdPs_CmdTransfer( InstancePtr, CMD6, Arg, 0U );
 
