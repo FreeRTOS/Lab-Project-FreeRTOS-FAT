@@ -87,7 +87,10 @@ int prvFFErrorToErrno( FF_Error_t xError );
  * to extend relative paths to absolute paths. */
     typedef struct WORKING_DIR
     {
-        char pcCWD[ ffconfigMAX_FILENAME ];      /* The current working directory. */
+        char pcCWD[ ffconfigMAX_FILENAME-2 ];		/* The current working directory.  To eliminate warnings in path building
+        											 * code below we make this ffconfigMAX_FILENAME-2. In reality you would have
+        											 * a least one character for filename and one for '/' so this not unreasonable.
+        											 */
         char pcFileName[ ffconfigMAX_FILENAME ]; /* The created absolute path. */
     } WorkingDirectory_t;
 
@@ -2139,7 +2142,7 @@ int prvFFErrorToErrno( FF_Error_t xError )
             {
                 /* In the root, so don't add a '/' between the CWD and the
                  * file name. */
-                snprintf( pxWorkingDirectory->pcFileName, sizeof( pxWorkingDirectory->pcFileName ), "/%s", pcPath );
+                snprintf( pxWorkingDirectory->pcFileName, ffconfigMAX_FILENAME - 1, "/%s", pcPath );
             }
             else
             {

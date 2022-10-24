@@ -407,7 +407,7 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 
     if( ( xPartition < 0 ) || ( xPartition >= ffconfigMAX_PARTITIONS ) )
     {
-        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %d ( max %d )\n", xPartition, ffconfigMAX_PARTITIONS - 1 );
+        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %d ( max %d )\n", (int)xPartition, ffconfigMAX_PARTITIONS - 1 );
         xReturn = NULL;
     }
     else if( pxCacheMemories[ xPartition ] == NULL )
@@ -1062,7 +1062,7 @@ volatile unsigned sd_int_count = 0;
         if( ( ulStatusReg & ulBitMask ) != ulBitMask )
         {
             ulStatusReg = XSdPs_ReadReg( InstancePtr->Config.BaseAddress, XSDPS_NORM_INTR_STS_OFFSET );
-            FF_PRINTF( "%s: XSdPs_WaitInterrupt = 0x%02x\r\n", __func__, ulStatusReg );
+            FF_PRINTF( "%s: XSdPs_WaitInterrupt = 0x%02x\r\n", __func__, (unsigned)ulStatusReg );
 
             /* Avoid logging about the 'CMD1' command which always fails on an SD-card. */
             if( ulWait != 0U )
