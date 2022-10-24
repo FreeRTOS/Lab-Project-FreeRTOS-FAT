@@ -167,19 +167,21 @@ void FF_LockDirectory( FF_IOManager_t * pxIOManager )
         return;
     }
 
-    for (;;) 
+    for( ; ; )
     {
-        xEventGroupWaitBits(pxIOManager->xEventGroup,
-                            FF_DIR_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-                            pdFALSE,                /* xClearOnExit */
-                            pdFALSE,                /* xWaitForAllBits n.a. */
-                            FF_TIME_TO_WAIT_FOR_EVENT_TICKS);
+        xEventGroupWaitBits( pxIOManager->xEventGroup,
+                             FF_DIR_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
+                             pdFALSE,                /* xClearOnExit */
+                             pdFALSE,                /* xWaitForAllBits n.a. */
+                             FF_TIME_TO_WAIT_FOR_EVENT_TICKS );
+
         /* At this point, this task is one of many potentially unblocked by
-        xEventGroupSetBits. The next operation will only succeed for 1 task at a
-        time, because it is an atomic test & set operation: */
-        xBits = xEventGroupClearBits(pxIOManager->xEventGroup,
-                                     FF_DIR_LOCK_EVENT_BITS);
-        if ((xBits & FF_DIR_LOCK_EVENT_BITS) != 0) 
+         * xEventGroupSetBits. The next operation will only succeed for 1 task at a
+         * time, because it is an atomic test & set operation: */
+        xBits = xEventGroupClearBits( pxIOManager->xEventGroup,
+                                      FF_DIR_LOCK_EVENT_BITS );
+
+        if( ( xBits & FF_DIR_LOCK_EVENT_BITS ) != 0 )
         {
             /* This task has cleared the desired bit.
              * It now 'owns' the resource. */
@@ -249,7 +251,7 @@ void FF_Assert_Lock( FF_IOManager_t * pxIOManager,
 
     if( ( aBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
     {
-        configASSERT( ( pxIOManager->pvFATLockHandle != NULL ) && ( pxIOManager->pvFATLockHandle == handle ) );        
+        configASSERT( ( pxIOManager->pvFATLockHandle != NULL ) && ( pxIOManager->pvFATLockHandle == handle ) );
         /* In case configASSERT() is not defined. */
         ( void ) pxIOManager;
         ( void ) handle;
@@ -272,23 +274,25 @@ void FF_LockFAT( FF_IOManager_t * pxIOManager )
 
     configASSERT( FF_Has_Lock( pxIOManager, FF_FAT_LOCK ) == pdFALSE );
 
-    for (;;) 
+    for( ; ; )
     {
-        xEventGroupWaitBits(pxIOManager->xEventGroup,
-                            FF_FAT_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
-                            pdFALSE,                /* xClearOnExit */
-                            pdFALSE,                /* xWaitForAllBits n.a. */
-                            FF_TIME_TO_WAIT_FOR_EVENT_TICKS);
+        xEventGroupWaitBits( pxIOManager->xEventGroup,
+                             FF_FAT_LOCK_EVENT_BITS, /* uxBitsToWaitFor */
+                             pdFALSE,                /* xClearOnExit */
+                             pdFALSE,                /* xWaitForAllBits n.a. */
+                             FF_TIME_TO_WAIT_FOR_EVENT_TICKS );
+
         /* At this point, this task is one of many potentially unblocked by
-        xEventGroupSetBits. The next operation will only succeed for 1 task at a
-        time, because it is an atomic test & set operation: */
-        xBits = xEventGroupClearBits(pxIOManager->xEventGroup,
-                                     FF_FAT_LOCK_EVENT_BITS);
-        if ((xBits & FF_FAT_LOCK_EVENT_BITS) != 0) 
+         * xEventGroupSetBits. The next operation will only succeed for 1 task at a
+         * time, because it is an atomic test & set operation: */
+        xBits = xEventGroupClearBits( pxIOManager->xEventGroup,
+                                      FF_FAT_LOCK_EVENT_BITS );
+
+        if( ( xBits & FF_FAT_LOCK_EVENT_BITS ) != 0 )
         {
             /* This task has cleared the desired bit.
              * It now 'owns' the resource. */
-            configASSERT(pxIOManager->pvFATLockHandle == NULL);
+            configASSERT( pxIOManager->pvFATLockHandle == NULL );
             pxIOManager->pvFATLockHandle = xTaskGetCurrentTaskHandle();
             break;
         }
@@ -303,6 +307,7 @@ void FF_UnlockFAT( FF_IOManager_t * pxIOManager )
         /* Scheduler not yet active. */
         return;
     }
+
     configASSERT( ( xEventGroupGetBits( pxIOManager->xEventGroup ) & FF_FAT_LOCK_EVENT_BITS ) == 0 );
     pxIOManager->pvFATLockHandle = NULL;
     xEventGroupSetBits( pxIOManager->xEventGroup, FF_FAT_LOCK_EVENT_BITS );

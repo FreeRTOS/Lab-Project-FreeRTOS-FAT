@@ -26,7 +26,7 @@
  * implied, expressed, or statutory.
  *
  * This is a stub for allowing linux to compile. should just make it save to a file.
- * 
+ *
  *
  */
 
@@ -48,16 +48,16 @@
 #include "ff_headers.h"
 #include "ff_sys.h"
 
-// Dummy variables.
-#define HUNDRED_64_BIT                    ( 100U )
-#define BYTES_PER_MB                      ( 1024U * 1024U )
-#define SECTORS_PER_MB                    ( BYTES_PER_MB / 512U )
+/* Dummy variables. */
+#define HUNDRED_64_BIT    ( 100U )
+#define BYTES_PER_MB      ( 1024U * 1024U )
+#define SECTORS_PER_MB    ( BYTES_PER_MB / 512U )
 
 /*-----------------------------------------------------------*/
 
-BaseType_t FF_SDDiskDetect( FF_Disk_t *pxDisk )
+BaseType_t FF_SDDiskDetect( FF_Disk_t * pxDisk )
 {
-    (void)pxDisk; // Unused
+    ( void ) pxDisk; /* Unused */
     return pdTRUE;
 }
 
@@ -76,7 +76,7 @@ void FF_SDDiskFlush( FF_Disk_t * pxDisk )
 
 FF_Disk_t * FF_SDDiskInit( const char * pcName )
 {
-    (void)pcName; // Unused
+    ( void ) pcName; /* Unused */
     FF_Disk_t * pxDisk = NULL;
 
     pxDisk = ( FF_Disk_t * ) pvPortMalloc( sizeof( *pxDisk ) );
@@ -101,12 +101,14 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
 BaseType_t FF_SDDiskFormat( FF_Disk_t * pxDisk,
                             BaseType_t aPart )
 {
-    (void)aPart; // Unused
-    if (pxDisk != NULL)
+    ( void ) aPart; /* Unused */
+
+    if( pxDisk != NULL )
     {
-        FF_PRINTF("FF_SDDISKFormat \n");
+        FF_PRINTF( "FF_SDDISKFormat \n" );
         return pdPASS;
     }
+
     return pdFAIL;
 }
 /*-----------------------------------------------------------*/
@@ -127,7 +129,7 @@ BaseType_t FF_SDDiskUnmount( FF_Disk_t * pxDisk )
 
 BaseType_t FF_SDDiskReinit( FF_Disk_t * pxDisk )
 {
-    (void) pxDisk;
+    ( void ) pxDisk;
     FF_PRINTF( "FF_SDDiskReinit: rc %08x\n", 0U );
     return pdPASS;
 }
@@ -141,6 +143,7 @@ BaseType_t FF_SDDiskMount( FF_Disk_t * pxDisk )
         FF_PRINTF( "****** FreeRTOS+FAT initialized %u sectors\n", ( unsigned ) pxDisk->pxIOManager->xPartition.ulTotalSectors );
         return pdPASS;
     }
+
     return pdFAIL;
 }
 /*-----------------------------------------------------------*/
@@ -170,6 +173,7 @@ BaseType_t FF_SDDiskDelete( FF_Disk_t * pxDisk )
     {
         vPortFree( pxDisk );
     }
+
     return pdTRUE;
 }
 /*-----------------------------------------------------------*/
@@ -245,6 +249,6 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
 
 BaseType_t FF_SDDiskInserted( BaseType_t xDriveNr )
 {
-    (void) xDriveNr;
+    ( void ) xDriveNr;
     return pdFALSE;
 }

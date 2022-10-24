@@ -467,10 +467,11 @@
 #endif
 
 #ifndef ffconfigFAT_USES_STAT
-    /* When enabled, the library keeps statistics about the use of cache
-	 * buffers.  This can be useful while configuring or optimising the
-	 * cache size. */
-	#define ffconfigFAT_USES_STAT     0
+
+/* When enabled, the library keeps statistics about the use of cache
+ * buffers.  This can be useful while configuring or optimising the
+ * cache size. */
+    #define ffconfigFAT_USES_STAT    0
 #endif
 
 #ifndef ffconfigUSE_NOTIFY
@@ -507,8 +508,8 @@
 #endif
 
 #ifndef FF_NOSTRCASECMP
-	/* When zero, the function 'strcasecmp()' will be dfined. */
-	#define FF_NOSTRCASECMP    0
+    /* When zero, the function 'strcasecmp()' will be dfined. */
+    #define FF_NOSTRCASECMP    0
 #endif
 
 #endif /* ifndef FF_DEFAULTCONFIG_H */
