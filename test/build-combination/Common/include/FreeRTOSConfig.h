@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+TCP <DEVELOPMENT BRANCH>
+ * FreeRTOS+FAT <DEVELOPMENT BRANCH>
  * Copyright (C) 2022 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -37,8 +37,8 @@
 * http://www.freertos.org/a00110.html
 *
 * The bottom of this file contains some constants specific to running the UDP
-* stack in this demo.  Constants specific to FreeRTOS+TCP itself (rather than
-* the demo) are contained in FreeRTOSIPConfig.h.
+* stack in this demo.  Constants specific to FreeRTOS+FAT itself (rather than
+* the demo) are contained in FreeRTOSFATConfig.h.
 *----------------------------------------------------------*/
 #define configENABLE_BACKWARD_COMPATIBILITY        1
 #define configUSE_PREEMPTION                       1
