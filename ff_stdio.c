@@ -2141,8 +2141,11 @@ int prvFFErrorToErrno( FF_Error_t xError )
             if( pxWorkingDirectory->pcCWD[ 1 ] == 0x00 )
             {
                 /* In the root, so don't add a '/' between the CWD and the
-                 * file name. */
-                snprintf( pxWorkingDirectory->pcFileName, ffconfigMAX_FILENAME - 1, "/%s", pcPath );
+                 * file name.
+            	 * The length parameter also needs a -1 here because we are adding the '/' which would cause
+            	 * truncation on a full file path length it silences the associated compiler warning.
+            	 */
+                snprintf( pxWorkingDirectory->pcFileName, sizeof( pxWorkingDirectory->pcFileName ) - 1, "/%s", pcPath );
             }
             else
             {
