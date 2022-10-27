@@ -240,7 +240,7 @@ int sd_decode_csd( struct mmc_csd * pxCSD,
             m = UNSTUFF_BITS( ulResponse, 48, 22 );
             pxCSD->capacity = ( 1 + m ) << 10;
 
-            FF_PRINTF( "capacity: (1 + %u) << 10  DTR %u Mhz\n", m, pxCSD->max_dtr / 1000000 );
+            FF_PRINTF( "capacity: (1 + %u) << 10  DTR %u Mhz\n", m, (unsigned)pxCSD->max_dtr / 1000000 );
 
             pxCSD->read_blkbits = 9;
             pxCSD->read_partial = 0;

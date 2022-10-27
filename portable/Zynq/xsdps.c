@@ -1523,12 +1523,10 @@ s32 XSdPs_WritePolled( XSdPs * InstancePtr,
         }
 
         XSdPs_ReadStatus( InstancePtr );
-/*		eventLogAdd("Wt %lx %lx%s", Status[0], Status[1], Status[0] != Status[1] ? " DIFF" : ""); */
     }
     else
     {
-        u32 Status = XSdPs_ReadStatus( InstancePtr );
-/*		eventLogAdd("Wt %lx", Status); */
+        XSdPs_ReadStatus( InstancePtr );
     }
 
     XSdPs_WriteReg16( InstancePtr->Config.BaseAddress,
