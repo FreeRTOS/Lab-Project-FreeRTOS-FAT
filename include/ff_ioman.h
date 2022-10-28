@@ -238,7 +238,7 @@
         uint32_t ulSectorsPerFAT; /* Number of sectors per Fat. */
         uint32_t ulTotalSectors;
         uint32_t ulDataSectors;
-        #if ( ffconfigWRITE_FREE_COUNT != 0 )
+        #if ( ffconfigWRITE_FREE_COUNT != 0 ) || ( ffconfigFSINFO_TRUSTED != 0 )
             uint32_t ulFSInfoLBA; /* LBA of the FSINFO sector. */
         #endif
         uint32_t ulRootDirSectors;

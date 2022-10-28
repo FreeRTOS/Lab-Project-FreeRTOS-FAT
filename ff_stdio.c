@@ -87,7 +87,10 @@ int prvFFErrorToErrno( FF_Error_t xError );
  * to extend relative paths to absolute paths. */
     typedef struct WORKING_DIR
     {
-        char pcCWD[ ffconfigMAX_FILENAME ];      /* The current working directory. */
+        char pcCWD[ ffconfigMAX_FILENAME-2 ];		/* The current working directory.  To eliminate warnings in path building
+        											 * code below we make this ffconfigMAX_FILENAME-2. In reality you would have
+        											 * a least one character for filename and one for '/' so this not unreasonable.
+        											 */
         char pcFileName[ ffconfigMAX_FILENAME ]; /* The created absolute path. */
     } WorkingDirectory_t;
 
@@ -1489,8 +1492,14 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     pxFindData->xDirectoryEntry.xCreateTime.Hour = ( uint16_t ) xTimeStruct.tm_hour;            /* Hour (0 - 23). */
                     pxFindData->xDirectoryEntry.xCreateTime.Minute = ( uint16_t ) xTimeStruct.tm_min;           /* Min (0 - 59). */
                     pxFindData->xDirectoryEntry.xCreateTime.Second = ( uint16_t ) xTimeStruct.tm_sec;           /* Second (0 - 59). */
-                    pxFindData->xDirectoryEntry.xModifiedTime = pxFindData->xDirectoryEntry.xCreateTime;        /* Date and Time Modified. */
-                    pxFindData->xDirectoryEntry.xAccessedTime = pxFindData->xDirectoryEntry.xCreateTime;        /* Date of Last Access. */
+                    /* Date and Time Modified. */
+                    memcpy( &( pxFindData->xDirectoryEntry.xModifiedTime ),
+                            &( pxFindData->xDirectoryEntry.xCreateTime ),
+                            sizeof( pxFindData->xDirectoryEntry.xModifiedTime ) );
+                    /* Date of Last Access. */
+                    memcpy( &( pxFindData->xDirectoryEntry.xAccessedTime ),
+                            &( pxFindData->xDirectoryEntry.xCreateTime ),
+                            sizeof( pxFindData->xDirectoryEntry.xAccessedTime ) );
                 }
             }
         #endif /* ffconfigTIME_SUPPORT */
@@ -2132,8 +2141,11 @@ int prvFFErrorToErrno( FF_Error_t xError )
             if( pxWorkingDirectory->pcCWD[ 1 ] == 0x00 )
             {
                 /* In the root, so don't add a '/' between the CWD and the
-                 * file name. */
-                snprintf( pxWorkingDirectory->pcFileName, sizeof( pxWorkingDirectory->pcFileName ), "/%s", pcPath );
+                 * file name.
+            	 * The length parameter also needs a -1 here because we are adding the '/' which would cause
+            	 * truncation on a full file path length it silences the associated compiler warning.
+            	 */
+                snprintf( pxWorkingDirectory->pcFileName, sizeof( pxWorkingDirectory->pcFileName ) - 1, "/%s", pcPath );
             }
             else
             {

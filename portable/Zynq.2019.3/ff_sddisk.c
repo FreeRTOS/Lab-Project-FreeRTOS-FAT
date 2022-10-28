@@ -102,9 +102,9 @@
 #define EXT_CSD_HIGH_SPEED_BYTE           185
 #define EXT_CSD_DEVICE_TYPE_HIGH_SPEED    0x3
 
-#define HUNDRED_64_BIT                    100ULL
-#define BYTES_PER_MB                      ( 1024ull * 1024ull )
-#define SECTORS_PER_MB                    ( BYTES_PER_MB / 512ull )
+#define HUNDRED_64_BIT                    100U
+#define BYTES_PER_MB                      ( 1024U * 1024U )
+#define SECTORS_PER_MB                    ( BYTES_PER_MB / 512U )
 
 #define XSDPS_INTR_NORMAL_ENABLE                                                    \
     ( XSDPS_INTR_CC_MASK | XSDPS_INTR_TC_MASK |                                     \
@@ -242,7 +242,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
 
             if( iResult == XST_SUCCESS )
             {
-                lReturnCode = 0l;
+                lReturnCode = 0;
             }
             else
             {
@@ -407,7 +407,7 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 
     if( ( xPartition < 0 ) || ( xPartition >= ffconfigMAX_PARTITIONS ) )
     {
-        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %d ( max %d )\n", xPartition, ffconfigMAX_PARTITIONS - 1 );
+        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %d ( max %d )\n", (int)xPartition, ffconfigMAX_PARTITIONS - 1 );
         xReturn = NULL;
     }
     else if( pxCacheMemories[ xPartition ] == NULL )
@@ -504,7 +504,10 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
         /* Initialise the created disk structure. */
         memset( pxDisk, '\0', sizeof( *pxDisk ) );
 
-        pxDisk->ulNumberOfSectors = myCSD.sd_last_block_address + 1;
+        /* Apparently is `myCSD.sd_last_block_address` is not correct/accurate */
+
+        /*pxDisk->ulNumberOfSectors = myCSD.sd_last_block_address + 1; */
+        pxDisk->ulNumberOfSectors = pxSDCardInstance->SectorCount;
 
         if( xPlusFATMutex == NULL )
         {
@@ -666,7 +669,7 @@ BaseType_t FF_SDDiskMount( FF_Disk_t * pxDisk )
     else
     {
         pxDisk->xStatus.bIsMounted = pdTRUE;
-        FF_PRINTF( "****** FreeRTOS+FAT initialized %lu sectors\n", pxDisk->pxIOManager->xPartition.ulTotalSectors );
+        FF_PRINTF( "****** FreeRTOS+FAT initialized %u sectors\n", ( unsigned ) pxDisk->pxIOManager->xPartition.ulTotalSectors );
     }
 
     return xReturn;
@@ -769,13 +772,15 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "Partition Nr   %8u\n", pxDisk->xStatus.bPartitionNumber );
         FF_PRINTF( "Type           %8s (%u)\n", pcTypeName, pxIOManager->xPartition.ucType );
         FF_PRINTF( "VolLabel       '%8s' \n", pxIOManager->xPartition.pcVolumeLabel );
-        FF_PRINTF( "TotalSectors   %8lu\n", pxIOManager->xPartition.ulTotalSectors );
-        FF_PRINTF( "DataSectors    %8lu\n", pxIOManager->xPartition.ulDataSectors );
-        FF_PRINTF( "SecsPerCluster %8lu\n", pxIOManager->xPartition.ulSectorsPerCluster );
-        FF_PRINTF( "Size           %8lu MB\n", ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8lu MB ( %d perc free )\n", ulFreeSizeMB, iPercentageFree );
-        FF_PRINTF( "BeginLBA       %8lu\n", pxIOManager->xPartition.ulBeginLBA );
-        FF_PRINTF( "FATBeginLBA    %8lu\n", pxIOManager->xPartition.ulFATBeginLBA );
+        FF_PRINTF( "TotalSectors   %8u x 512 = %u\n",
+                   ( unsigned ) pxIOManager->xPartition.ulTotalSectors,
+                   ( unsigned ) pxIOManager->xPartition.ulTotalSectors * 512U );
+        FF_PRINTF( "DataSectors    %8u\n", ( unsigned ) pxIOManager->xPartition.ulDataSectors );
+        FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
+        FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
+        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, ( int ) iPercentageFree );
+        FF_PRINTF( "BeginLBA       %8u\n", ( unsigned ) pxIOManager->xPartition.ulBeginLBA );
+        FF_PRINTF( "FATBeginLBA    %8u\n", ( unsigned ) pxIOManager->xPartition.ulFATBeginLBA );
     }
 
     return xReturn;
@@ -920,7 +925,15 @@ BaseType_t FF_SDDiskInserted( BaseType_t xDriveNr )
 volatile unsigned sd_int_count = 0;
 
 #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
+
+/* The iSR will read the status bits, copy them to
+ * ulSDInterruptStatus[], and clear the bits that
+ * were found set. */
     volatile u32 ulSDInterruptStatus[ 2 ];
+
+/* ulSDExpectedStatus[] contains the expected status
+ * bits, which is either CC, or CC|TC. */
+    volatile u32 ulSDExpectedStatus[ 2 ];
 
     void XSdPs_IntrHandler( void * XSdPsPtr )
     {
@@ -949,12 +962,10 @@ volatile unsigned sd_int_count = 0;
 
         if( xSDSemaphores[ iIndex ] != NULL )
         {
-            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-            xSemaphoreGiveFromISR( xSDSemaphores[ iIndex ], &xHigherPriorityTaskWoken );
-
-            if( xHigherPriorityTaskWoken != 0 )
+            if( ( ulSDInterruptStatus[ iIndex ] & ulSDExpectedStatus[ iIndex ] ) == ulSDExpectedStatus[ iIndex ] )
             {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+            xSemaphoreGiveFromISR( xSDSemaphores[ iIndex ], &xHigherPriorityTaskWoken );
                 portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
             }
         }
@@ -963,12 +974,28 @@ volatile unsigned sd_int_count = 0;
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
-    void XSdPs_ClearInterrupt( XSdPs * InstancePtr )
+    void XSdPs_ClearInterrupt( XSdPs * InstancePtr,
+                               uint32_t ulMask )
     {
-        int iIndex = InstancePtr->Config.DeviceId;
+        #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
+            SemaphoreHandle_t xSemaphore;
+        #endif
+        BaseType_t xIndex = InstancePtr->Config.DeviceId;
 
-        configASSERT( iIndex <= 1 );
-        ulSDInterruptStatus[ iIndex ] = 0;
+        configASSERT( xIndex <= 1 );
+        ulSDInterruptStatus[ xIndex ] = 0U;
+        ulSDExpectedStatus[ xIndex ] = ulMask;
+
+        #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
+            xSemaphore = xSDSemaphores[ xIndex ];
+
+            if( ( xSemaphore != NULL ) &&
+                ( uxQueueMessagesWaiting( xSemaphore ) == pdTRUE ) )
+            {
+                /* Make sure that the semaphore is initially taken. */
+                xSemaphoreTake( xSemaphore, 0U );
+            }
+        #endif
     }
 #endif /* ffconfigSDIO_DRIVER_USES_INTERRUPT */
 /*-----------------------------------------------------------*/
@@ -981,13 +1008,18 @@ volatile unsigned sd_int_count = 0;
                              u32 ulMask,
                              u32 ulWait )
     {
-        u32 ulStatusReg;
+        TickType_t xStartTime = xTaskGetTickCount();
+        u32 ulStatusReg = 0U;
         int iIndex = InstancePtr->Config.DeviceId;
         TickType_t xRemainingTime = pdMS_TO_TICKS( sdWAIT_INT_TIME_OUT_MS );
         TimeOut_t xTimeOut;
+        u32 ulBitMask = ulMask & ( XSDPS_INTR_CC_MASK | XSDPS_INTR_TC_MASK );
 
-        if( ulWait == 0UL )
+        if( ulWait == 0U )
         {
+            /* The command is CMD1, which is not implemented on
+             * an SD-card, and thus should fail. Make the time-out shorter
+             * than usual. */
             xRemainingTime = pdMS_TO_TICKS( sdQUICK_WAIT_INT_TIME_OUT_MS );
         }
 
@@ -999,34 +1031,59 @@ volatile unsigned sd_int_count = 0;
          * 1. Expected bit (ulMask) becomes high
          * 2. Time-out reached (normally 2 seconds)
          */
-        do
-        {
-            if( xRemainingTime != 0 )
-            {
-                xSemaphoreTake( xSDSemaphores[ iIndex ], xRemainingTime );
-            }
 
+        for( ; ; )
+        {
             ulStatusReg = ulSDInterruptStatus[ iIndex ];
+
+            if( ( ulStatusReg & ulBitMask ) == ulBitMask )
+            {
+                /* The desired state is reached. */
+                break;
+            }
 
             if( ( ulStatusReg & XSDPS_INTR_ERR_MASK ) != 0 )
             {
                 break;
             }
-        }
-        while( ( xTaskCheckForTimeOut( &xTimeOut, &xRemainingTime ) == pdFALSE ) &&
-               ( ( ulStatusReg & ulMask ) == 0 ) );
 
-        if( ( ulStatusReg & ulMask ) == 0 )
+            if( ( xRemainingTime == 0U ) || ( xTaskCheckForTimeOut( &xTimeOut, &xRemainingTime ) == pdTRUE ) )
+            {
+                /* The command or transfer timed out. */
+                break;
+            }
+
+            xSemaphoreTake( xSDSemaphores[ iIndex ], xRemainingTime );
+        }
+
+        /* Added by Sid: This delay is what stopped the race condition that I was seeing */
+        /* vTaskDelay(1); */
+
+        if( ( ulStatusReg & ulBitMask ) != ulBitMask )
         {
             ulStatusReg = XSdPs_ReadReg( InstancePtr->Config.BaseAddress, XSDPS_NORM_INTR_STS_OFFSET );
+            FF_PRINTF( "%s: XSdPs_WaitInterrupt = 0x%02x\r\n", __func__, (unsigned)ulStatusReg );
 
-            if( ulWait != 0UL )
+            /* Avoid logging about the 'CMD1' command which always fails on an SD-card. */
+            if( ulWait != 0U )
             {
                 FF_PRINTF( "XSdPs_WaitInterrupt[ %d ]: Got %08lx, expect %08lx ints: %d\n",
                            iIndex,
                            ulStatusReg,
                            ulMask,
                            sd_int_count );
+            }
+        }
+
+        if( ulWait != 0U )
+        {
+            TickType_t xEndTime = xTaskGetTickCount();
+            TickType_t xDiff = xEndTime - xStartTime;
+
+            if( xDiff >= 1000U )
+            {
+                FF_PRINTF( "XSdPs_WaitInterrupt: delta = %u ( %08X %08X )\n",
+                           ( unsigned ) xDiff, ( unsigned ) ulStatusReg, ( unsigned ) ulSDInterruptStatus[ iIndex ] );
             }
         }
 

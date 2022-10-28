@@ -182,20 +182,8 @@ extern s32 XSdPs_Uhs_ModeInit( XSdPs * InstancePtr,
 static s32 XSdPs_IdentifyCard( XSdPs * InstancePtr );
 static s32 XSdPs_Switch_Voltage( XSdPs * InstancePtr );
 
-#if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
-
-/* Declared in ff_sddisk.c :
- * Function will sleep and get interrupted on a change of
- * the status register.  It will loop until:
- *  1. Expected bit (ulMask) becomes high
- *  2. Time-out reached (normally 2 seconds)
- */
-    extern u32 XSdPs_WaitInterrupt( XSdPs * InstancePtr,
-                                    u32 ulMask,
-                                    u32 ulWait );
-    /* Clear the interrupt before using it. */
-    extern void XSdPs_ClearInterrupt( XSdPs * InstancePtr );
-#else
+#if ( ffconfigSDIO_DRIVER_USES_INTERRUPT == 0 )
+    /* The polling version of this driver is not well tested. */
     #error Please define ffconfigSDIO_DRIVER_USES_INTERRUPT
 #endif
 
@@ -480,7 +468,7 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
         goto RETURN_PATH;
     }
 
-    FF_PRINTF( "CMD0 : %d\n", Status );
+    FF_PRINTF( "CMD0 : %d\n", (int)Status );
 
     /*
      * CMD8; response expected
@@ -488,7 +476,7 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
      */
     Status = XSdPs_CmdTransfer( InstancePtr, CMD8,
                                 XSDPS_CMD8_VOL_PATTERN, 0U );
-    FF_PRINTF( "CMD8 : %d\n", Status );
+    FF_PRINTF( "CMD8 : %d\n", (int)Status );
 
     if( ( Status != XST_SUCCESS ) && ( Status != XSDPS_CT_ERROR ) )
     {
@@ -668,11 +656,6 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
         mmc_decode_cid( &myCSD, &myCID, resp );
     }
 
-    /*
-     * Card specific data is read.
-     * Currently not used for any operation.
-     */
-    #if 0
         CSD[ 0 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
                                   XSDPS_RESP0_OFFSET );
         CSD[ 1 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
@@ -702,9 +685,8 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
             Status = XST_FAILURE;
             goto RETURN_PATH;
         }
-    #endif /* 0 */
 
-    FF_PRINTF( "Sector count %lu\n", InstancePtr->SectorCount );
+    FF_PRINTF( "Sector count %u myCSD.capacity %u\n", ( unsigned ) InstancePtr->SectorCount, ( unsigned ) myCSD.capacity );
     Status = XST_SUCCESS;
 
 RETURN_PATH:
@@ -1389,11 +1371,19 @@ s32 XSdPs_Wait_For( XSdPs * InstancePtr,
     #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
         StatusReg = XSdPs_WaitInterrupt( InstancePtr, XSDPS_INTR_ERR_MASK | Mask, Wait );
 
+        if( ( StatusReg & XSDPS_INTR_ERR_MASK ) != 0U )
+        {
+            /* Write to clear error bits */
+            XSdPs_WriteReg16( InstancePtr->Config.BaseAddress,
+                              XSDPS_ERR_INTR_STS_OFFSET,
+                              XSDPS_ERROR_INTR_ALL_MASK );
+        }
+
         if( ( StatusReg & Mask ) == 0 )
         {
             Status = XST_FAILURE;
         }
-    #else
+    #else /* if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 ) */
 
         /*
          * Check for transfer complete
@@ -1468,6 +1458,15 @@ s32 XSdPs_CmdTransfer( XSdPs * InstancePtr,
     u32 PresentStateReg;
     u32 CommandReg;
     s32 Status;
+    uint32_t ulMask;
+
+    ulMask = XSDPS_INTR_CC_MASK;
+
+    if( ( Cmd == CMD18 ) || ( Cmd == CMD25 ) )
+    {
+        /* The commands 18 and 25 also expect a Transfer Complete interrupt. */
+        ulMask |= XSDPS_INTR_TC_MASK;
+    }
 
     Xil_AssertNonvoid( InstancePtr != NULL );
     Xil_AssertNonvoid( InstancePtr->IsReady == XIL_COMPONENT_IS_READY );
@@ -1522,14 +1521,17 @@ s32 XSdPs_CmdTransfer( XSdPs * InstancePtr,
     }
 
     #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
-        XSdPs_ClearInterrupt( InstancePtr );
+
+        /* Clear the status bits and tell which status bits
+         * are ex[ected in the next transaction. */
+        XSdPs_ClearInterrupt( InstancePtr, ulMask );
     #endif
     XSdPs_WriteReg( InstancePtr->Config.BaseAddress, XSDPS_XFER_MODE_OFFSET,
                     ( CommandReg << 16 ) | TransferMode );
 /*	XSdPs_WriteReg16(InstancePtr->Config.BaseAddress, XSDPS_CMD_OFFSET, */
 /*			(u16)CommandReg); */
 
-    Status = XSdPs_Wait_For( InstancePtr, XSDPS_INTR_CC_MASK, Cmd != CMD1 );
+    Status = XSdPs_Wait_For( InstancePtr, ulMask, Cmd != CMD1 );
 
 RETURN_PATH:
 
@@ -1892,21 +1894,15 @@ s32 XSdPs_ReadPolled( XSdPs * InstancePtr,
     /* Send multiple blocks read command */
     Status = XSdPs_CmdTransfer( InstancePtr, CMD18, Arg, BlkCnt );
 
-    if( Status != XST_SUCCESS )
+    if( Status == XST_SUCCESS )
+    {
+        XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
+                       XSDPS_RESP0_OFFSET );
+    }
+    else
     {
         Status = XST_FAILURE;
-        goto RETURN_PATH;
     }
-
-    Status = XSdPs_Wait_For( InstancePtr, XSDPS_INTR_TC_MASK, pdTRUE );
-
-    if( Status != XST_SUCCESS )
-    {
-        goto RETURN_PATH;
-    }
-
-    XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
-                   XSDPS_RESP0_OFFSET );
 
 RETURN_PATH:
     return Status;
@@ -2037,14 +2033,6 @@ s32 XSdPs_WritePolled( XSdPs * InstancePtr,
 
     /* Send multiple blocks write command */
     Status = XSdPs_CmdTransfer( InstancePtr, CMD25, Arg, BlkCnt );
-
-    if( Status != XST_SUCCESS )
-    {
-        Status = XST_FAILURE;
-        goto RETURN_PATH;
-    }
-
-    Status = XSdPs_Wait_For( InstancePtr, XSDPS_INTR_TC_MASK, pdTRUE );
 
 RETURN_PATH:
     return Status;

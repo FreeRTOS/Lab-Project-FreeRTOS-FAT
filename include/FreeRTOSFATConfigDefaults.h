@@ -122,7 +122,7 @@
  * - UTF-8  (ffconfigUNICODE_UTF8_SUPPORT = 1)
  * - UTF-16 (ffconfigUNICODE_UTF16_SUPPORT = 1)
  */
-#if ( ffconfigUNICODE_UTF16_SUPPORT == 0 )
+#if !defined( ffconfigUNICODE_UTF16_SUPPORT )
 
 /* Only used when ffconfigLFN_SUPPORT is set to 1.
  *
@@ -436,7 +436,8 @@
 /* Sets the maximum length for file names, including the path.
  * Note that the value of this define is directly related to the maximum stack
  * use of the +FAT library. In some API's, a character buffer of size
- * 'ffconfigMAX_FILENAME' will be declared on stack. */
+ * 'ffconfigMAX_FILENAME' will be declared on stack. As such, this value should
+ * include space for the null byte. */
     #define ffconfigMAX_FILENAME    129
 #endif
 
@@ -465,11 +466,10 @@
 #endif
 
 #ifndef ffconfigFAT_USES_STAT
-
-/* When enabled, the library keeps statistics about the use of cache
- * buffers.  This can be useful while configuring or optimising the
- * cache size. */
-    #define ffconfigFAT_USES_STAT    0
+    /* When enabled, the library keeps statistics about the use of cache
+	 * buffers.  This can be useful while configuring or optimising the
+	 * cache size. */
+	#define ffconfigFAT_USES_STAT     0
 #endif
 
 #ifndef ffconfigUSE_NOTIFY
@@ -505,19 +505,9 @@
     #define ffconfigNOT_USED_FOR_NOW    0
 #endif
 
-
-#ifndef ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE
-
-/* When FF_Open() is called to create a file, protect the entire function
- * with a dedicated semaphore called FF_IOManager_t::pvSemaphoreOpen.
- * As the race condition occurs rarely, it will be disabled.
- */
-    #define ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE    0
-#endif
-
 #ifndef FF_NOSTRCASECMP
-    /* When zero, the function 'strcasecmp()' will be dfined. */
-    #define FF_NOSTRCASECMP    0
+	/* When zero, the function 'strcasecmp()' will be dfined. */
+	#define FF_NOSTRCASECMP    0
 #endif
 
 #endif /* ifndef FF_DEFAULTCONFIG_H */
