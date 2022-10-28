@@ -468,7 +468,7 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
         goto RETURN_PATH;
     }
 
-    FF_PRINTF( "CMD0 : %d\n", (int)Status );
+    FF_PRINTF( "CMD0 : %d\n", ( int ) Status );
 
     /*
      * CMD8; response expected
@@ -476,7 +476,7 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
      */
     Status = XSdPs_CmdTransfer( InstancePtr, CMD8,
                                 XSDPS_CMD8_VOL_PATTERN, 0U );
-    FF_PRINTF( "CMD8 : %d\n", (int)Status );
+    FF_PRINTF( "CMD8 : %d\n", ( int ) Status );
 
     if( ( Status != XST_SUCCESS ) && ( Status != XSDPS_CT_ERROR ) )
     {
@@ -656,35 +656,35 @@ s32 XSdPs_SdCardInitialize( XSdPs * InstancePtr )
         mmc_decode_cid( &myCSD, &myCID, resp );
     }
 
-        CSD[ 0 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
-                                  XSDPS_RESP0_OFFSET );
-        CSD[ 1 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
-                                  XSDPS_RESP1_OFFSET );
-        CSD[ 2 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
-                                  XSDPS_RESP2_OFFSET );
-        CSD[ 3 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
-                                  XSDPS_RESP3_OFFSET );
+    CSD[ 0 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
+                              XSDPS_RESP0_OFFSET );
+    CSD[ 1 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
+                              XSDPS_RESP1_OFFSET );
+    CSD[ 2 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
+                              XSDPS_RESP2_OFFSET );
+    CSD[ 3 ] = XSdPs_ReadReg( InstancePtr->Config.BaseAddress,
+                              XSDPS_RESP3_OFFSET );
 
-        if( ( ( CSD[ 3 ] & CSD_STRUCT_MASK ) >> 22U ) == 0U )
-        {
-            BlkLen = 1U << ( ( u32 ) ( CSD[ 2 ] & READ_BLK_LEN_MASK ) >> 8U );
-            Mult = 1U << ( ( u32 ) ( ( CSD[ 1 ] & C_SIZE_MULT_MASK ) >> 7U ) + 2U );
-            DeviceSize = ( CSD[ 1 ] & C_SIZE_LOWER_MASK ) >> 22U;
-            DeviceSize |= ( CSD[ 2 ] & C_SIZE_UPPER_MASK ) << 10U;
-            DeviceSize = ( DeviceSize + 1U ) * Mult;
-            DeviceSize = DeviceSize * BlkLen;
-            InstancePtr->SectorCount = ( DeviceSize / XSDPS_BLK_SIZE_512_MASK );
-        }
-        else if( ( ( CSD[ 3 ] & CSD_STRUCT_MASK ) >> 22U ) == 1U )
-        {
-            InstancePtr->SectorCount = ( ( ( CSD[ 1 ] & CSD_V2_C_SIZE_MASK ) >> 8U ) +
-                                         1U ) * 1024U;
-        }
-        else
-        {
-            Status = XST_FAILURE;
-            goto RETURN_PATH;
-        }
+    if( ( ( CSD[ 3 ] & CSD_STRUCT_MASK ) >> 22U ) == 0U )
+    {
+        BlkLen = 1U << ( ( u32 ) ( CSD[ 2 ] & READ_BLK_LEN_MASK ) >> 8U );
+        Mult = 1U << ( ( u32 ) ( ( CSD[ 1 ] & C_SIZE_MULT_MASK ) >> 7U ) + 2U );
+        DeviceSize = ( CSD[ 1 ] & C_SIZE_LOWER_MASK ) >> 22U;
+        DeviceSize |= ( CSD[ 2 ] & C_SIZE_UPPER_MASK ) << 10U;
+        DeviceSize = ( DeviceSize + 1U ) * Mult;
+        DeviceSize = DeviceSize * BlkLen;
+        InstancePtr->SectorCount = ( DeviceSize / XSDPS_BLK_SIZE_512_MASK );
+    }
+    else if( ( ( CSD[ 3 ] & CSD_STRUCT_MASK ) >> 22U ) == 1U )
+    {
+        InstancePtr->SectorCount = ( ( ( CSD[ 1 ] & CSD_V2_C_SIZE_MASK ) >> 8U ) +
+                                     1U ) * 1024U;
+    }
+    else
+    {
+        Status = XST_FAILURE;
+        goto RETURN_PATH;
+    }
 
     FF_PRINTF( "Sector count %u myCSD.capacity %u\n", ( unsigned ) InstancePtr->SectorCount, ( unsigned ) myCSD.capacity );
     Status = XST_SUCCESS;
