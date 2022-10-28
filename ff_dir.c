@@ -3123,7 +3123,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
 
     memset( &xMyFile, '\0', sizeof( xMyFile ) );
 
-    STRNCPY( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME  - 1 );
+    STRNCPY( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME - 1 );
     xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
     xMyFile.ulObjectCluster = FF_CreateClusterChain( pxIOManager, &xError );
