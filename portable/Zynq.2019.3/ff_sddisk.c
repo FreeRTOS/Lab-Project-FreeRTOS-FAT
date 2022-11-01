@@ -256,7 +256,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
 
         if( pxDisk->xStatus.bIsInitialised != pdFALSE )
         {
-            FF_PRINTF( "prvFFRead: warning: %lu + %lu > %lu\n", ulSectorNumber, ulSectorCount, pxDisk->ulNumberOfSectors );
+            FF_PRINTF( "prvFFRead: warning: %u + %u > %u\n", (unsigned)ulSectorNumber, (unsigned)ulSectorCount, (unsigned)pxDisk->ulNumberOfSectors );
         }
 
         lReturnCode = FF_ERR_IOMAN_OUT_OF_BOUNDS_READ | FF_ERRFLAG;
@@ -334,8 +334,8 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
 
         if( pxDisk->xStatus.bIsInitialised )
         {
-            FF_PRINTF( "prvFFWrite::read: warning: %lu + %lu > %lu\n",
-                       ulSectorNumber, ulSectorCount, pxDisk->ulNumberOfSectors );
+            FF_PRINTF( "prvFFWrite::read: warning: %u + %u > %u\n",
+                       (unsigned)ulSectorNumber, (unsigned)ulSectorCount, (unsigned)pxDisk->ulNumberOfSectors );
         }
     }
 
