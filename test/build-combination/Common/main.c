@@ -35,12 +35,10 @@
 #include "task.h"
 
 /* System application includes. */
+#include "FreeRTOSConfig.h"
 #include "ff_headers.h"
 #include "ff_stdio.h"
 #include "ff_ramdisk.h"
-
-#define mainHOST_NAME                "Build Combination"
-#define mainDEVICE_NICK_NAME         "Build_Combination"
 
 /* The number and size of sectors that will make up the RAM disk.  The RAM disk
  * is huge to allow some verbose FTP tests used in previous demos. */
@@ -140,6 +138,9 @@ void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
                                      uint32_t * pulTimerTaskStackSize )
 {
     /* Provide a stub for this function. */
+    (void) ppxTimerTaskTCBBuffer;
+    (void) ppxTimerTaskStackBuffer;
+    (void) pulTimerTaskStackSize;
 }
 
 void vApplicationMallocFailedHook( void )

@@ -116,7 +116,7 @@
 
 /* Assert call defined for debug builds. */
 void vAssertCalled( const char * pcFile,
-                    unsigned long ulLine );
+                    unsigned long ulLine ) __attribute__((noreturn));
 
 #define configASSERT( x )
 
