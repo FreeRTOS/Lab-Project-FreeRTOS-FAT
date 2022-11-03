@@ -95,10 +95,18 @@ target_compile_options( freertos_plus_fat_port
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-unused-parameter>
 )
 
+if( (FREERTOS_PLUS_FAT_PORT STREQUAL ZYNQ_2019_3) AND NOT TARGET freertos_xil_uncached_memory )
+    # Note: the ZYNQ_2019_3 - assumes the use of freertos_xil_uncached_memory.h from F
+    message(FATAL_ERROR "For FREERTOS_PLUS_FAT_PORT=ZYNQ_2019_3, must have a freertos_xil_uncached_memory target"
+                   "This can be found in FreeRTOS-Plus-TCP NetworkInterface/Zynq/uncached_memory.*")
+endif()
+
 target_link_libraries( freertos_plus_fat_port
   PUBLIC
     freertos_plus_fat_port_common
   PRIVATE
     freertos_plus_fat
     freertos_kernel
+
+    $<$<STREQUAL:${FREERTOS_PLUS_FAT_PORT},ZYNQ_2019_3>:freertos_xil_uncached_memory>
 )
