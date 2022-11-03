@@ -125,7 +125,6 @@ void vAssertCalled( const char * pcFile,
 #define configPRINTF( X )
 
 /* Non-format version thread-safe print. */
-extern void vLoggingPrint( const char * pcMessage );
 #define configPRINT( X )
 
 /* Non-format version thread-safe print. */

@@ -53,8 +53,6 @@
 int main( void )
 {
     /* Initialize the FAT RamDisk */
-    /* vLoggingPrint( "FF_RAMDiskInit\n" ); */
-
     static uint8_t ucRAMDisk[ mainRAM_DISK_SECTORS * mainRAM_DISK_SECTOR_SIZE ];
     FF_Disk_t * pxDisk;
 
@@ -67,41 +65,16 @@ int main( void )
     return 0;
 }
 /*-----------------------------------------------------------*/
+#if ( configUSE_IDLE_HOOK != 0 )
 
 void vApplicationIdleHook( void )
 {
     /* Exit. Just a stub. */
 }
-/*-----------------------------------------------------------*/
-void vAssertCalled( const char * pcFile,
-                    unsigned long ulLine )
-{
-    ( void ) pcFile;
-    ( void ) ulLine;
-
-    taskDISABLE_INTERRUPTS();
-    {
-        while( 1 )
-        {
-        }
-    }
-    taskENABLE_INTERRUPTS();
-}
+#endif
 /*-----------------------------------------------------------*/
 
-void vLoggingPrint( const char * pcMessage )
-{
-    ( void ) pcMessage;
-}
-/*-----------------------------------------------------------*/
-
-void getUserCmd( char * pucUserCmd )
-{
-    /* Provide a stub for this function. */
-    ( void ) pucUserCmd;
-}
-
-/*-----------------------------------------------------------*/
+#if ( configSUPPORT_STATIC_ALLOCATION == 1 )
 
 void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
                                     StackType_t ** ppxIdleTaskStackBuffer,
@@ -112,20 +85,25 @@ void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
     ( void ) ppxIdleTaskStackBuffer;
     ( void ) pulIdleTaskStackSize;
 }
+#endif
 
 /*-----------------------------------------------------------*/
-
+#if  ( configUSE_TICK_HOOK != 0 )
 void vApplicationTickHook( void )
 {
     /* Provide a stub for this function. */
 }
+#endif
 
 /*-----------------------------------------------------------*/
-
+#if  ( configUSE_DAEMON_TASK_STARTUP_HOOK != 0 )
 void vApplicationDaemonTaskStartupHook( void )
 {
     /* Provide a stub for this function. */
 }
+#endif
+
+#if ( configSUPPORT_STATIC_ALLOCATION == 1 )
 
 /*
  * Callback that provides the inputs necessary to generate a randomized TCP
@@ -142,6 +120,7 @@ void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
     (void) ppxTimerTaskStackBuffer;
     (void) pulTimerTaskStackSize;
 }
+#endif
 
 void vApplicationMallocFailedHook( void )
 {
