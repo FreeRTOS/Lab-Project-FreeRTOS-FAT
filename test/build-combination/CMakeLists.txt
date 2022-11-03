@@ -17,7 +17,7 @@ else()
     add_library( freertos_config ALIAS freertos_plus_fat_config_default)
 endif()
 
-add_executable(freertos_plus_fat_build_test)
+add_executable(freertos_plus_fat_build_test EXCLUDE_FROM_ALL)
 
 target_sources(freertos_plus_fat_build_test
   PRIVATE

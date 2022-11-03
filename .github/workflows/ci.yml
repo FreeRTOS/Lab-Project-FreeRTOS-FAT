@@ -57,7 +57,7 @@ jobs:
       - name: Build checks (Default configuration)
         run: |
           cmake -S . -B build/ -DFREERTOS_PLUS_FAT_TEST_CONFIGURATION=DEFAULT_CONF
-          make -C build/
+          cmake --build build --target freertos_plus_tcp_build_test
 
   # complexity:
   #   runs-on: ubuntu-latest
