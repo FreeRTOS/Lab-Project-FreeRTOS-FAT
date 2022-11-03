@@ -175,9 +175,11 @@ target_compile_definitions( freertos_plus_fat
 
 target_compile_options( freertos_plus_fat
   PRIVATE
+    $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-array-bounds>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-cast-qual>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-constant-conversion>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-covered-switch-default>
+    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-declaration-after-statement>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation-unknown-command>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-extra-semi-stmt>
