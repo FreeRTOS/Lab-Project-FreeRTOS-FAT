@@ -72,7 +72,7 @@ int prvFFErrorToErrno( FF_Error_t xError );
  * Generate a time stamp for the file.
  */
 #if ( ffconfigTIME_SUPPORT == 1 )
-    static uint32_t prvFileTime( FF_SystemTime_t * pxTime );
+    static time_t prvFileTime( FF_SystemTime_t * pxTime );
 #endif
 
 #if ( ffconfigHAS_CWD == 1 )
@@ -230,12 +230,12 @@ int ff_fseek( FF_FILE * pxStream,
     #if ( ffconfigDEV_SUPPORT != 0 )
         if( pxStream->pxDevNode != NULL )
         {
-            xError = FF_Device_Seek( pxStream, lOffset, iWhence );
+            xError = FF_Device_Seek( pxStream, ( int32_t ) lOffset, iWhence );
         }
         else
     #endif
     {
-        xError = FF_Seek( pxStream, lOffset, iWhence );
+        xError = FF_Seek( pxStream, ( int32_t ) lOffset, iWhence );
     }
 
     ff_errno = prvFFErrorToErrno( xError );
@@ -350,7 +350,7 @@ size_t ff_fread( void * pvBuffer,
         else
     #endif
     {
-        iReturned = FF_Read( pxStream, xSize, xItems, ( uint8_t * ) pvBuffer );
+        iReturned = FF_Read( pxStream, ( uint32_t ) xSize, ( uint32_t ) xItems, ( uint8_t * ) pvBuffer );
     }
 
     ff_errno = prvFFErrorToErrno( iReturned );
@@ -391,7 +391,7 @@ size_t ff_fwrite( const void * pvBuffer,
         else
     #endif
     {
-        iReturned = FF_Write( pxStream, xSize, xItems, ( uint8_t * ) pvBuffer );
+        iReturned = FF_Write( pxStream, ( uint32_t ) xSize, ( uint32_t ) xItems, ( uint8_t * ) pvBuffer );
     }
 
     ff_errno = prvFFErrorToErrno( iReturned );
@@ -509,7 +509,7 @@ char * ff_fgets( char * pcBuffer,
     int32_t xResult;
     int ff_errno;
 
-    xResult = FF_GetLine( pxStream, ( char * ) pcBuffer, xCount );
+    xResult = FF_GetLine( pxStream, ( char * ) pcBuffer, ( uint32_t ) xCount );
 
     /* This call seems to result in errno being incorrectly set to
      * FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION when an EOF is encountered. */
@@ -582,7 +582,7 @@ FF_FILE * ff_truncate( const char * pcFileName,
     else if( ulLength > ( uint32_t ) lTruncateSize )
     {
         /* Seek the desired position */
-        xResult = FF_Seek( pxStream, lTruncateSize, FF_SEEK_SET );
+        xResult = FF_Seek( pxStream, ( int32_t ) lTruncateSize, FF_SEEK_SET );
 
         /* Make the current position equal to its length */
         if( FF_isERR( xResult ) == pdFALSE )
@@ -1076,7 +1076,7 @@ int ff_stat( const char * pcName,
         FF_CreateShortName( &xFindParams, pcFileName );
 
         /* Lookup the path and find the cluster pointing to the directory: */
-        xFindParams.ulDirCluster = FF_FindDir( xHandler.pxManager, pcName, xIndex, &xError );
+        xFindParams.ulDirCluster = FF_FindDir( xHandler.pxManager, pcName, ( uint16_t ) xIndex, &xError );
     }
 
     if( FF_isERR( xError ) == pdFALSE )
@@ -1103,7 +1103,7 @@ int ff_stat( const char * pcName,
         /* Test 'ulFileCluster' again, it might have been changed. */
         if( ulFileCluster == 0ul )
         {
-            xError = FF_ERR_FILE_NOT_FOUND | FF_STAT_FUNC;
+            xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_STAT_FUNC );
         }
     }
 
@@ -1133,13 +1133,13 @@ int ff_stat( const char * pcName,
          * if xDirEntry has not been initialised. */
         pxStatBuffer->st_size = xDirEntry.ulFileSize;
         pxStatBuffer->st_ino = xDirEntry.ulObjectCluster;
-        pxStatBuffer->st_dev = ( short ) xHandler.xFSIndex;
+        pxStatBuffer->st_dev = ( uint16_t ) xHandler.xFSIndex;
 
         #if ( ffconfigTIME_SUPPORT == 1 )
             {
-                pxStatBuffer->st_atime = ( unsigned long ) prvFileTime( &( xDirEntry.xAccessedTime ) );
-                pxStatBuffer->st_mtime = ( unsigned long ) prvFileTime( &( xDirEntry.xModifiedTime ) );
-                pxStatBuffer->st_ctime = ( unsigned long ) prvFileTime( &( xDirEntry.xCreateTime ) );
+                pxStatBuffer->st_atime = prvFileTime( &( xDirEntry.xAccessedTime ) );
+                pxStatBuffer->st_mtime = prvFileTime( &( xDirEntry.xModifiedTime ) );
+                pxStatBuffer->st_ctime = prvFileTime( &( xDirEntry.xCreateTime ) );
             }
         #endif
     }
@@ -1188,7 +1188,7 @@ int ff_stat( const char * pcName,
             {
                 /* The CWD will be stored without a trailing '/'.  If "/"
                  * happens to be the CWD, it will be stored as an empty string. */
-                iLength = strlen( pcDirectoryName );
+                iLength = ( int ) strlen( pcDirectoryName );
 
                 /* Knock off the trailing / if one exits - being careful not to
                  * remove the trailing slash if this is the root directory. */
@@ -1432,7 +1432,7 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     int found;
 
                     pxFindData->xDirectoryHandler.xFSIndex--;
-                    found = FF_FS_Get( pxFindData->xDirectoryHandler.xFSIndex, &xSubSystem );
+                    found = FF_FS_Get( ( int ) pxFindData->xDirectoryHandler.xFSIndex, &xSubSystem );
 
                     if( ( found == pdFALSE ) || ( xSubSystem.pcPath[ 1 ] == '\0' ) )
                     {
@@ -1535,11 +1535,11 @@ int ff_isdirempty( const char * pcPath )
     /* Find the i/o manager which can handle this path */
     if( FF_FS_Find( pcPath, &xHandler ) == pdFALSE )
     {
-        iResult = ( int ) ( FF_ERR_NULL_POINTER | FF_ISDIREMPTY );
+        iResult = ( int ) FF_createERR( FF_ERR_NULL_POINTER, FF_ISDIREMPTY );
     }
     else
     {
-        iResult = FF_isDirEmpty( xHandler.pxManager, xHandler.pcPath );
+        iResult = ( int ) FF_isDirEmpty( xHandler.pxManager, xHandler.pcPath );
     }
 
     /* Store the errno to thread local storage. */
@@ -2165,10 +2165,9 @@ int prvFFErrorToErrno( FF_Error_t xError )
 
 #if ( ffconfigTIME_SUPPORT == 1 )
 
-    static uint32_t prvFileTime( FF_SystemTime_t * pxTime )
+    time_t prvFileTime( FF_SystemTime_t * pxTime )
     {
         FF_TimeStruct_t xTime;
-        time_t xReturn;
 
         xTime.tm_sec = pxTime->Second;
         xTime.tm_min = pxTime->Minute;
@@ -2177,9 +2176,7 @@ int prvFFErrorToErrno( FF_Error_t xError )
         xTime.tm_mon = pxTime->Month - 1;
         xTime.tm_year = pxTime->Year - 1900;
 
-        xReturn = FreeRTOS_mktime( &xTime );
-
-        return xReturn;
+        return FreeRTOS_mktime( &xTime );
     }
 
 #endif /* if ( ffconfigTIME_SUPPORT == 1 ) */

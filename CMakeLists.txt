@@ -122,6 +122,54 @@ FetchContent_Declare( freertos_kernel
   GIT_TAG        feature/fixing-clang-gnu-compiler-warnings #master
 )
 
+
+########################################################################
+# Requirements
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+########################################################################
+# Overall Compile Options
+# Note the compile option strategy is to error on everything and then
+# Per library opt-out of things that are warnings/errors.
+# This ensures that no matter what strategy for compilation you take, the
+# builds will still occur.
+#
+# Only tested with GNU and Clang.
+# Other options are https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_COMPILER_ID.html#variable:CMAKE_%3CLANG%3E_COMPILER_ID
+# Naming of compilers translation map:
+#
+#   FreeRTOS    | CMake
+#   -------------------
+#   CCS         | ?TBD?
+#   GCC         | GNU, Clang, *Clang Others?
+#   IAR         | IAR
+#   Keil        | ARMCC
+#   MSVC        | MSVC # Note only for MinGW?
+#   Renesas     | ?TBD?
+
+add_compile_options(
+    ### Gnu/Clang C Options
+    $<$<COMPILE_LANG_AND_ID:C,GNU>:-fdiagnostics-color=always>
+    $<$<COMPILE_LANG_AND_ID:C,Clang>:-fcolor-diagnostics>
+
+    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wall>
+    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wextra>
+    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wpedantic>
+    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Werror>
+    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Weverything>
+
+    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Weverything>
+
+    # Enablement of supported but not widely used doxygen special commands
+    # https://doxygen.nl/manual/commands.html
+    $<$<COMPILE_LANG_AND_ID:C,Clang>:-fcomment-block-commands=retval>
+
+    # TODO: Add in other Compilers here.
+
+)
+
+
 ########################################################################
 add_library( freertos_plus_fat STATIC )
 
@@ -180,19 +228,11 @@ target_compile_options( freertos_plus_fat
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-constant-conversion>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-covered-switch-default>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-declaration-after-statement>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation-unknown-command>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-extra-semi-stmt>
     $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wno-format>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-implicit-int-conversion>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-missing-variable-declarations>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-overflow>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-padded>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-pedantic>
 
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-reserved-macro-identifier>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-shorten-64-to-32>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-sign-conversion>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-tautological-constant-out-of-range-compare>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-type-limits>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-undef>

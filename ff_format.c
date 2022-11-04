@@ -252,13 +252,13 @@ static FF_Error_t prvFormatGetClusterSize( struct xFormatSet * pxSet,
 
     for( ; ; )
     {
-        int32_t groupSize;
+        uint32_t groupSize;
         /* Usable sectors */
         pxSet->ulUsableDataSectors = pxSet->ulSectorCount - pxSet->ulNonDataSectors;
         /* Each group consists of 'xFATCount' sectors + 'ulClustersPerFATSector' clusters */
-        groupSize = pxSet->xFATCount + pxSet->ulClustersPerFATSector * pxSet->ulSectorsPerCluster;
+        groupSize = ( uint32_t ) pxSet->xFATCount + pxSet->ulClustersPerFATSector * pxSet->ulSectorsPerCluster;
         /* This amount of groups will fit: */
-        pxSet->ulSectorsPerFAT = ( pxSet->ulUsableDataSectors + groupSize - pxSet->ulSectorsPerCluster - pxSet->xFATCount ) / groupSize;
+        pxSet->ulSectorsPerFAT = ( uint32_t ) ( ( pxSet->ulUsableDataSectors + groupSize - pxSet->ulSectorsPerCluster - ( uint32_t ) pxSet->xFATCount ) / groupSize );
 
         pxSet->ulUsableDataClusters = ulMin32(
             ( uint32_t ) ( pxSet->ulUsableDataSectors - pxSet->xFATCount * pxSet->ulSectorsPerFAT ) / pxSet->ulSectorsPerCluster,
@@ -283,7 +283,7 @@ static FF_Error_t prvFormatGetClusterSize( struct xFormatSet * pxSet,
                        pxSet->ucFATType == FF_T_FAT32 ? 32 : 16,
                        xPreferFAT16 ? 16 : 32,
                        ( unsigned ) pxSet->ulSectorCount );
-            xReturn = FF_ERR_IOMAN_BAD_MEMSIZE | FF_MODULE_FORMAT;
+            xReturn = FF_createERR( FF_ERR_IOMAN_BAD_MEMSIZE, FF_MODULE_FORMAT );
             break;
         }
 
@@ -321,7 +321,7 @@ static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
          * http://3gfp.com/wp/2014/07/formatting-sd-cards-for-speed-and-lifetime/
          */
         pxSet->ulFATReservedSectors = MX_LBA_TO_MOVE_FAT - pxSet->ulHiddenSectors;
-        pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + pxSet->iFAT16RootSectors;
+        pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + ( uint32_t ) pxSet->iFAT16RootSectors;
 
         ulRemaining = ( pxSet->ulNonDataSectors + 2U * pxSet->ulSectorsPerFAT ) % 128U;
 
@@ -329,7 +329,7 @@ static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
         {
             /* In order to get ClusterBeginLBA well aligned (on a 128 sector boundary) */
             pxSet->ulFATReservedSectors += ( 128U - ulRemaining );
-            pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + pxSet->iFAT16RootSectors;
+            pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + ( uint32_t ) pxSet->iFAT16RootSectors;
         }
 
         pxSet->ulUsableDataSectors = pxSet->ulSectorCount - pxSet->ulNonDataSectors - 2 * pxSet->ulSectorsPerFAT;
@@ -511,7 +511,7 @@ static FF_Error_t prvFormatInitialiseRootDir( struct xFormatSet * pxSet,
     }
     else
     {
-        lLastAddress = lDirectoryBegin + pxSet->ulSectorsPerCluster;
+        lLastAddress = lDirectoryBegin + ( int32_t ) pxSet->ulSectorsPerCluster;
     }
 
     FF_PRINTF( "FF_Format: Clearing root directory at %08lX: %lu sectors\n", lDirectoryBegin, lLastAddress - lDirectoryBegin );
@@ -587,7 +587,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
     {
         if( xPartitionNumber >= xSet.xPartitionsFound.iCount )
         {
-            xReturn = FF_ERR_IOMAN_INVALID_PARTITION_NUM | FF_MODULE_FORMAT;
+            xReturn = FF_createERR( FF_ERR_IOMAN_INVALID_PARTITION_NUM, FF_MODULE_FORMAT );
             break;
         }
 
@@ -617,10 +617,10 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         xSet.pxIOManager->xPartition.ulBeginLBA = xSet.pxMyPartition->ulStartLBA;
 
         /* TODO: Find some solution here to get a unique disk ID */
-        xSet.ulVolumeID = ( rand() << 16 ) | rand(); /*_RB_ rand() has proven problematic in some environments. */
+        xSet.ulVolumeID = ( ( uint32_t ) rand() << 16 ) | ( uint32_t ) rand(); /*_RB_ rand() has proven problematic in some environments. */
 
         /* Sectors within partition which can not be used */
-        xSet.ulNonDataSectors = xSet.ulFATReservedSectors + xSet.iFAT16RootSectors;
+        xSet.ulNonDataSectors = xSet.ulFATReservedSectors + ( uint32_t ) xSet.iFAT16RootSectors;
 
         /* A fs dependent constant: */
         if( xSet.ucFATType == FF_T_FAT32 )
@@ -665,7 +665,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
 
         if( xSet.pucSectorBuffer == NULL )
         {
-            xReturn = FF_ERR_NOT_ENOUGH_MEMORY | FF_MODULE_FORMAT;
+            xReturn = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_MODULE_FORMAT );
             break;
         }
 
@@ -700,7 +700,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         }
 
         /*****************************/
-        lFatBeginLBA = xSet.ulHiddenSectors + xSet.ulFATReservedSectors;
+        lFatBeginLBA = ( int32_t ) ( xSet.ulHiddenSectors + xSet.ulFATReservedSectors );
 
         /* Initialise the FAT. */
         xReturn = prvFormatInitialiseFAT( &( xSet ), lFatBeginLBA );
@@ -711,22 +711,22 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         }
 
         /*****************************/
-        lDirectoryBegin = lFatBeginLBA + ( 2 * xSet.ulSectorsPerFAT );
+        lDirectoryBegin = lFatBeginLBA + ( int32_t ) ( 2 * xSet.ulSectorsPerFAT );
         #if ( ffconfigTIME_SUPPORT != 0 )
             {
                 FF_SystemTime_t str_t;
-                int16_t myShort;
+                uint16_t myShort;
 
                 FF_GetSystemTime( &str_t );
 
-                myShort = ( ( str_t.Hour << 11 ) & 0xF800 ) |
-                          ( ( str_t.Minute << 5 ) & 0x07E0 ) |
-                          ( ( str_t.Second / 2 ) & 0x001F );
+                myShort = ( ( uint16_t ) ( str_t.Hour << 11U ) & 0xF800U ) |
+                          ( ( uint16_t ) ( str_t.Minute << 5U ) & 0x07E0U ) |
+                          ( ( uint16_t ) ( str_t.Second / 2U ) & 0x001FU );
                 FF_putShort( xSet.pucSectorBuffer, 22, ( uint32_t ) myShort );
 
-                myShort = ( ( ( str_t.Year - 1980 ) << 9 ) & 0xFE00 ) |
-                          ( ( str_t.Month << 5 ) & 0x01E0 ) |
-                          ( str_t.Day & 0x001F );
+                myShort = ( ( uint16_t ) ( ( str_t.Year - 1980 ) << 9U ) & 0xFE00U ) |
+                          ( ( uint16_t ) ( str_t.Month << 5U ) & 0x01E0U ) |
+                          ( ( uint16_t ) ( str_t.Day & 0x001FU ) );
                 FF_putShort( xSet.pucSectorBuffer, 24, ( uint32_t ) myShort );
             }
         #endif /* ffconfigTIME_SUPPORT */
@@ -964,7 +964,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
             pParams->xSizes[ 0 ] = 100;
         }
 
-        ulSummedSizes = pParams->xSizes[ 0 ];
+        ulSummedSizes = ( uint32_t ) pParams->xSizes[ 0 ];
     }
 
     /* Correct PrimaryCount if necessary. */
@@ -983,7 +983,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
             pParams->ulHiddenSectors = 4096;
         }
 
-        ulReservedSpace = xSet.ulInterSpace * ( xSet.xPartitionCount - pParams->xPrimaryCount );
+        ulReservedSpace = xSet.ulInterSpace * ( uint32_t ) ( xSet.xPartitionCount - pParams->xPrimaryCount );
     }
     else
     {
@@ -1008,7 +1008,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
             if( ulSummedSizes > 100 )
             {
-                return FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE;
+                return ( FF_Error_t ) ( FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE );
             }
 
             ulSummedSizes = 100;
@@ -1018,7 +1018,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
             if( ulSummedSizes > ulAvailable )
             {
-                return FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE;
+                return ( FF_Error_t ) ( FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE );
             }
 
             break;
@@ -1045,7 +1045,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
                     case eSizeIsSectors: /* Assign fixed number of sectors (512 byte each) */
                     default:             /* Just for the compiler(s) */
-                        ulSize = pParams->xSizes[ xPartitionNumber ];
+                        ulSize = ( uint32_t ) pParams->xSizes[ xPartitionNumber ];
                         break;
                 }
 

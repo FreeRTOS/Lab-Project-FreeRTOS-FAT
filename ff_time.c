@@ -46,7 +46,6 @@
 #if ( ffconfigTIME_SUPPORT != 0 ) /* This if-block spans the rest of the source file. */
 
 /**
- *	@public
  *	@brief	Populates an FF_SystemTime_t object with the current time from the system.
  *
  *	The developer must modify this function so that it is suitable for their platform.
@@ -68,12 +67,12 @@
         /* Fill the fields in 'xTimeStruct'. */
         FreeRTOS_gmtime_r( &secs, &xTimeStruct );
 
-        pxTime->Hour = xTimeStruct.tm_hour;
-        pxTime->Minute = xTimeStruct.tm_min;
-        pxTime->Second = xTimeStruct.tm_sec;
-        pxTime->Day = xTimeStruct.tm_mday;
-        pxTime->Month = xTimeStruct.tm_mon + 1;
-        pxTime->Year = xTimeStruct.tm_year + 1900;
+        pxTime->Hour = ( uint16_t ) xTimeStruct.tm_hour;
+        pxTime->Minute = ( uint16_t ) xTimeStruct.tm_min;
+        pxTime->Second = ( uint16_t ) xTimeStruct.tm_sec;
+        pxTime->Day = ( uint16_t ) xTimeStruct.tm_mday;
+        pxTime->Month = ( uint16_t ) xTimeStruct.tm_mon + 1;
+        pxTime->Year = ( uint16_t ) xTimeStruct.tm_year + 1900;
 
         return 0;
     } /* FF_GetSystemTime() */
@@ -105,8 +104,8 @@
     #define WEEK_DAY_SATURDAY       6
 
 /* Make a bitmask with a '1' for each 31-day month. */
-    #define _MM( month )    ( 1u << ( month - 1 ) )
-    #define MASK_LONG_MONTHS     ( _MM( 1 ) | _MM( 3 ) | _MM( 5 ) | _MM( 7 ) | _MM( 8 ) | _MM( 10 ) | _MM( 12 ) )
+    #define MM_( month )    ( 1u << ( month - 1 ) )
+    #define MASK_LONG_MONTHS     ( MM_( 1 ) | MM_( 3 ) | MM_( 5 ) | MM_( 7 ) | MM_( 8 ) | MM_( 10 ) | MM_( 12 ) )
 
     #define DAYS_UNTIL_1970      ( ( 1970 * 365 ) + ( 1970 / 4 ) - ( 1970 / 100 ) + ( 1970 / 400 ) )
     #define DAYS_BEFORE_MARCH    ( 59 )
@@ -141,7 +140,7 @@
 
     static portINLINE unsigned long ulDaysPerYear( int iYear )
     {
-        int iDays;
+        unsigned long iDays;
 
         if( iIsLeapyear( iYear ) )
         {
@@ -155,10 +154,10 @@
         return iDays;
     }
 
-    static int iDaysPerMonth( int iYear,
-                              int iMonth )
+    static unsigned long iDaysPerMonth( int iYear,
+                                        int iMonth )
     {
-        int iDays;
+        unsigned long iDays;
 
         /* Month is zero-based, 1 is February. */
         if( iMonth != 1 )
@@ -205,7 +204,7 @@
         ulDayNumber = ( unsigned long ) ( xTime / SECONDS_PER_DAY );
 
         /* Today's HH:MM:SS */
-        pxTimeBuf->tm_hour = ulDaySeconds / SECONDS_PER_HOUR;
+        pxTimeBuf->tm_hour = ( int ) ulDaySeconds / SECONDS_PER_HOUR;
         pxTimeBuf->tm_min = ( ulDaySeconds % SECONDS_PER_HOUR ) / 60;
         pxTimeBuf->tm_sec = ulDaySeconds % 60;
 
@@ -230,7 +229,7 @@
         pxTimeBuf->tm_year = iYear - TM_STRUCT_FIRST_YEAR;
 
         /* The day within this year. */
-        pxTimeBuf->tm_yday = ulDayNumber;
+        pxTimeBuf->tm_yday = ( int ) ulDayNumber;
 
         /* Month are counted as 0..11 */
         iMonth = 0;
@@ -252,7 +251,7 @@
         pxTimeBuf->tm_mon = iMonth;
 
         /* Month days are counted as 1..31 */
-        pxTimeBuf->tm_mday = ulDayNumber + 1;
+        pxTimeBuf->tm_mday = ( int )ulDayNumber + 1;
 
         return pxTimeBuf;
     }
@@ -263,10 +262,10 @@
         int iYear = 1900 + pxTimeBuf->tm_year; /* 20xx */
 /* Get month zero-based. */
         int iMonth = pxTimeBuf->tm_mon;        /* 0..11 */
-        uint32_t ulDays;
-        uint32_t ulResult;
+        time_t ulDays;
+        time_t ulResult;
 
-        ulDays = pxTimeBuf->tm_mday - 1; /* 1..31 */
+        ulDays = ( time_t ) ( pxTimeBuf->tm_mday - 1 ); /* 1..31 */
 
         /* Make March the first month. */
         iMonth -= 2;
@@ -279,22 +278,22 @@
         }
 
         /* Add the number of days past until this month. */
-        ulDays += ( ( 306 * iMonth ) + 5 ) / 10;
+        ulDays += ( time_t ) ( ( ( 306 * iMonth ) + 5 ) / 10 );
 
         /* Add days past before this year: */
         ulDays +=
-            +( iYear * 365 )         /* Every normal year. */
-            + ( iYear / 4 )          /* Plus a day for every leap year. */
-            - ( iYear / 100 )        /* Minus the centuries. */
-            + ( iYear / 400 )        /* Except every fourth century. */
-            - ( DAYS_UNTIL_1970 )    /* Minus the days before 1-1-1970 */
-            + ( DAYS_BEFORE_MARCH ); /* Because 2 months were subtracted. */
+            + ( time_t ) ( iYear * 365 )         /* Every normal year. */
+            + ( time_t ) ( iYear / 4 )          /* Plus a day for every leap year. */
+            - ( time_t ) ( iYear / 100 )        /* Minus the centuries. */
+            + ( time_t ) ( iYear / 400 )        /* Except every fourth century. */
+            - ( time_t ) ( DAYS_UNTIL_1970 )    /* Minus the days before 1-1-1970 */
+            + ( time_t ) ( DAYS_BEFORE_MARCH ); /* Because 2 months were subtracted. */
 
         ulResult =
             ( ulDays * SECONDS_PER_DAY ) +
-            ( pxTimeBuf->tm_hour * SECONDS_PER_HOUR ) +
-            ( pxTimeBuf->tm_min * SECONDS_PER_MINUTE ) +
-            pxTimeBuf->tm_sec;
+            ( time_t ) ( ( pxTimeBuf->tm_hour * SECONDS_PER_HOUR ) +
+                         ( pxTimeBuf->tm_min * SECONDS_PER_MINUTE ) +
+                         ( pxTimeBuf->tm_sec ) );
 
         return ulResult;
     }

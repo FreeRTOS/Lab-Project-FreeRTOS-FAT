@@ -132,7 +132,7 @@ int32_t FF_Utf32stoUtf8s( uint8_t * Utf8String,
     #define STRNCPY( target, src, maxlen )    wcsncpy( ( target ), ( src ), ( maxlen ) )
     #define STRLEN( string )                  wcslen( ( string ) )
 #else
-    #define STRNCPY( target, src, maxlen )    strncpy( ( target ), ( src ), ( maxlen ) );
+    #define STRNCPY( target, src, maxlen )    strncpy( ( target ), ( src ), ( maxlen ) )
     #define STRLEN( string )                  strlen( ( string ) )
 #endif
 

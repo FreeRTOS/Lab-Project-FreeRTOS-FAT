@@ -62,6 +62,7 @@
 #define FF_GETMOD_FUNC( x )    ( ( ( ( unsigned ) x ) >> FF_FUNCTION_SHIFT ) & 0xFFFF )
 #define FF_ERRFLAG    0x80000000
 #define FF_isERR( x )          ( ( ( x ) & FF_ERRFLAG ) != 0 )
+#define FF_createERR( x, id ) ( ( FF_Error_t ) ( ( x ) |  ( id ) ) )
 
 /*----- FreeRTOS+FAT Module Identifiers */
 #define FF_MODULE_IOMAN      ( ( 1 << FF_MODULE_SHIFT ) | FF_ERRFLAG )
