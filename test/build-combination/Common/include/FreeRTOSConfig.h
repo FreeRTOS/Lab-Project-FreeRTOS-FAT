@@ -118,10 +118,6 @@
 void vAssertCalled( const char * pcFile,
                     unsigned long ulLine );
 
-#define configASSERT( x )
-
-#define configASSERT_DEFINED     ( 0 )
-
 /* The function that implements FreeRTOS printf style output, and the macro
  * that maps the configPRINTF() macros to that function. */
 #define configPRINTF( X )
