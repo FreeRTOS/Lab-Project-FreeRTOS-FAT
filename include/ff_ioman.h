@@ -329,8 +329,8 @@
 /*---------- PROTOTYPES (in order of appearance). */
 
 /* PUBLIC (Interfaces): */
-    FF_IOManager_t * FF_CreateIOManger( FF_CreationParameters_t * pxParameters,
-                                        FF_Error_t * pError );
+    FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
+                                         FF_Error_t * pError );
     FF_Error_t FF_DeleteIOManager( FF_IOManager_t * pxIOManager );
     FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
                          BaseType_t xPartitionNumber );

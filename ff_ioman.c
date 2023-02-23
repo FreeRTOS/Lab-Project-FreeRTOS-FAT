@@ -89,8 +89,8 @@ static BaseType_t prvHasActiveHandles( FF_IOManager_t * pxIOManager );
  *	@Return	Returns a pointer to an FF_IOManager_t type object. NULL on xError, check the contents of
  *	@Return pError
  **/
-FF_IOManager_t * FF_CreateIOManger( FF_CreationParameters_t * pxParameters,
-                                    FF_Error_t * pError )
+FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
+                                     FF_Error_t * pError )
 {
     FF_IOManager_t * pxIOManager = NULL;
     FF_Error_t xError;
@@ -231,14 +231,14 @@ FF_IOManager_t * FF_CreateIOManger( FF_CreationParameters_t * pxParameters,
     }
 
     return pxIOManager;
-} /* FF_CreateIOManger() */
+} /* FF_CreateIOManager() */
 /*-----------------------------------------------------------*/
 
 /**
  *	@public
  *	@brief	Destroys an FF_IOManager_t object, and frees all assigned memory.
  *
- *	@param	pxIOManager	Pointer to an FF_IOManager_t object, as returned from FF_CreateIOManger.
+ *	@param	pxIOManager	Pointer to an FF_IOManager_t object, as returned from FF_CreateIOManager.
  *
  *	@Return	FF_ERR_NONE on sucess, or a documented error code on failure. (FF_ERR_NULL_POINTER)
  *
@@ -1925,7 +1925,7 @@ FF_Error_t FF_DecreaseFreeClusters( FF_IOManager_t * pxIOManager,
  *	knocking sequence for security. After the sector knock, some secure USB
  *	sticks then present a different BlockSize.
  *
- *	@param	pxIOManager		FF_IOManager_t Object returned from FF_CreateIOManger()
+ *	@param	pxIOManager		FF_IOManager_t Object returned from FF_CreateIOManager()
  *
  *	@Return	The blocksize of the partition. A value less than 0 when an error occurs.
  *	@Return	Any negative value can be cast to the FF_Error_t type.
@@ -1952,7 +1952,7 @@ int32_t FF_GetPartitionBlockSize( FF_IOManager_t * pxIOManager )
 /**
  *	@brief	Returns the number of bytes contained within the mounted partition or volume.
  *
- *	@param	pxIOManager		FF_IOManager_t Object returned from FF_CreateIOManger()
+ *	@param	pxIOManager		FF_IOManager_t Object returned from FF_CreateIOManager()
  *
  *	@Return The total number of bytes that the mounted partition or volume contains.
  *

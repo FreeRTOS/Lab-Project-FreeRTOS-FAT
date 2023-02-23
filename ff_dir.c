@@ -1129,7 +1129,7 @@ FF_Error_t FF_CleanupEntryFetch( FF_IOManager_t * pxIOManager,
  *  @brief	Make an exception for the root directory ( non FAT32 only ):
  *  @brief	Just calculate the cluster ( don't consult the actual FAT )
  *
- *	@param	pxIOManager FF_IOManager_t object that was created by FF_CreateIOManger( ).
+ *	@param	pxIOManager FF_IOManager_t object that was created by FF_CreateIOManager( ).
  *	@param	ulEntry     The sequence number of the entry of interest
  *  @param	pxContext   Context of current search
  *
@@ -1647,7 +1647,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
  *	Note, as compatible with other similar APIs, FreeRTOS+FAT also accepts \sub1\* for the same behaviour as
  *	/sub1/.
  *
- *	@param	pxIOManager FF_IOManager_t object that was created by FF_CreateIOManger( ).
+ *	@param	pxIOManager FF_IOManager_t object that was created by FF_CreateIOManager( ).
  *	@param	pxDirEntry	FF_DirEnt_t object to store the entry information.
  *	@param	path		String to of the path to the Dir being listed.
  *
@@ -1777,7 +1777,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
  *	All values recorded in pxDirEntry must be preserved to and between calls to
  *	FF_FindNext( ). Please see @see FF_FindFirst( ) for find initialisation.
  *
- *	@param	pxIOManager		FF_IOManager_t object that was created by FF_CreateIOManger( ).
+ *	@param	pxIOManager		FF_IOManager_t object that was created by FF_CreateIOManager( ).
  *	@param	pxDirEntry		FF_DirEnt_t object to store the entry information. ( As initialised by FF_FindFirst( )).
  *
  *	@Return FF_ERR_DEVICE_DRIVER_FAILED is device access failed.

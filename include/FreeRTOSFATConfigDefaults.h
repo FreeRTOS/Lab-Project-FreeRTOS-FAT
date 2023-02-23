@@ -512,4 +512,13 @@
     #define FF_NOSTRCASECMP    0
 #endif
 
+/* Allow backword compatibility if desired */
+#ifndef ffconfigENABLE_BACKWARD_COMPATIBILITY
+    #define ffconfigENABLE_BACKWARD_COMPATIBILITY    1
+#endif
+
+#if ffconfigENABLE_BACKWARD_COMPATIBILITY == 1
+    #define FF_CreateIOManger    FF_CreateIOManager
+#endif /* ffconfigENABLE_BACKWARD_COMPATIBILITY */
+
 #endif /* ifndef FF_DEFAULTCONFIG_H */

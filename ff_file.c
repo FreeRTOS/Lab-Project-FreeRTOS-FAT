@@ -210,7 +210,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *	@public
  *	@brief	Opens a File for Access
  *
- *	@param	pxIOManager	FF_IOManager_t object that was created by FF_CreateIOManger().
+ *	@param	pxIOManager	FF_IOManager_t object that was created by FF_CreateIOManager().
  *	@param	pcPath		Path to the File or object.
  *	@param	ucMode		Access Mode required. Modes are a little complicated, the function FF_GetModeBits()
  *	@param	ucMode		will convert a stdio Mode string into the equivalent Mode bits for this parameter.
@@ -500,7 +500,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *	@public
  *	@brief	Tests if a Directory contains any other files or folders.
  *
- *	@param	pxIOManager	FF_IOManager_t object returned from the FF_CreateIOManger() function.
+ *	@param	pxIOManager	FF_IOManager_t object returned from the FF_CreateIOManager() function.
  *
  **/
 /* *INDENT-OFF* */
@@ -2660,7 +2660,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
  *	@public
  *	@brief	Invalidate all file handles belonging to pxIOManager
  *
- *	@param	pIoMan		FF_IOManager_t object that was created by FF_CreateIOManger().
+ *	@param	pIoMan		FF_IOManager_t object that was created by FF_CreateIOManager().
  *
  *	@return 0 if no handles were open
  *	@return >0 the amount of handles that were invalidated
