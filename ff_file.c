@@ -220,6 +220,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *	@return	NULL pointer on error, in which case pxError should be checked for more information.
  *	@return	pxError can be:
  **/
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_FILE * FF_Open( FF_IOManager_t * pxIOManager,
                        const FF_T_WCHAR * pcPath,
@@ -228,6 +229,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 #else
     FF_FILE * FF_Open( FF_IOManager_t * pxIOManager, const char * pcPath, uint8_t ucMode, FF_Error_t * pxError )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile = NULL;
     FF_FILE * pxFileChain;
@@ -498,6 +500,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *	@param	pxIOManager	FF_IOManager_t object returned from the FF_CreateIOManger() function.
  *
  **/
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     BaseType_t FF_isDirEmpty( FF_IOManager_t * pxIOManager,
                               const FF_T_WCHAR * pcPath )
@@ -505,6 +508,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     BaseType_t FF_isDirEmpty( FF_IOManager_t * pxIOManager,
                               const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xDirEntry;
     FF_Error_t xError = FF_ERR_NONE;
@@ -582,6 +586,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_RmDir( FF_IOManager_t * pxIOManager,
                          const FF_T_WCHAR * pcPath )
@@ -589,6 +594,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_RmDir( FF_IOManager_t * pxIOManager,
                          const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile;
     uint8_t ucEntryBuffer[ 32 ];
@@ -738,6 +744,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 } /* FF_RmDir() */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_RmFile( FF_IOManager_t * pxIOManager,
                           const FF_T_WCHAR * pcPath )
@@ -745,6 +752,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_RmFile( FF_IOManager_t * pxIOManager,
                           const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile;
     FF_Error_t xError = FF_ERR_NONE;
@@ -868,6 +876,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *
  **/
 
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_Move( FF_IOManager_t * pxIOManager,
                         const FF_T_WCHAR * szSourceFile,
@@ -879,6 +888,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                         const char * szDestinationFile,
                         BaseType_t xDeleteIfExists )
 #endif
+/* *INDENT-ON* */
 {
     FF_Error_t xError;
     FF_FILE * pSrcFile, * pxDestFile;
@@ -2935,6 +2945,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 #endif /* ffconfigTIME_SUPPORT */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_SetPerm( FF_IOManager_t * pxIOManager,
                            const FF_T_WCHAR * pcPath,
@@ -2944,6 +2955,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                            const char * pcPath,
                            UBaseType_t aPerm )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xOriginalEntry;
     FF_Error_t xError;

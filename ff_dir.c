@@ -297,6 +297,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
 /* _HT_ called 3 times before inserting a single file. With these changes it is called one time only */
 /* _HT_ pxFindParams caches some information: */
 /* _HT_ 1: the first free entry 2: whether the short-name version already exists */
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     uint32_t FF_FindEntryInDir( FF_IOManager_t * pxIOManager,
                                 FF_FindParams_t * pxFindParams,
@@ -312,6 +313,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                                 FF_DirEnt_t * pxDirEntry,
                                 FF_Error_t * pxError )
 #endif /* if ( ffconfigUNICODE_UTF16_SUPPORT != 0 ) */
+/* *INDENT-ON* */
 {
     FF_FetchContext_t xFetchContext;
 /* const pointer to read from pBuffer */
@@ -692,6 +694,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
 /**
  *	@private
  **/
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     uint32_t FF_FindDir( FF_IOManager_t * pxIOManager,
                          const FF_T_WCHAR * pcPath,
@@ -703,6 +706,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                          uint16_t pathLen,
                          FF_Error_t * pxError )
 #endif
+/* *INDENT-ON* */
 {
     uint16_t it = 0; /* Re-entrancy Variables for FF_strtok( ). */
     BaseType_t last = pdFALSE;
@@ -1652,6 +1656,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
  *	@Return -2 if Dir was not found.
  *
  **/
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_FindFirst( FF_IOManager_t * pxIOManager,
                              FF_DirEnt_t * pxDirEntry,
@@ -1661,6 +1666,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
                              FF_DirEnt_t * pxDirEntry,
                              const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_Error_t xError;
 
@@ -2180,6 +2186,7 @@ static BaseType_t FF_ValidShortChar( char cChar )
 } /* FF_ValidShortChar() */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     void FF_CreateShortName( FF_FindParams_t * pxFindParams,
                              const FF_T_WCHAR * pcLongName )
@@ -2187,6 +2194,7 @@ static BaseType_t FF_ValidShortChar( char cChar )
     void FF_CreateShortName( FF_FindParams_t * pxFindParams,
                              const char * pcLongName )
 #endif
+/* *INDENT-ON* */
 {
     BaseType_t xIndex, xPosition, xLastDot;
     uint16_t NameLen;
@@ -2884,11 +2892,13 @@ static const uint8_t forbiddenChrs[] =
     0x22, 0x2A, 0x2F, 0x3A, 0x3C, 0x3E, 0x3F, 0x5C, 0x7F, 0x7C
 };
 
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     static void FF_MakeNameCompliant( FF_T_WCHAR * pcName )
 #else
     static void FF_MakeNameCompliant( char * pcName )
 #endif
+/* *INDENT-ON* */
 {
     BaseType_t index;
 
@@ -3102,7 +3112,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
 } /* FF_CreateDirent() */
 /*-----------------------------------------------------------*/
 
-
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     uint32_t FF_CreateFile( FF_IOManager_t * pxIOManager,
                             FF_FindParams_t * pxFindParams,
@@ -3116,6 +3126,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
                             FF_DirEnt_t * pxDirEntry,
                             FF_Error_t * pxError )
 #endif /* if ( ffconfigUNICODE_UTF16_SUPPORT != 0 ) */
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xMyFile;
     FF_Error_t xTempError, xError = FF_ERR_NONE;
@@ -3189,6 +3200,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
  *	@Return	FF_ERR_DIR_INVALID_PATH
  *	@Return FF_ERR_NONE on success.
  **/
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_MkDir( FF_IOManager_t * pxIOManager,
                          const FF_T_WCHAR * pcPath )
@@ -3196,6 +3208,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_MkDir( FF_IOManager_t * pxIOManager,
                          const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xMyDirectory;
 

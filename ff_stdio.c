@@ -1548,6 +1548,7 @@ int ff_isdirempty( const char * pcPath )
 }
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* https://github.com/uncrustify/uncrustify/issues/2032 */
 #if ( ffconfig64_NUM_SUPPORT != 0 )
     int64_t ff_diskfree( const char * pcPath,
                          uint32_t * pxSectorCount )
@@ -1555,6 +1556,7 @@ int ff_isdirempty( const char * pcPath )
     int32_t ff_diskfree( const char * pcPath,
                          uint32_t * pxSectorCount )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirHandler_t xHandler;
     FF_Error_t xError;
