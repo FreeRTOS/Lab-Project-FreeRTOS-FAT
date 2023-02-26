@@ -488,7 +488,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return pxFile;
-}  /* FF_Open() */
+} /* FF_Open() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -542,7 +542,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return xReturn;
-}   /* FF_isDirEmpty() */
+} /* FF_isDirEmpty() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigPATH_CACHE != 0 )
@@ -735,7 +735,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }     /* else if( pxIOManager != NULL ) */
 
     return xError;
-}   /* FF_RmDir() */
+} /* FF_RmDir() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
@@ -846,10 +846,10 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
             }
         }
-    }   /* if( pxFile != NULL ) */
+    } /* if( pxFile != NULL ) */
 
     return xError;
-}   /* FF_RmFile() */
+} /* FF_RmFile() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1052,7 +1052,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                     }
                 #endif
             }
-            else    /* ulDirCluster == 0ul */
+            else /* ulDirCluster == 0ul */
             {
                 xError = ( FF_Error_t ) ( FF_ERR_FILE_DIR_NOT_FOUND | FF_MOVE );
             }
@@ -1086,7 +1086,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_Move() */
+} /* FF_Move() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1113,7 +1113,7 @@ BaseType_t FF_isEOF( FF_FILE * pxFile )
     }
 
     return xReturn;
-}   /* FF_isEOF() */
+} /* FF_isEOF() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1147,7 +1147,7 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
     }
 
     return xReturn;
-}   /* FF_BytesLeft() */
+} /* FF_BytesLeft() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1160,7 +1160,7 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
  *	@return	Number of bytes left to read from handle
  **/
 FF_Error_t FF_GetFileSize( FF_FILE * pxFile,
-                           uint32_t * pulSize )                 /* Writes # of bytes in a file to the parameter. */
+                           uint32_t * pulSize ) /* Writes # of bytes in a file to the parameter. */
 {
     BaseType_t xReturn;
 
@@ -1181,7 +1181,7 @@ FF_Error_t FF_GetFileSize( FF_FILE * pxFile,
     }
 
     return xReturn;
-}   /* FF_GetFileSize */
+} /* FF_GetFileSize */
 
 int32_t FF_FileSize( FF_FILE * pxFile )
 {
@@ -1197,7 +1197,7 @@ int32_t FF_FileSize( FF_FILE * pxFile )
     }
 
     return ( int32_t ) xResult;
-}   /* FF_FileSize() */
+} /* FF_FileSize() */
 /*-----------------------------------------------------------*/
 
 static uint32_t FF_GetSequentialClusters( FF_IOManager_t * pxIOManager,
@@ -1249,7 +1249,7 @@ static uint32_t FF_GetSequentialClusters( FF_IOManager_t * pxIOManager,
     *pxError = FF_ReleaseFATBuffers( pxIOManager, &xFATBuffers );
 
     return ulIndex;
-}   /* FF_GetSequentialClusters() */
+} /* FF_GetSequentialClusters() */
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_ReadClusters( FF_FILE * pxFile,
@@ -1305,7 +1305,7 @@ static FF_Error_t FF_ReadClusters( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_ReadClusters ()*/
+} /* FF_ReadClusters ()*/
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
@@ -1428,7 +1428,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
 
         {
             FF_Error_t xTempError;
-            xTempError = FF_DecreaseFreeClusters( pxIOManager, ( uint32_t ) xIndex );   /* Keep Tab of Numbers for fast FreeSize() */
+            xTempError = FF_DecreaseFreeClusters( pxIOManager, ( uint32_t ) xIndex ); /* Keep Tab of Numbers for fast FreeSize() */
 
             if( FF_isERR( xError ) == pdFALSE )
             {
@@ -1491,7 +1491,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
     } /* if( ulTotalClustersNeeded > pxFile->ulChainLength ) */
 
     return xError;
-}   /* FF_ExtendFile() */
+} /* FF_ExtendFile() */
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
@@ -1551,7 +1551,7 @@ static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_WriteClusters */
+} /* FF_WriteClusters */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1576,7 +1576,7 @@ static uint32_t FF_FileLBA( FF_FILE * pxFile )
     ulItemLBA += FF_getMinorBlockNumber( pxFile->pxIOManager, pxFile->ulFilePointer, 1 );
 
     return ulItemLBA;
-}   /* FF_FileLBA() */
+} /* FF_FileLBA() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1636,7 +1636,7 @@ static uint32_t FF_SetCluster( FF_FILE * pxFile,
     *pxError = xResult;
 
     return ulReturn;
-}   /* FF_SetCluster() */
+} /* FF_SetCluster() */
 /*-----------------------------------------------------------*/
 
 static int32_t FF_ReadPartial( FF_FILE * pxFile,
@@ -1728,7 +1728,7 @@ static int32_t FF_ReadPartial( FF_FILE * pxFile,
     *pxError = xError;
 
     return ulBytesRead;
-}   /* FF_ReadPartial() */
+} /* FF_ReadPartial() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1798,7 +1798,7 @@ int32_t FF_Read( FF_FILE * pxFile,
         {
             /* The file handle is not valid. */
         }
-    }   /* else pxFile != NULL */
+    } /* else pxFile != NULL */
 
     if( FF_isERR( xError ) == pdFALSE )
     {
@@ -1969,7 +1969,7 @@ int32_t FF_Read( FF_FILE * pxFile,
     }
 
     return lResult;
-}   /* FF_Read() */
+} /* FF_Read() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1992,7 +1992,7 @@ int32_t FF_GetC( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xResult = FF_ERR_NULL_POINTER | FF_GETC;    /* Ensure this is a signed error. */
+        xResult = FF_ERR_NULL_POINTER | FF_GETC; /* Ensure this is a signed error. */
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
@@ -2022,7 +2022,7 @@ int32_t FF_GetC( FF_FILE * pxFile )
     }
 
     return ( int32_t ) xResult;
-}   /* FF_GetC() */
+} /* FF_GetC() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2107,7 +2107,7 @@ int32_t FF_GetLine( FF_FILE * pxFile,
     }
 
     return xResult;
-}   /* FF_GetLine() */
+} /* FF_GetLine() */
 /*-----------------------------------------------------------*/
 
 static int32_t FF_WritePartial( FF_FILE * pxFile,
@@ -2216,7 +2216,7 @@ static int32_t FF_WritePartial( FF_FILE * pxFile,
     *pxError = xError;
 
     return ulBytesWritten;
-}   /* FF_WritePartial() */
+} /* FF_WritePartial() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2466,7 +2466,7 @@ int32_t FF_Write( FF_FILE * pxFile,
     }
 
     return lResult;
-}   /* FF_Write() */
+} /* FF_Write() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2542,7 +2542,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
     }
 
     return xResult;
-}   /* FF_PutC() */
+} /* FF_PutC() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2639,7 +2639,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_Seek() */
+} /* FF_Seek() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigREMOVABLE_MEDIA != 0 )
@@ -2690,7 +2690,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
         }
 
         return xResult;
-    }   /* FF_Invalidate() */
+    } /* FF_Invalidate() */
 #endif /* ffconfigREMOVABLE_MEDIA */
 /*-----------------------------------------------------------*/
 
@@ -2749,7 +2749,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
     }
 
     return xError;
-}   /* FF_CheckValid() */
+} /* FF_CheckValid() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigTIME_SUPPORT != 0 )
@@ -2777,7 +2777,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
         if( FF_isERR( xError ) == pdFALSE )
         {
             if( pxFile->ulValidFlags & FF_VALID_FLAG_DELETED )
-            {   /*if (pxFile->FileDeleted) */
+            { /*if (pxFile->FileDeleted) */
                 xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETFILETIME );
             }
             else if( ( pxFile->ucMode & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) == 0 )
@@ -2793,7 +2793,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                 {
                     if( uxWhat & ETimeCreate )
                     {
-                        xOriginalEntry.xCreateTime = *pxTime;       /*/< Date and Time Created. */
+                        xOriginalEntry.xCreateTime = *pxTime; /*/< Date and Time Created. */
                     }
 
                     if( uxWhat & ETimeMod )
@@ -2811,13 +2811,13 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
                 if( FF_isERR( xError ) == pdFALSE )
                 {
-                    xError = FF_FlushCache( pxFile->pxIOManager );      /* Ensure all modfied blocks are flushed to disk! */
+                    xError = FF_FlushCache( pxFile->pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
                 }
             }
         }
 
         return xError;
-    }   /* FF_SetFileTime() */
+    } /* FF_SetFileTime() */
 #endif /* ffconfigTIME_SUPPORT */
 /*-----------------------------------------------------------*/
 
@@ -3024,13 +3024,13 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
         if( FF_isERR( xError ) == pdFALSE )
         {
-            xError = FF_FlushCache( pxIOManager );          /* Ensure all modfied blocks are flushed to disk! */
+            xError = FF_FlushCache( pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
         }
     }
     while( pdFALSE );
 
     return xError;
-}   /* FF_SetPerm() */
+} /* FF_SetPerm() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -3087,7 +3087,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                                 pxFileChain = pxFileChain->pxNext; /* Forgot this one */
                             }
                         }
-                    }               /* Semaphore released, linked list was shortened! */
+                    } /* Semaphore released, linked list was shortened! */
 
                     FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
                     #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
@@ -3170,7 +3170,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                     pxFileChain = pxFileChain->pxNext;
                 }
             }
-        }   /* Semaphore released, linked list was shortened! */
+        } /* Semaphore released, linked list was shortened! */
         FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
 
         #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
@@ -3205,7 +3205,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
     while( pdFALSE );
 
     return xError;
-}   /* FF_Close() */
+} /* FF_Close() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -3243,7 +3243,7 @@ FF_Error_t FF_SetEof( FF_FILE * pxFile )
     }
 
     return xError;
-}   /* FF_SetEof() */
+} /* FF_SetEof() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -3339,5 +3339,5 @@ static FF_Error_t FF_Truncate( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_Truncate() */
+} /* FF_Truncate() */
 /*-----------------------------------------------------------*/
