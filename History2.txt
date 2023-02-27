@@ -1,4 +1,4 @@
-> is there a repository I should be aware of when it comes to FreeRTOS Labs? 
+> is there a repository I should be aware of when it comes to FreeRTOS Labs?
 
 Unfortunately there isn't. FreeRTOS+FAT has become a bit of an orphan. All time and energy goes to the products in the [AWS/FreeRTOS release](https://github.com/aws/amazon-freertos)
 But I am still actively maintaining FreeRTOS+FAT: implementing requests and fixes.
