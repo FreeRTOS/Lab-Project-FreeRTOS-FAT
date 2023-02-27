@@ -1548,6 +1548,7 @@ int ff_isdirempty( const char * pcPath )
 }
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* */
 #if ( ffconfig64_NUM_SUPPORT != 0 )
     int64_t ff_diskfree( const char * pcPath,
                          uint32_t * pxSectorCount )
@@ -1555,6 +1556,7 @@ int ff_isdirempty( const char * pcPath )
     int32_t ff_diskfree( const char * pcPath,
                          uint32_t * pxSectorCount )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirHandler_t xHandler;
     FF_Error_t xError;
@@ -1573,7 +1575,7 @@ int ff_isdirempty( const char * pcPath )
         lReturn = 0ul;
 
         /* Store the errno to thread local storage. */
-        stdioSET_ERRNO( pdFREERTOS_ERRNO_ENXIO );   /* No such device or address */
+        stdioSET_ERRNO( pdFREERTOS_ERRNO_ENXIO ); /* No such device or address */
     }
     else
     {
@@ -1824,160 +1826,160 @@ int prvFFErrorToErrno( FF_Error_t xError )
     {
         /* Global Error Codes. */
         case FF_ERR_NONE:
-            return 0;                                               /* No Error. */
+            return 0; /* No Error. */
 
         case FF_ERR_NULL_POINTER:
-            return pdFREERTOS_ERRNO_EBADF;                                          /* pxIOManager was NULL. */
+            return pdFREERTOS_ERRNO_EBADF; /* pxIOManager was NULL. */
 
         case FF_ERR_NOT_ENOUGH_MEMORY:
-            return pdFREERTOS_ERRNO_ENOMEM;                                         /* malloc() failed! - Could not allocate handle memory. */
+            return pdFREERTOS_ERRNO_ENOMEM; /* malloc() failed! - Could not allocate handle memory. */
 
         case FF_ERR_DEVICE_DRIVER_FAILED:
-            return pdFREERTOS_ERRNO_EIO;                                            /* The Block Device driver reported a FATAL error, cannot continue. */
+            return pdFREERTOS_ERRNO_EIO; /* The Block Device driver reported a FATAL error, cannot continue. */
 
         /* User return codes for Rd/Wr functions:. */
         case FF_ERR_IOMAN_DRIVER_BUSY:
-            return pdFREERTOS_ERRNO_EBUSY;                                          /* 10. */
+            return pdFREERTOS_ERRNO_EBUSY; /* 10. */
 
         case FF_ERR_IOMAN_DRIVER_FATAL_ERROR:
-            return pdFREERTOS_ERRNO_EUNATCH;                                        /* Protocol driver not attached. */
+            return pdFREERTOS_ERRNO_EUNATCH; /* Protocol driver not attached. */
 
         /* IOMAN Error Codes. */
         case FF_ERR_IOMAN_BAD_BLKSIZE:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* The provided blocksize was not a multiple of 512. */
+            return pdFREERTOS_ERRNO_EINVAL; /* The provided blocksize was not a multiple of 512. */
 
         case FF_ERR_IOMAN_BAD_MEMSIZE:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* The memory size was not a multiple of the blocksize. */
+            return pdFREERTOS_ERRNO_EINVAL; /* The memory size was not a multiple of the blocksize. */
 
         case FF_ERR_IOMAN_DEV_ALREADY_REGD:
-            return pdFREERTOS_ERRNO_EADDRINUSE;                                     /* Device was already registered. Use FF_UnRegister() to re-use this IOMAN with another device. */
+            return pdFREERTOS_ERRNO_EADDRINUSE; /* Device was already registered. Use FF_UnRegister() to re-use this IOMAN with another device. */
 
         case FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION:
-            return pdFREERTOS_ERRNO_ENOMEDIUM;                                      /* A mountable partition could not be found on the device. */
+            return pdFREERTOS_ERRNO_ENOMEDIUM; /* A mountable partition could not be found on the device. */
 
         case FF_ERR_IOMAN_INVALID_FORMAT:
-            return pdFREERTOS_ERRNO_EFTYPE;                                         /* The. */
+            return pdFREERTOS_ERRNO_EFTYPE; /* The. */
 
         case FF_ERR_IOMAN_INVALID_PARTITION_NUM:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* The partition number provided was out of range. */
+            return pdFREERTOS_ERRNO_EINVAL; /* The partition number provided was out of range. */
 
         case FF_ERR_IOMAN_NOT_FAT_FORMATTED:
-            return pdFREERTOS_ERRNO_EFTYPE;                                         /* The partition did not look like a FAT partition. */
+            return pdFREERTOS_ERRNO_EFTYPE; /* The partition did not look like a FAT partition. */
 
         case FF_ERR_IOMAN_DEV_INVALID_BLKSIZE:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* IOMAN object BlkSize is not compatible with the blocksize of this device driver. */
+            return pdFREERTOS_ERRNO_EINVAL; /* IOMAN object BlkSize is not compatible with the blocksize of this device driver. */
 
         case FF_ERR_IOMAN_PARTITION_MOUNTED:
-            return pdFREERTOS_ERRNO_EADDRINUSE;                                     /* Device is in use by an actively mounted partition. Unmount the partition first. */
+            return pdFREERTOS_ERRNO_EADDRINUSE; /* Device is in use by an actively mounted partition. Unmount the partition first. */
 
         case FF_ERR_IOMAN_ACTIVE_HANDLES:
-            return pdFREERTOS_ERRNO_EBUSY;                                          /* The partition cannot be unmounted until all active file handles are closed. (There may also be active handles on the cache). */
+            return pdFREERTOS_ERRNO_EBUSY; /* The partition cannot be unmounted until all active file handles are closed. (There may also be active handles on the cache). */
 
         case FF_ERR_IOMAN_GPT_HEADER_CORRUPT:
-            return pdFREERTOS_ERRNO_EBADE;                                          /* The GPT partition table appears to be corrupt, refusing to mount. */
+            return pdFREERTOS_ERRNO_EBADE; /* The GPT partition table appears to be corrupt, refusing to mount. */
 
         case FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* 22. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* 22. */
 
         case FF_ERR_IOMAN_OUT_OF_BOUNDS_READ:
-            return pdFREERTOS_ERRNO_ESPIPE;                                         /* 23, return 'Illegal seek'. */
+            return pdFREERTOS_ERRNO_ESPIPE; /* 23, return 'Illegal seek'. */
 
         case FF_ERR_IOMAN_OUT_OF_BOUNDS_WRITE:
-            return pdFREERTOS_ERRNO_ESPIPE;                                         /* 24. */
+            return pdFREERTOS_ERRNO_ESPIPE; /* 24. */
 
         case FF_ERR_IOMAN_DRIVER_NOMEDIUM:
-            return pdFREERTOS_ERRNO_ENOMEDIUM;                                      /* The medium (e.g. SD-card) has been extracted. */
+            return pdFREERTOS_ERRNO_ENOMEDIUM; /* The medium (e.g. SD-card) has been extracted. */
 
         /* File Error Codes                         30 +. */
         case FF_ERR_FILE_ALREADY_OPEN:
-            return pdFREERTOS_ERRNO_EALREADY;                                       /* File is in use. */
+            return pdFREERTOS_ERRNO_EALREADY; /* File is in use. */
 
         case FF_ERR_FILE_NOT_FOUND:
-            return pdFREERTOS_ERRNO_ENOENT;                                         /* File was not found. */
+            return pdFREERTOS_ERRNO_ENOENT; /* File was not found. */
 
         case FF_ERR_FILE_OBJECT_IS_A_DIR:
-            return pdFREERTOS_ERRNO_EISDIR;                                         /* Tried to FF_Open() a Directory. */
+            return pdFREERTOS_ERRNO_EISDIR; /* Tried to FF_Open() a Directory. */
 
         case FF_ERR_FILE_IS_READ_ONLY:
-            return pdFREERTOS_ERRNO_EROFS;                                          /* Tried to FF_Open() a file marked read only. */
+            return pdFREERTOS_ERRNO_EROFS; /* Tried to FF_Open() a file marked read only. */
 
         case FF_ERR_FILE_INVALID_PATH:
-            return pdFREERTOS_ERRNO_ENOTDIR;                                        /* The path of the file was not found. */
+            return pdFREERTOS_ERRNO_ENOTDIR; /* The path of the file was not found. */
 
         case FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE:
-            return pdFREERTOS_ERRNO_EACCES;                                         /* 35. */
+            return pdFREERTOS_ERRNO_EACCES; /* 35. */
 
         case FF_ERR_FILE_NOT_OPENED_IN_READ_MODE:
-            return pdFREERTOS_ERRNO_EACCES;                                         /* 36. */
+            return pdFREERTOS_ERRNO_EACCES; /* 36. */
 
         case FF_ERR_FILE_EXTEND_FAILED:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* Could not extend the file. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* Could not extend the file. */
 
         case FF_ERR_FILE_DESTINATION_EXISTS:
-            return pdFREERTOS_ERRNO_EEXIST;                                         /* 38. */
+            return pdFREERTOS_ERRNO_EEXIST; /* 38. */
 
         case FF_ERR_FILE_SOURCE_NOT_FOUND:
-            return pdFREERTOS_ERRNO_ENOENT;                                         /* 39. */
+            return pdFREERTOS_ERRNO_ENOENT; /* 39. */
 
         case FF_ERR_FILE_DIR_NOT_FOUND:
-            return pdFREERTOS_ERRNO_ENOENT;                                         /* 40. */
+            return pdFREERTOS_ERRNO_ENOENT; /* 40. */
 
         case FF_ERR_FILE_COULD_NOT_CREATE_DIRENT:
-            return pdFREERTOS_ERRNO_EIO;                                            /* 41. */
+            return pdFREERTOS_ERRNO_EIO; /* 41. */
 
         case FF_ERR_FILE_BAD_HANDLE:
-            return pdFREERTOS_ERRNO_EBADF;                                          /* A file handle was invalid. */
+            return pdFREERTOS_ERRNO_EBADF; /* A file handle was invalid. */
 
         case FF_ERR_FILE_MEDIA_REMOVED:
-            return pdFREERTOS_ERRNO_ENODEV;                                         /* File handle got invalid because media was removed. */
+            return pdFREERTOS_ERRNO_ENODEV; /* File handle got invalid because media was removed. */
 
         case FF_ERR_FILE_SEEK_INVALID_POSITION:
-            return pdFREERTOS_ERRNO_ESPIPE;                                         /* Illegal position, outside the file's space */
+            return pdFREERTOS_ERRNO_ESPIPE; /* Illegal position, outside the file's space */
 
         case FF_ERR_FILE_SEEK_INVALID_ORIGIN:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* Seeking beyond end of file. */
+            return pdFREERTOS_ERRNO_EINVAL; /* Seeking beyond end of file. */
 
         /* Directory Error Codes                    50 +. */
         case FF_ERR_DIR_OBJECT_EXISTS:
-            return pdFREERTOS_ERRNO_EEXIST;                                         /* A file or folder of the same name already exists in the current directory. */
+            return pdFREERTOS_ERRNO_EEXIST; /* A file or folder of the same name already exists in the current directory. */
 
         case FF_ERR_DIR_DIRECTORY_FULL:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* No more items could be added to the directory. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* No more items could be added to the directory. */
 
         case FF_ERR_DIR_END_OF_DIR:
-            return pdFREERTOS_ERRNO_ENMFILE;                                        /*/. */
+            return pdFREERTOS_ERRNO_ENMFILE; /*/. */
 
         case FF_ERR_DIR_NOT_EMPTY:
-            return pdFREERTOS_ERRNO_ENOTEMPTY;                                      /* Cannot delete a directory that contains files or folders. */
+            return pdFREERTOS_ERRNO_ENOTEMPTY; /* Cannot delete a directory that contains files or folders. */
 
         case FF_ERR_DIR_INVALID_PATH:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* Could not find the directory specified by the path. */
+            return pdFREERTOS_ERRNO_EINVAL; /* Could not find the directory specified by the path. */
 
         case FF_ERR_DIR_CANT_EXTEND_ROOT_DIR:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* Can't extend the root dir. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* Can't extend the root dir. */
 
         case FF_ERR_DIR_EXTEND_FAILED:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* Not enough space to extend the directory. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* Not enough space to extend the directory. */
 
         case FF_ERR_DIR_NAME_TOO_LONG:
-            return pdFREERTOS_ERRNO_ENAMETOOLONG;                                    /* Name exceeds the number of allowed characters for a filename. */
+            return pdFREERTOS_ERRNO_ENAMETOOLONG; /* Name exceeds the number of allowed characters for a filename. */
 
         /* Fat Error Codes                          70 +. */
         case FF_ERR_FAT_NO_FREE_CLUSTERS:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* No more free space is available on the disk. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* No more free space is available on the disk. */
 
         /* UNICODE Error Codes                      100 +. */
         case FF_ERR_UNICODE_INVALID_CODE:
-            return pdFREERTOS_ERRNO_EBADE;                                          /* An invalid Unicode character was provided!. */
+            return pdFREERTOS_ERRNO_EBADE; /* An invalid Unicode character was provided!. */
 
         case FF_ERR_UNICODE_DEST_TOO_SMALL:
-            return pdFREERTOS_ERRNO_ENOBUFS;                                        /* Not enough space in the UTF-16 buffer to encode the entire sequence as UTF-16. */
+            return pdFREERTOS_ERRNO_ENOBUFS; /* Not enough space in the UTF-16 buffer to encode the entire sequence as UTF-16. */
 
         case FF_ERR_UNICODE_INVALID_SEQUENCE:
-            return pdFREERTOS_ERRNO_EILSEQ;                                         /* An invalid UTF-16 sequence was encountered. */
+            return pdFREERTOS_ERRNO_EILSEQ; /* An invalid UTF-16 sequence was encountered. */
 
         case FF_ERR_UNICODE_CONVERSION_EXCEEDED:
-            return pdFREERTOS_ERRNO_ENAMETOOLONG;                                    /* Filename exceeds MAX long-filename length when converted to UTF-16. */
+            return pdFREERTOS_ERRNO_ENAMETOOLONG; /* Filename exceeds MAX long-filename length when converted to UTF-16. */
     }
 
     return pdFREERTOS_ERRNO_EFAULT;

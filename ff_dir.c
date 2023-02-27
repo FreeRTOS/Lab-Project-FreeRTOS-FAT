@@ -297,6 +297,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
 /* _HT_ called 3 times before inserting a single file. With these changes it is called one time only */
 /* _HT_ pxFindParams caches some information: */
 /* _HT_ 1: the first free entry 2: whether the short-name version already exists */
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     uint32_t FF_FindEntryInDir( FF_IOManager_t * pxIOManager,
                                 FF_FindParams_t * pxFindParams,
@@ -312,6 +313,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                                 FF_DirEnt_t * pxDirEntry,
                                 FF_Error_t * pxError )
 #endif /* if ( ffconfigUNICODE_UTF16_SUPPORT != 0 ) */
+/* *INDENT-ON* */
 {
     FF_FetchContext_t xFetchContext;
 /* const pointer to read from pBuffer */
@@ -335,10 +337,10 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
 
     #if ( ffconfigLFN_SUPPORT != 0 )
         #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-            FF_T_WCHAR * pcCurPtr;  /* Pointer to store a LFN. */
+            FF_T_WCHAR * pcCurPtr; /* Pointer to store a LFN. */
             FF_T_WCHAR * pcLastPtr = pxDirEntry->pcFileName + sizeof( pxDirEntry->pcFileName );
         #else
-            char * pcCurPtr;    /* Pointer to store a LFN. */
+            char * pcCurPtr; /* Pointer to store a LFN. */
             char * pcLastPtr = pxDirEntry->pcFileName + sizeof( pxDirEntry->pcFileName );
         #endif /* ffconfigUNICODE_UTF16_SUPPORT */
 
@@ -650,7 +652,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                     xLFNTotal = 0;
                 }
             #endif
-        }   /* for( ; pxDirEntry->usCurrentItem < FF_MAX_ENTRIES_PER_DIRECTORY; pxDirEntry->usCurrentItem++ ) */
+        } /* for( ; pxDirEntry->usCurrentItem < FF_MAX_ENTRIES_PER_DIRECTORY; pxDirEntry->usCurrentItem++ ) */
 
         {
             FF_Error_t xTempError;
@@ -685,13 +687,14 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
     }
 
     return xResult;
-}   /* FF_FindEntryInDir() */
+} /* FF_FindEntryInDir() */
 /*-----------------------------------------------------------*/
 
 
 /**
  *	@private
  **/
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     uint32_t FF_FindDir( FF_IOManager_t * pxIOManager,
                          const FF_T_WCHAR * pcPath,
@@ -703,8 +706,9 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                          uint16_t pathLen,
                          FF_Error_t * pxError )
 #endif
+/* *INDENT-ON* */
 {
-    uint16_t it = 0;     /* Re-entrancy Variables for FF_strtok( ). */
+    uint16_t it = 0; /* Re-entrancy Variables for FF_strtok( ). */
     BaseType_t last = pdFALSE;
     FF_DirEnt_t xMyDirectory;
     FF_FindParams_t xFindParams;
@@ -835,7 +839,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
     }
 
     return xFindParams.ulDirCluster;
-}   /* FF_FindDir() */
+} /* FF_FindDir() */
 /*-----------------------------------------------------------*/
 
 
@@ -1017,7 +1021,7 @@ void FF_PopulateShortDirent( FF_IOManager_t * pxIOManager,
                              FF_DirEnt_t * pxDirEntry,
                              const uint8_t * pucEntryBuffer )
 {
-    memcpy( pxDirEntry->pcFileName, pucEntryBuffer, 11 );   /* Copy the filename into the Dirent object. */
+    memcpy( pxDirEntry->pcFileName, pucEntryBuffer, 11 ); /* Copy the filename into the Dirent object. */
     #if ( ffconfigLFN_SUPPORT != 0 ) && ( ffconfigINCLUDE_SHORT_NAME != 0 )
         memcpy( pxDirEntry->pcShortName, pucEntryBuffer, 11 );
         pxDirEntry->pcShortName[ 11 ] = '\0';
@@ -1032,7 +1036,7 @@ void FF_PopulateShortDirent( FF_IOManager_t * pxIOManager,
         FF_ShortNameExpand( pxDirEntry->pcFileName );
     #endif
 
-    ( void ) pxIOManager;   /* Silence a compiler warning, about not referencing pxIOManager. */
+    ( void ) pxIOManager; /* Silence a compiler warning, about not referencing pxIOManager. */
 
     #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
         FF_tolower( pxDirEntry->pcFileName, ( uint32_t ) wcslen( pxDirEntry->pcFileName ) );
@@ -1092,7 +1096,7 @@ FF_Error_t FF_InitEntryFetch( FF_IOManager_t * pxIOManager,
                 /* This is a RootDIR, special consideration needs to be made, because it doesn't have a Cluster chain! */
                 pxContext->ulChainLength = pxIOManager->xPartition.ulRootDirSectors / pxIOManager->xPartition.ulSectorsPerCluster;
 
-                if( pxContext->ulChainLength == 0 )     /* Some media has ulRootDirSectors < ulSectorsPerCluster. This is wrong, as it should be atleast 1 cluster! */
+                if( pxContext->ulChainLength == 0 ) /* Some media has ulRootDirSectors < ulSectorsPerCluster. This is wrong, as it should be atleast 1 cluster! */
                 {
                     pxContext->ulChainLength = 1;
                 }
@@ -1101,7 +1105,7 @@ FF_Error_t FF_InitEntryFetch( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_InitEntryFetch() */
+} /* FF_InitEntryFetch() */
 /*-----------------------------------------------------------*/
 
 FF_Error_t FF_CleanupEntryFetch( FF_IOManager_t * pxIOManager,
@@ -1116,7 +1120,7 @@ FF_Error_t FF_CleanupEntryFetch( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_CleanupEntryFetch() */
+} /* FF_CleanupEntryFetch() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1147,7 +1151,7 @@ static FF_Error_t FF_Traverse( FF_IOManager_t * pxIOManager,
     /* Check if we're past the last cluster ( ulChainLength is also valid for root sectors ). */
     if( ( ulClusterNum + 1 ) > pxContext->ulChainLength )
     {
-        xError = FF_ERR_DIR_END_OF_DIR | FF_TRAVERSE;   /* End of Dir was reached! */
+        xError = FF_ERR_DIR_END_OF_DIR | FF_TRAVERSE; /* End of Dir was reached! */
     }
     else if( ( pxIOManager->xPartition.ucType != FF_T_FAT32 ) &&
              ( pxContext->ulDirCluster == pxIOManager->xPartition.ulRootDirCluster ) )
@@ -1183,7 +1187,7 @@ static FF_Error_t FF_Traverse( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_Traverse() */
+} /* FF_Traverse() */
 /*-----------------------------------------------------------*/
 
 FF_Error_t FF_FetchEntryWithContext( FF_IOManager_t * pxIOManager,
@@ -1241,7 +1245,7 @@ FF_Error_t FF_FetchEntryWithContext( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_FetchEntryWithContext() */
+} /* FF_FetchEntryWithContext() */
 /*-----------------------------------------------------------*/
 
 
@@ -1300,7 +1304,7 @@ FF_Error_t FF_PushEntryWithContext( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_PushEntryWithContext() */
+} /* FF_PushEntryWithContext() */
 /*-----------------------------------------------------------*/
 
 
@@ -1367,7 +1371,7 @@ FF_Error_t FF_GetEntry( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_GetEntry() */
+} /* FF_GetEntry() */
 /*-----------------------------------------------------------*/
 
 
@@ -1619,7 +1623,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
     while( pdFALSE );
 
     return xError;
-}   /* FF_PopulateLongDirent() */
+} /* FF_PopulateLongDirent() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1652,6 +1656,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
  *	@Return -2 if Dir was not found.
  *
  **/
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_FindFirst( FF_IOManager_t * pxIOManager,
                              FF_DirEnt_t * pxDirEntry,
@@ -1661,6 +1666,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
                              FF_DirEnt_t * pxDirEntry,
                              const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_Error_t xError;
 
@@ -1761,7 +1767,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_FindFirst() */
+} /* FF_FindFirst() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1990,7 +1996,7 @@ FF_Error_t FF_FindNext( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_FindNext() */
+} /* FF_FindNext() */
 /*-----------------------------------------------------------*/
 
 
@@ -2052,7 +2058,7 @@ static int32_t FF_FindFreeDirent( FF_IOManager_t * pxIOManager,
                 pucEntryBuffer += FF_SIZEOF_DIRECTORY_ENTRY;
             }
 
-            if( FF_isEndOfDir( pucEntryBuffer ) )   /* If its the end of the Dir, then FreeDirents from here. */
+            if( FF_isEndOfDir( pucEntryBuffer ) ) /* If its the end of the Dir, then FreeDirents from here. */
             {
                 /* Check if the directory has enough space */
                 DirLength = xFetchContext.ulChainLength;
@@ -2081,7 +2087,7 @@ static int32_t FF_FindFreeDirent( FF_IOManager_t * pxIOManager,
             {
                 freeCount = 0;
             }
-        }   /* for ( uxEntry = 0; uxEntry < FF_MAX_ENTRIES_PER_DIRECTORY; uxEntry++ ) */
+        } /* for ( uxEntry = 0; uxEntry < FF_MAX_ENTRIES_PER_DIRECTORY; uxEntry++ ) */
 
         {
             FF_Error_t xTempError;
@@ -2109,7 +2115,7 @@ static int32_t FF_FindFreeDirent( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_FindFreeDirent() */
+} /* FF_FindFreeDirent() */
 /*-----------------------------------------------------------*/
 
 /* _HT_ Now FF_PutEntry has a new optional parameter *pucContents */
@@ -2168,7 +2174,7 @@ FF_Error_t FF_PutEntry( FF_IOManager_t * pxIOManager,
     FF_CleanupEntryFetch( pxIOManager, &xFetchContext );
 
     return xError;
-}   /* FF_PutEntry() */
+} /* FF_PutEntry() */
 /*-----------------------------------------------------------*/
 
 static BaseType_t FF_ValidShortChar( char cChar )
@@ -2177,9 +2183,10 @@ static BaseType_t FF_ValidShortChar( char cChar )
            ( cChar >= 'a' && cChar <= 'z' ) || /* lower-case can be stored using NT/XP attribute. */
            ( cChar >= '0' && cChar <= '9' ) ||
            strchr( "$%-_@~`!(){}^#&", cChar ) != NULL;
-}   /* FF_ValidShortChar() */
+} /* FF_ValidShortChar() */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     void FF_CreateShortName( FF_FindParams_t * pxFindParams,
                              const FF_T_WCHAR * pcLongName )
@@ -2187,6 +2194,7 @@ static BaseType_t FF_ValidShortChar( char cChar )
     void FF_CreateShortName( FF_FindParams_t * pxFindParams,
                              const char * pcLongName )
 #endif
+/* *INDENT-ON* */
 {
     BaseType_t xIndex, xPosition, xLastDot;
     uint16_t NameLen;
@@ -2200,8 +2208,8 @@ static BaseType_t FF_ValidShortChar( char cChar )
      * "README.txt" will get the attribute FF_FAT_CASE_ATTR_EXT
      * "Readme.txt" can not be store as a short name */
 
-    pxFindParams->ucCaseAttrib = 0;     /* May get the value FF_FAT_CASE_ATTR_BASE or FF_FAT_CASE_ATTR_EXT */
-    pxFindParams->ucFirstTilde = 6;     /* The numerical position of the ~ */
+    pxFindParams->ucCaseAttrib = 0; /* May get the value FF_FAT_CASE_ATTR_BASE or FF_FAT_CASE_ATTR_EXT */
+    pxFindParams->ucFirstTilde = 6; /* The numerical position of the ~ */
     pxFindParams->ulFlags |= FIND_FLAG_SHORTNAME_SET | FIND_FLAG_FITS_SHORT | FIND_FLAG_SIZE_OK;
 
     #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
@@ -2233,10 +2241,10 @@ static BaseType_t FF_ValidShortChar( char cChar )
      * ".cproject"   : NameLen =  9, xLastDot = 0, xPosition =  8
      */
 
-    if( ( NameLen > 12 ) ||             /* If name is longer than 12 characters (8.3). */
-        ( NameLen - xPosition > 1 ) ||  /* If it contains more than 1 dot. */
-        ( NameLen - xLastDot > 4 ) ||   /* If the file name extension is longer than 3 characters. */
-        ( xLastDot > 8 ) )              /* If the file name base is too long. */
+    if( ( NameLen > 12 ) ||            /* If name is longer than 12 characters (8.3). */
+        ( NameLen - xPosition > 1 ) || /* If it contains more than 1 dot. */
+        ( NameLen - xLastDot > 4 ) ||  /* If the file name extension is longer than 3 characters. */
+        ( xLastDot > 8 ) )             /* If the file name base is too long. */
     {
         pxFindParams->ulFlags &= ~FIND_FLAG_SIZE_OK;
     }
@@ -2357,11 +2365,11 @@ static BaseType_t FF_ValidShortChar( char cChar )
         pxFindParams->ucFirstTilde = xLastDot;
     }
 
-    if( NameLen < pxFindParams->ucFirstTilde )  /* Names like "Abc" will become "~Abc". */
+    if( NameLen < pxFindParams->ucFirstTilde ) /* Names like "Abc" will become "~Abc". */
     {
         pxFindParams->ucFirstTilde = ( uint8_t ) NameLen;
     }
-}   /* FF_CreateShortName() */
+} /* FF_CreateShortName() */
 /*-----------------------------------------------------------*/
 
 int32_t FF_FindShortName( FF_IOManager_t * pxIOManager,
@@ -2514,7 +2522,7 @@ int32_t FF_FindShortName( FF_IOManager_t * pxIOManager,
     }
 
     return xResult;
-}   /* FF_FindShortName () */
+} /* FF_FindShortName () */
 /*-----------------------------------------------------------*/
 
 
@@ -2602,7 +2610,7 @@ int32_t FF_FindShortName( FF_IOManager_t * pxIOManager,
         }
 
         return FF_ERR_NONE;
-    }   /* FF_CreateLFNEntry() */
+    } /* FF_CreateLFNEntry() */
 #endif /* ffconfigLFN_SUPPORT */
 /*-----------------------------------------------------------*/
 
@@ -2874,7 +2882,7 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_ExtendDirectory() */
+} /* FF_ExtendDirectory() */
 /*-----------------------------------------------------------*/
 
 static const uint8_t forbiddenChrs[] =
@@ -2884,11 +2892,13 @@ static const uint8_t forbiddenChrs[] =
     0x22, 0x2A, 0x2F, 0x3A, 0x3C, 0x3E, 0x3F, 0x5C, 0x7F, 0x7C
 };
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     static void FF_MakeNameCompliant( FF_T_WCHAR * pcName )
 #else
     static void FF_MakeNameCompliant( char * pcName )
 #endif
+/* *INDENT-ON* */
 {
     BaseType_t index;
 
@@ -2908,7 +2918,7 @@ static const uint8_t forbiddenChrs[] =
             }
         }
     }
-}   /* FF_MakeNameCompliant() */
+} /* FF_MakeNameCompliant() */
 /*-----------------------------------------------------------*/
 
 FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
@@ -3099,10 +3109,10 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     }
 
     return xReturn;
-}   /* FF_CreateDirent() */
+} /* FF_CreateDirent() */
 /*-----------------------------------------------------------*/
 
-
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     uint32_t FF_CreateFile( FF_IOManager_t * pxIOManager,
                             FF_FindParams_t * pxFindParams,
@@ -3116,6 +3126,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
                             FF_DirEnt_t * pxDirEntry,
                             FF_Error_t * pxError )
 #endif /* if ( ffconfigUNICODE_UTF16_SUPPORT != 0 ) */
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xMyFile;
     FF_Error_t xTempError, xError = FF_ERR_NONE;
@@ -3174,7 +3185,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     }
 
     return ulResult;
-}   /* FF_CreateFile() */
+} /* FF_CreateFile() */
 /*-----------------------------------------------------------*/
 
 
@@ -3189,6 +3200,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
  *	@Return	FF_ERR_DIR_INVALID_PATH
  *	@Return FF_ERR_NONE on success.
  **/
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_MkDir( FF_IOManager_t * pxIOManager,
                          const FF_T_WCHAR * pcPath )
@@ -3196,6 +3208,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_MkDir( FF_IOManager_t * pxIOManager,
                          const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xMyDirectory;
 
@@ -3340,7 +3353,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
                 FF_UnlinkClusterChain( pxIOManager, xMyDirectory.ulObjectCluster, 0 );
             }
             FF_UnlockFAT( pxIOManager );
-            FF_FlushCache( pxIOManager );   /* Don't override error. */
+            FF_FlushCache( pxIOManager ); /* Don't override error. */
             break;
         }
 
@@ -3386,7 +3399,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     while( pdFALSE );
 
     return xError;
-}   /* FF_MkDir() */
+} /* FF_MkDir() */
 /*-----------------------------------------------------------*/
 
 
@@ -3431,7 +3444,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_RmLFNs() */
+} /* FF_RmLFNs() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigHASH_CACHE != 0 )
@@ -3550,7 +3563,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
         }
 
         return xError;
-    }   /* FF_HashDir() */
+    } /* FF_HashDir() */
 #endif /* ffconfigHASH_CACHE != 0 */
 /*-----------------------------------------------------------*/
 
@@ -3573,7 +3586,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
                 break;
             }
         }
-    }   /* FF_UnHashDir() */
+    } /* FF_UnHashDir() */
 #endif /* ffconfigHASH_CACHE */
 /*-----------------------------------------------------------*/
 
@@ -3590,7 +3603,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
         uint32_t tblBit = ulHash % 32;
 
         pxHash->ulBitTable[ tblIndex ] |= ( 0x80000000ul >> tblBit );
-    }   /* FF_SetHash() */
+    } /* FF_SetHash() */
 #endif /* ffconfigHASH_CACHE */
 /*-----------------------------------------------------------*/
 
@@ -3605,7 +3618,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
 
             pxHash->ulBitTable[ tblIndex ] &= ~( 0x80000000ul >> tblBit );
         }
-    }   /* FF_ClearHash() */
+    } /* FF_ClearHash() */
 #endif /* ffconfigHASH_CACHE */
 /*-----------------------------------------------------------*/
 
@@ -3629,7 +3642,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
         }
 
         return xResult;
-    }   /* FF_isHashSet() */
+    } /* FF_isHashSet() */
 #endif /* ffconfigHASH_CACHE */
 /*-----------------------------------------------------------*/
 
@@ -3649,7 +3662,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
                 break;
             }
         }
-    }   /* FF_AddDirentHash() */
+    } /* FF_AddDirentHash() */
 #endif /* ffconfigHASH_CACHE*/
 /*-----------------------------------------------------------*/
 
@@ -3680,7 +3693,7 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
         }
 
         return xResult;
-    }   /* FF_CheckDirentHash() */
+    } /* FF_CheckDirentHash() */
 #endif /* ffconfigHASH_CACHE */
 /*-----------------------------------------------------------*/
 
@@ -3710,6 +3723,6 @@ FF_Error_t FF_RmLFNs( FF_IOManager_t * pxIOManager,
         }
 
         return xResult;
-    }   /* FF_DirHashed() */
+    } /* FF_DirHashed() */
 #endif /* ffconfigHASH_CACHE */
 /*-----------------------------------------------------------*/
