@@ -18,7 +18,7 @@ endif()
 ########################################################################
 # Options
 
-# Optional:  FREERTOS_PLUS_FAT_DEV_SUPPORT 
+# Optional:  FREERTOS_PLUS_FAT_DEV_SUPPORT
 #   - when OFF - device support is disabled and not used.
 #   - When ON  - device support is enabled and the ff_devices.h API is used.
 # Optional:  FREERTOS_PLUS_FAT_PORT
@@ -32,13 +32,13 @@ option(FREERTOS_PLUS_FAT_DEV_SUPPORT "FreeRTOS Plus FAT Device selection support
 set(FREERTOS_PLUS_FAT_PORT "" CACHE STRING "FreeRTOS Plus FAT Port selection")
 set(FREERTOS_PLUS_FAT_PORT_LIST
     A_CUSTOM_PORT
-    ATSAM4E    
-    AVR32_UC3  
+    ATSAM4E
+    AVR32_UC3
     LPC18XX
-    POSIX    
-    STM32FXX   
-    STM32HXX   
-    ZYNQ       
+    POSIX
+    STM32FXX
+    STM32HXX
+    ZYNQ
     ZYNQ_2019_3
 )
 if(NOT FREERTOS_PLUS_FAT_PORT)
