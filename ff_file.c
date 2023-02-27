@@ -226,7 +226,10 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                        uint8_t ucMode,
                        FF_Error_t * pxError )
 #else
-    FF_FILE * FF_Open( FF_IOManager_t * pxIOManager, const char * pcPath, uint8_t ucMode, FF_Error_t * pxError )
+    FF_FILE * FF_Open( FF_IOManager_t * pxIOManager,
+                       const char * pcPath,
+                       uint8_t ucMode,
+                       FF_Error_t * pxError )
 #endif
 {
     FF_FILE * pxFile = NULL;
