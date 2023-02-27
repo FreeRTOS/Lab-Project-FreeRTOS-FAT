@@ -596,11 +596,11 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
                  * prvFFRead()/prvFFWrite() from different tasks. */
                 xParameters.pvSemaphore = ( void * ) xPlusFATMutex;
 
-                pxDisk->pxIOManager = FF_CreateIOManger( &xParameters, &xFFError );
+                pxDisk->pxIOManager = FF_CreateIOManager( &xParameters, &xFFError );
 
                 if( pxDisk->pxIOManager == NULL )
                 {
-                    FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManger: %s\n", ( const char * ) FF_GetErrMessage( xFFError ) );
+                    FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManager: %s\n", ( const char * ) FF_GetErrMessage( xFFError ) );
                     FF_SDDiskDelete( pxDisk );
                     pxDisk = NULL;
                 }
