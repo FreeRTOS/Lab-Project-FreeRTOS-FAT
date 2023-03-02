@@ -15,6 +15,8 @@ If using CMake, it is recommended to use this repository using FetchContent.
 Add the following into your project's main or a subdirectory's `CMakeLists.txt`:
 
 ```cmake
+include(FetchContent)
+
 FetchContent_Declare( freertos_plus_fat
   GIT_REPOSITORY https://github.com/FreeRTOS/Lab-Project-FreeRTOS-FAT.git
   GIT_TAG        master #Note: Best practice to use specific git-hash or tagged version
@@ -34,6 +36,8 @@ endif()
 
 FetchContent_MakeAvailable(freertos_plus_fat)
 ```
+
+If you already have FreeRTOS in your project, you may skip the fetch content by setting `FREERTOS_PLUS_FAT_FETCH_FREERTOS` to `OFF`.
 
 ### Consuming stand-alone
 It is recommended to use this repository as a submodule. Please refer to [Git Tools — Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). 

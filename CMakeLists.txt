@@ -107,6 +107,15 @@ else()
     endif()
 endif()
 
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS
+#   - when OFF - disable automatic fetch of FreeRTOS-kernel, user must make sure that
+#                target freertos_kernel is available
+#   - When ON  - FreeRTOS-kernel will be fetch using CMake FetchContent_Declare function.
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG
+option(FREERTOS_PLUS_FAT_FETCH_FREERTOS "FreeRTOS-Kernel automatic fecth support" ON)
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO "https://github.com/FreeRTOS/FreeRTOS-Kernel.git" CACHE STRING "")
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG "main" CACHE STRING "")
 
 ########################################################################
 # External Dependencies
@@ -115,12 +124,14 @@ endif()
 #   README.md `Consume with CMake`
 # This will allow you to upgrade submodules and have one common submodule for
 # all your builds despite multiple submodules having different versions.
-include(FetchContent)
+if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
+  include(FetchContent)
 
-FetchContent_Declare( freertos_kernel
-  GIT_REPOSITORY https://github.com/phelter/FreeRTOS-Kernel.git #https://github.com/FreeRTOS/FreeRTOS-Kernel.git
-  GIT_TAG        feature/fixing-clang-gnu-compiler-warnings #master
-)
+  FetchContent_Declare( freertos_kernel
+    GIT_REPOSITORY ${FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO}
+    GIT_TAG        ${FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG}
+  )
+endif()
 
 ########################################################################
 add_library( freertos_plus_fat STATIC )
@@ -208,6 +219,6 @@ target_link_libraries( freertos_plus_fat
 add_subdirectory(portable)
 add_subdirectory(test)
 
-
-
-FetchContent_MakeAvailable(freertos_kernel)
+if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
+  FetchContent_MakeAvailable(freertos_kernel)
+endif()
