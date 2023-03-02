@@ -114,8 +114,8 @@ endif()
 # Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO
 # Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG
 option(FREERTOS_PLUS_FAT_FETCH_FREERTOS "FreeRTOS-Kernel automatic fecth support" ON)
-set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO "https://github.com/phelter/FreeRTOS-Kernel.git" CACHE STRING "")
-set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG "feature/fixing-clang-gnu-compiler-warnings" CACHE STRING "")
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO "https://github.com/FreeRTOS/FreeRTOS-Kernel.git" CACHE STRING "")
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG "main" CACHE STRING "")
 
 ########################################################################
 # External Dependencies
