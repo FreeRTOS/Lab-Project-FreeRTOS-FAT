@@ -208,7 +208,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 /**
  *	@brief	Opens a File for Access
  *
- *	@param	pxIOManager	FF_IOManager_t object that was created by FF_CreateIOManger().
+ *	@param	pxIOManager	FF_IOManager_t object that was created by FF_CreateIOManager().
  *	@param	pcPath		Path to the File or object.
  *	@param	ucMode		Access Mode required. Modes are a little complicated, the function FF_GetModeBits()
  *	@param	ucMode		will convert a stdio Mode string into the equivalent Mode bits for this parameter.
@@ -217,14 +217,19 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *
  *	@return	NULL pointer on error, in which case pxError should be checked for more information.
  **/
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_FILE * FF_Open( FF_IOManager_t * pxIOManager,
                        const FF_T_WCHAR * pcPath,
                        uint8_t ucMode,
                        FF_Error_t * pxError )
 #else
-    FF_FILE * FF_Open( FF_IOManager_t * pxIOManager, const char * pcPath, uint8_t ucMode, FF_Error_t * pxError )
+    FF_FILE * FF_Open( FF_IOManager_t * pxIOManager,
+                       const char * pcPath,
+                       uint8_t ucMode,
+                       FF_Error_t * pxError )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile = NULL;
     FF_FILE * pxFileChain;
@@ -485,15 +490,16 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return pxFile;
-}  /* FF_Open() */
+} /* FF_Open() */
 /*-----------------------------------------------------------*/
 
 /**
  *	@brief	Tests if a Directory contains any other files or folders.
  *
- *	@param	pxIOManager	FF_IOManager_t object returned from the FF_CreateIOManger() function.
+ *	@param	pxIOManager	FF_IOManager_t object returned from the FF_CreateIOManager() function.
  *
  **/
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     BaseType_t FF_isDirEmpty( FF_IOManager_t * pxIOManager,
                               const FF_T_WCHAR * pcPath )
@@ -501,6 +507,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     BaseType_t FF_isDirEmpty( FF_IOManager_t * pxIOManager,
                               const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xDirEntry;
     FF_Error_t xError = FF_ERR_NONE;
@@ -538,7 +545,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return xReturn;
-}   /* FF_isDirEmpty() */
+} /* FF_isDirEmpty() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigPATH_CACHE != 0 )
@@ -576,7 +583,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 #endif /* ffconfigPATH_CACHE */
 /*-----------------------------------------------------------*/
 
-
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_RmDir( FF_IOManager_t * pxIOManager,
                          const FF_T_WCHAR * pcPath )
@@ -584,6 +591,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_RmDir( FF_IOManager_t * pxIOManager,
                          const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile;
     uint8_t ucEntryBuffer[ 32 ];
@@ -730,9 +738,10 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }     /* else if( pxIOManager != NULL ) */
 
     return xError;
-}   /* FF_RmDir() */
+} /* FF_RmDir() */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_RmFile( FF_IOManager_t * pxIOManager,
                           const FF_T_WCHAR * pcPath )
@@ -740,6 +749,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_RmFile( FF_IOManager_t * pxIOManager,
                           const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile;
     FF_Error_t xError = FF_ERR_NONE;
@@ -841,10 +851,10 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
             }
         }
-    }   /* if( pxFile != NULL ) */
+    } /* if( pxFile != NULL ) */
 
     return xError;
-}   /* FF_RmFile() */
+} /* FF_RmFile() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -862,6 +872,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *
  **/
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_Move( FF_IOManager_t * pxIOManager,
                         const FF_T_WCHAR * szSourceFile,
@@ -873,6 +884,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                         const char * szDestinationFile,
                         BaseType_t xDeleteIfExists )
 #endif
+/* *INDENT-ON* */
 {
     FF_Error_t xError;
     FF_FILE * pSrcFile, * pxDestFile;
@@ -1046,7 +1058,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                     }
                 #endif
             }
-            else    /* ulDirCluster == 0ul */
+            else /* ulDirCluster == 0ul */
             {
                 xError = FF_createERR( FF_ERR_FILE_DIR_NOT_FOUND, FF_MOVE );
             }
@@ -1080,7 +1092,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_Move() */
+} /* FF_Move() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1106,7 +1118,7 @@ BaseType_t FF_isEOF( FF_FILE * pxFile )
     }
 
     return xReturn;
-}   /* FF_isEOF() */
+} /* FF_isEOF() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1137,8 +1149,8 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
         xReturn = pxFile->ulFileSize - pxFile->ulFilePointer;
     }
 
-    return ( int32_t ) xReturn;
-}   /* FF_BytesLeft() */
+    return xReturn;
+} /* FF_BytesLeft() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1150,7 +1162,7 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
  *	@return	Less than zero: an error code, or Number of bytes left to read from handle
  **/
 FF_Error_t FF_GetFileSize( FF_FILE * pxFile,
-                           uint32_t * pulSize )
+                           uint32_t * pulSize ) /* Writes # of bytes in a file to the parameter. */
 {
     FF_Error_t xReturn;
 
@@ -1171,7 +1183,7 @@ FF_Error_t FF_GetFileSize( FF_FILE * pxFile,
     }
 
     return xReturn;
-}   /* FF_GetFileSize */
+} /* FF_GetFileSize */
 
 int32_t FF_FileSize( FF_FILE * pxFile )
 {
@@ -1187,7 +1199,7 @@ int32_t FF_FileSize( FF_FILE * pxFile )
     }
 
     return ( int32_t ) xResult;
-}   /* FF_FileSize() */
+} /* FF_FileSize() */
 /*-----------------------------------------------------------*/
 
 static uint32_t FF_GetSequentialClusters( FF_IOManager_t * pxIOManager,
@@ -1239,7 +1251,7 @@ static uint32_t FF_GetSequentialClusters( FF_IOManager_t * pxIOManager,
     *pxError = FF_ReleaseFATBuffers( pxIOManager, &xFATBuffers );
 
     return ulIndex;
-}   /* FF_GetSequentialClusters() */
+} /* FF_GetSequentialClusters() */
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_ReadClusters( FF_FILE * pxFile,
@@ -1295,7 +1307,7 @@ static FF_Error_t FF_ReadClusters( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_ReadClusters ()*/
+} /* FF_ReadClusters ()*/
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
@@ -1418,7 +1430,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
 
         {
             FF_Error_t xTempError;
-            xTempError = FF_DecreaseFreeClusters( pxIOManager, ( uint32_t ) xIndex );   /* Keep Tab of Numbers for fast FreeSize() */
+            xTempError = FF_DecreaseFreeClusters( pxIOManager, ( uint32_t ) xIndex ); /* Keep Tab of Numbers for fast FreeSize() */
 
             if( FF_isERR( xError ) == pdFALSE )
             {
@@ -1481,7 +1493,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
     } /* if( ulTotalClustersNeeded > pxFile->ulChainLength ) */
 
     return xError;
-}   /* FF_ExtendFile() */
+} /* FF_ExtendFile() */
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
@@ -1541,7 +1553,7 @@ static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_WriteClusters */
+} /* FF_WriteClusters */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1565,7 +1577,7 @@ static uint32_t FF_FileLBA( FF_FILE * pxFile )
     ulItemLBA += FF_getMinorBlockNumber( pxFile->pxIOManager, pxFile->ulFilePointer, 1 );
 
     return ulItemLBA;
-}   /* FF_FileLBA() */
+} /* FF_FileLBA() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1624,7 +1636,7 @@ static uint32_t FF_SetCluster( FF_FILE * pxFile,
     *pxError = xResult;
 
     return ulReturn;
-}   /* FF_SetCluster() */
+} /* FF_SetCluster() */
 /*-----------------------------------------------------------*/
 
 static uint32_t FF_ReadPartial( FF_FILE * pxFile,
@@ -1716,7 +1728,7 @@ static uint32_t FF_ReadPartial( FF_FILE * pxFile,
     *pxError = xError;
 
     return ulBytesRead;
-}   /* FF_ReadPartial() */
+} /* FF_ReadPartial() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1785,7 +1797,7 @@ int32_t FF_Read( FF_FILE * pxFile,
         {
             /* The file handle is not valid. */
         }
-    }   /* else pxFile != NULL */
+    } /* else pxFile != NULL */
 
     if( FF_isERR( xError ) == pdFALSE )
     {
@@ -1956,7 +1968,7 @@ int32_t FF_Read( FF_FILE * pxFile,
     }
 
     return lResult;
-}   /* FF_Read() */
+} /* FF_Read() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -1978,7 +1990,7 @@ int32_t FF_GetC( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xResult = (FF_Error_t) ( FF_ERR_NULL_POINTER | FF_GETC );    /* Ensure this is a signed error. */
+        xResult = FF_ERR_NULL_POINTER | FF_GETC; /* Ensure this is a signed error. */
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
@@ -2008,7 +2020,7 @@ int32_t FF_GetC( FF_FILE * pxFile )
     }
 
     return ( int32_t ) xResult;
-}   /* FF_GetC() */
+} /* FF_GetC() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2092,7 +2104,7 @@ int32_t FF_GetLine( FF_FILE * pxFile,
     }
 
     return xResult;
-}   /* FF_GetLine() */
+} /* FF_GetLine() */
 /*-----------------------------------------------------------*/
 
 static uint32_t FF_WritePartial( FF_FILE * pxFile,
@@ -2201,7 +2213,7 @@ static uint32_t FF_WritePartial( FF_FILE * pxFile,
     *pxError = xError;
 
     return ulBytesWritten;
-}   /* FF_WritePartial() */
+} /* FF_WritePartial() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2450,7 +2462,7 @@ int32_t FF_Write( FF_FILE * pxFile,
     }
 
     return lResult;
-}   /* FF_Write() */
+} /* FF_Write() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2470,8 +2482,8 @@ int32_t FF_PutC( FF_FILE * pxFile,
     FF_Error_t xResult;
 
     if( pxFile == NULL )
-    {   /* Ensure we don't have a Null file pointer on a Public interface. */
-        xResult = FF_createERR( FF_ERR_NULL_POINTER, FF_PUTC );
+    { /* Ensure we don't have a Null file pointer on a Public interface. */
+        xResult = FF_ERR_NULL_POINTER | FF_PUTC;
     }
     else if( ( pxFile->ucMode & FF_MODE_WRITE ) == 0 )
     {
@@ -2525,7 +2537,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
     }
 
     return xResult;
-}   /* FF_PutC() */
+} /* FF_PutC() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -2621,7 +2633,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_Seek() */
+} /* FF_Seek() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigREMOVABLE_MEDIA != 0 )
@@ -2629,7 +2641,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
 /**
  *	@brief	Invalidate all file handles belonging to pxIOManager
  *
- *	@param	pIoMan		FF_IOManager_t object that was created by FF_CreateIOManger().
+ *	@param	pIoMan		FF_IOManager_t object that was created by FF_CreateIOManager().
  *
  *	@retval 0 if no handles were open
  *	@retval >0 the amount of handles that were invalidated
@@ -2671,7 +2683,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
         }
 
         return xResult;
-    }   /* FF_Invalidate() */
+    } /* FF_Invalidate() */
 #endif /* ffconfigREMOVABLE_MEDIA */
 /*-----------------------------------------------------------*/
 
@@ -2729,7 +2741,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
     }
 
     return xError;
-}   /* FF_CheckValid() */
+} /* FF_CheckValid() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigTIME_SUPPORT != 0 )
@@ -2756,8 +2768,8 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
         if( FF_isERR( xError ) == pdFALSE )
         {
             if( pxFile->ulValidFlags & FF_VALID_FLAG_DELETED )
-            {   /*if (pxFile->FileDeleted) */
-                xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_SETFILETIME );
+            { /*if (pxFile->FileDeleted) */
+                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETFILETIME );
             }
             else if( ( pxFile->ucMode & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) == 0 )
             {
@@ -2772,7 +2784,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                 {
                     if( uxWhat & ETimeCreate )
                     {
-                        xOriginalEntry.xCreateTime = *pxTime;       /*/< Date and Time Created. */
+                        xOriginalEntry.xCreateTime = *pxTime; /*/< Date and Time Created. */
                     }
 
                     if( uxWhat & ETimeMod )
@@ -2790,13 +2802,13 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
                 if( FF_isERR( xError ) == pdFALSE )
                 {
-                    xError = FF_FlushCache( pxFile->pxIOManager );      /* Ensure all modfied blocks are flushed to disk! */
+                    xError = FF_FlushCache( pxFile->pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
                 }
             }
         }
 
         return xError;
-    }   /* FF_SetFileTime() */
+    } /* FF_SetFileTime() */
 #endif /* ffconfigTIME_SUPPORT */
 /*-----------------------------------------------------------*/
 
@@ -2913,6 +2925,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 #endif /* ffconfigTIME_SUPPORT */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_SetPerm( FF_IOManager_t * pxIOManager,
                            const FF_T_WCHAR * pcPath,
@@ -2922,6 +2935,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                            const char * pcPath,
                            UBaseType_t aPerm )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xOriginalEntry;
     FF_Error_t xError;
@@ -3002,13 +3016,13 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
         if( FF_isERR( xError ) == pdFALSE )
         {
-            xError = FF_FlushCache( pxIOManager );          /* Ensure all modfied blocks are flushed to disk! */
+            xError = FF_FlushCache( pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
         }
     }
     while( pdFALSE );
 
     return xError;
-}   /* FF_SetPerm() */
+} /* FF_SetPerm() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -3064,7 +3078,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                                 pxFileChain = pxFileChain->pxNext; /* Forgot this one */
                             }
                         }
-                    }               /* Semaphore released, linked list was shortened! */
+                    } /* Semaphore released, linked list was shortened! */
 
                     FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
                     #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
@@ -3126,7 +3140,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
 
         /* Handle Linked list! */
         FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
-        {   /* Semaphore is required, or linked list could become corrupted. */
+        { /* Semaphore is required, or linked list could become corrupted. */
             pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
 
             if( pxFileChain == pxFile )
@@ -3147,7 +3161,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                     pxFileChain = pxFileChain->pxNext;
                 }
             }
-        }   /* Semaphore released, linked list was shortened! */
+        } /* Semaphore released, linked list was shortened! */
         FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
 
         #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
@@ -3182,7 +3196,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
     while( pdFALSE );
 
     return xError;
-}   /* FF_Close() */
+} /* FF_Close() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -3219,7 +3233,7 @@ FF_Error_t FF_SetEof( FF_FILE * pxFile )
     }
 
     return xError;
-}   /* FF_SetEof() */
+} /* FF_SetEof() */
 /*-----------------------------------------------------------*/
 
 /**
@@ -3314,5 +3328,5 @@ static FF_Error_t FF_Truncate( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_Truncate() */
+} /* FF_Truncate() */
 /*-----------------------------------------------------------*/

@@ -146,7 +146,7 @@ FF_Disk_t * FF_RAMDiskInit( char * pcName,
         xParameters.pvSemaphore = ( void * ) xSemaphoreCreateRecursiveMutex();
         xParameters.xBlockDeviceIsReentrant = pdFALSE;
 
-        pxDisk->pxIOManager = FF_CreateIOManger( &xParameters, &xError );
+        pxDisk->pxIOManager = FF_CreateIOManager( &xParameters, &xError );
 
         if( ( pxDisk->pxIOManager != NULL ) && ( FF_isERR( xError ) == pdFALSE ) )
         {
@@ -181,7 +181,7 @@ FF_Disk_t * FF_RAMDiskInit( char * pcName,
         }
         else
         {
-            FF_PRINTF( "FF_RAMDiskInit: FF_CreateIOManger: %s\n", ( const char * ) FF_GetErrMessage( xError ) );
+            FF_PRINTF( "FF_RAMDiskInit: FF_CreateIOManager: %s\n", ( const char * ) FF_GetErrMessage( xError ) );
 
             /* The disk structure was allocated, but the disk's IO manager could
              * not be allocated, so free the disk again. */

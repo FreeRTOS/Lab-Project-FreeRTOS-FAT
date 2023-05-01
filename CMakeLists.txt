@@ -18,7 +18,7 @@ endif()
 ########################################################################
 # Options
 
-# Optional:  FREERTOS_PLUS_FAT_DEV_SUPPORT 
+# Optional:  FREERTOS_PLUS_FAT_DEV_SUPPORT
 #   - when OFF - device support is disabled and not used.
 #   - When ON  - device support is enabled and the ff_devices.h API is used.
 # Optional:  FREERTOS_PLUS_FAT_PORT
@@ -32,13 +32,13 @@ option(FREERTOS_PLUS_FAT_DEV_SUPPORT "FreeRTOS Plus FAT Device selection support
 set(FREERTOS_PLUS_FAT_PORT "" CACHE STRING "FreeRTOS Plus FAT Port selection")
 set(FREERTOS_PLUS_FAT_PORT_LIST
     A_CUSTOM_PORT
-    ATSAM4E    
-    AVR32_UC3  
+    ATSAM4E
+    AVR32_UC3
     LPC18XX
-    POSIX    
-    STM32FXX   
-    STM32HXX   
-    ZYNQ       
+    POSIX
+    STM32FXX
+    STM32HXX
+    ZYNQ
     ZYNQ_2019_3
 )
 if(NOT FREERTOS_PLUS_FAT_PORT)
@@ -107,6 +107,15 @@ else()
     endif()
 endif()
 
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS
+#   - when OFF - disable automatic fetch of FreeRTOS-kernel, user must make sure that
+#                target freertos_kernel is available
+#   - When ON  - FreeRTOS-kernel will be fetch using CMake FetchContent_Declare function.
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG
+option(FREERTOS_PLUS_FAT_FETCH_FREERTOS "FreeRTOS-Kernel automatic fecth support" ON)
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO "https://github.com/FreeRTOS/FreeRTOS-Kernel.git" CACHE STRING "")
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG "main" CACHE STRING "")
 
 ########################################################################
 # External Dependencies
@@ -115,60 +124,14 @@ endif()
 #   README.md `Consume with CMake`
 # This will allow you to upgrade submodules and have one common submodule for
 # all your builds despite multiple submodules having different versions.
-include(FetchContent)
+if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
+  include(FetchContent)
 
-FetchContent_Declare( freertos_kernel
-  GIT_REPOSITORY https://github.com/phelter/FreeRTOS-Kernel.git #https://github.com/FreeRTOS/FreeRTOS-Kernel.git
-  GIT_TAG        feature/fixing-clang-gnu-compiler-warnings #master
-)
-
-
-########################################################################
-# Requirements
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-
-########################################################################
-# Overall Compile Options
-# Note the compile option strategy is to error on everything and then
-# Per library opt-out of things that are warnings/errors.
-# This ensures that no matter what strategy for compilation you take, the
-# builds will still occur.
-#
-# Only tested with GNU and Clang.
-# Other options are https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_COMPILER_ID.html#variable:CMAKE_%3CLANG%3E_COMPILER_ID
-# Naming of compilers translation map:
-#
-#   FreeRTOS    | CMake
-#   -------------------
-#   CCS         | ?TBD?
-#   GCC         | GNU, Clang, *Clang Others?
-#   IAR         | IAR
-#   Keil        | ARMCC
-#   MSVC        | MSVC # Note only for MinGW?
-#   Renesas     | ?TBD?
-
-add_compile_options(
-    ### Gnu/Clang C Options
-    $<$<COMPILE_LANG_AND_ID:C,GNU>:-fdiagnostics-color=always>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-fcolor-diagnostics>
-
-    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wall>
-    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wextra>
-    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wpedantic>
-    $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Werror>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Weverything>
-
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Weverything>
-
-    # Enablement of supported but not widely used doxygen special commands
-    # https://doxygen.nl/manual/commands.html
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-fcomment-block-commands=retval>
-
-    # TODO: Add in other Compilers here.
-
-)
-
+  FetchContent_Declare( freertos_kernel
+    GIT_REPOSITORY ${FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO}
+    GIT_TAG        ${FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG}
+  )
+endif()
 
 ########################################################################
 add_library( freertos_plus_fat STATIC )
@@ -250,4 +213,6 @@ target_link_libraries( freertos_plus_fat
 add_subdirectory(portable)
 add_subdirectory(test)
 
-FetchContent_MakeAvailable(freertos_kernel)
+if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
+  FetchContent_MakeAvailable(freertos_kernel)
+endif()

@@ -12,13 +12,11 @@ jobs:
   # Currently no spell-check
 
   formatting:
-    # Use only 18.04 since we want the uncrustify version to
-    # be 0.66.1_f to ensure proper formatting.
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Install Uncrustify
-        run: sudo apt-get install uncrustify
+        run: sudo apt-get install uncrustify=0.69.0+dfsg1-1build1
       - name: Run Uncrustify
         run: |
           uncrustify --version

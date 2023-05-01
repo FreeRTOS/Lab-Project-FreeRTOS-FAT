@@ -75,7 +75,7 @@
         {
             { "Unknown Function",         1                                          },
 /*----- FF_IOManager_t - The FreeRTOS+FAT I/O Manager */
-            { "FF_CreateIOManger",        FF_GETMOD_FUNC( FF_CREATEIOMAN )           },
+            { "FF_CreateIOManager",       FF_GETMOD_FUNC( FF_CREATEIOMAN )           },
             { "FF_DeleteIOManager",       FF_GETMOD_FUNC( FF_DESTROYIOMAN )          },
             { "FF_Mount",                 FF_GETMOD_FUNC( FF_MOUNT )                 },
             { "FF_Unmount",               FF_GETMOD_FUNC( FF_UNMOUNT )               },

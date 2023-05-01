@@ -407,7 +407,7 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 
     if( ( xPartition < 0 ) || ( xPartition >= ffconfigMAX_PARTITIONS ) )
     {
-        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %d ( max %d )\n", (int)xPartition, ffconfigMAX_PARTITIONS - 1 );
+        FF_PRINTF( "pucGetSDIOCacheMemory: bad partition number: %d ( max %d )\n", ( int ) xPartition, ffconfigMAX_PARTITIONS - 1 );
         xReturn = NULL;
     }
     else if( pxCacheMemories[ xPartition ] == NULL )
@@ -540,11 +540,11 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
          * and also to avoid concurrent calls to prvFFRead()/prvFFWrite() from different tasks. */
         xParameters.pvSemaphore = ( void * ) xPlusFATMutex;
 
-        pxDisk->pxIOManager = FF_CreateIOManger( &xParameters, &xFFError );
+        pxDisk->pxIOManager = FF_CreateIOManager( &xParameters, &xFFError );
 
         if( pxDisk->pxIOManager == NULL )
         {
-            FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManger: %s\n", ( const char * ) FF_GetErrMessage( xFFError ) );
+            FF_PRINTF( "FF_SDDiskInit: FF_CreateIOManager: %s\n", ( const char * ) FF_GetErrMessage( xFFError ) );
             FF_SDDiskDelete( pxDisk );
             pxDisk = NULL;
             break;
@@ -1062,7 +1062,7 @@ volatile unsigned sd_int_count = 0;
         if( ( ulStatusReg & ulBitMask ) != ulBitMask )
         {
             ulStatusReg = XSdPs_ReadReg( InstancePtr->Config.BaseAddress, XSDPS_NORM_INTR_STS_OFFSET );
-            FF_PRINTF( "%s: XSdPs_WaitInterrupt = 0x%02x\r\n", __func__, (unsigned)ulStatusReg );
+            FF_PRINTF( "%s: XSdPs_WaitInterrupt = 0x%02x\r\n", __func__, ( unsigned ) ulStatusReg );
 
             /* Avoid logging about the 'CMD1' command which always fails on an SD-card. */
             if( ulWait != 0U )

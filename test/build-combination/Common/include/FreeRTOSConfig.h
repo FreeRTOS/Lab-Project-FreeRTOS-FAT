@@ -116,16 +116,14 @@
 
 /* Assert call defined for debug builds. */
 void vAssertCalled( const char * pcFile,
-                    unsigned long ulLine ) __attribute__((noreturn));
-
-#define configASSERT( x )
+                    unsigned long ulLine );
 
 /* The function that implements FreeRTOS printf style output, and the macro
  * that maps the configPRINTF() macros to that function. */
 #define configPRINTF( X )
 
 /* Non-format version thread-safe print. */
-#define configPRINT( X )
+extern void vLoggingPrint( const char * pcMessage );
 
 /* Non-format version thread-safe print. */
 #define configPRINT_STRING( X )
@@ -144,7 +142,7 @@ void vAssertCalled( const char * pcFile,
  * command interpreter running, and it has its own local output buffer, so the
  * global buffer is just set to be one byte long as it is not used and should not
  * take up unnecessary RAM. */
-#define configCOMMAND_INT_MAX_OUTPUT_SIZE    1
+#define configCOMMAND_INT_MAX_OUTPUT_SIZE    ( 1 )
 
 #define configPROFILING                      ( 0 )
 

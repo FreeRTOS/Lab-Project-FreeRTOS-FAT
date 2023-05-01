@@ -1213,9 +1213,9 @@
  *		u16 XSdPs_ReadReg(u32 BaseAddress. int RegOffset)
  *
  ******************************************************************************/
-#ifndef INLINE
-    #define INLINE    __inline
-#endif
+    #ifndef INLINE
+        #define INLINE    __inline
+    #endif
     static INLINE u16 XSdPs_ReadReg16( u32 BaseAddress,
                                        u8 RegOffset )
     {
