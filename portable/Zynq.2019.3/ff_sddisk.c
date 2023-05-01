@@ -433,7 +433,7 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 /*-----------------------------------------------------------*/
 
 /* Initialise the SDIO driver and mount an SD card */
-BaseType_t xMountFailIgnore = 0;
+BaseType_t xMountFailIgnore = 1;
 
 /* _HT_ : the function FF_SDDiskInit() used to mount partition-0.
  * It would be nice if it has a parameter indicating the partition
