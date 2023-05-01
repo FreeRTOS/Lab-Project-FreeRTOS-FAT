@@ -1134,11 +1134,11 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xReturn = FF_ERR_NULL_POINTER | FF_BYTESLEFT;
+        xReturn = FF_createERR(FF_ERR_NULL_POINTER, FF_BYTESLEFT);
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
-        xReturn = FF_ERR_FILE_NOT_OPENED_IN_READ_MODE | FF_BYTESLEFT;
+        xReturn = FF_createERR(FF_ERR_FILE_NOT_OPENED_IN_READ_MODE, FF_BYTESLEFT);
     }
     else if( pxFile->ulFilePointer >= pxFile->ulFileSize )
     {
@@ -1149,7 +1149,7 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
         xReturn = pxFile->ulFileSize - pxFile->ulFilePointer;
     }
 
-    return xReturn;
+    return (int32_t) xReturn;
 } /* FF_BytesLeft() */
 /*-----------------------------------------------------------*/
 
@@ -1990,17 +1990,17 @@ int32_t FF_GetC( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xResult = FF_ERR_NULL_POINTER | FF_GETC; /* Ensure this is a signed error. */
+        xResult = FF_createERR(FF_ERR_NULL_POINTER, FF_GETC); /* Ensure this is a signed error. */
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
-        xResult = (FF_Error_t) ( FF_ERR_FILE_NOT_OPENED_IN_READ_MODE | FF_GETC );
+        xResult = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_READ_MODE, FF_GETC );
     }
     else if( pxFile->ulFilePointer >= pxFile->ulFileSize )
     {
         /* The end-of-file is reached.  The error READ_ZERO will not be
          * returned, it is just used to avoid further processing. */
-        xResult = (FF_Error_t) ( FF_ERR_FILE_READ_ZERO | FF_READ );
+        xResult = FF_createERR( FF_ERR_FILE_READ_ZERO, FF_READ );
     }
     else
     {
@@ -2483,7 +2483,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
 
     if( pxFile == NULL )
     { /* Ensure we don't have a Null file pointer on a Public interface. */
-        xResult = FF_ERR_NULL_POINTER | FF_PUTC;
+        xResult = FF_createERR(FF_ERR_NULL_POINTER, FF_PUTC);
     }
     else if( ( pxFile->ucMode & FF_MODE_WRITE ) == 0 )
     {
@@ -2609,7 +2609,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
             }
             else
             {
-                xError = ( FF_Error_t ) ( FF_SEEK | FF_ERR_FILE_SEEK_INVALID_ORIGIN );
+                xError = FF_createERR( FF_ERR_FILE_SEEK_INVALID_ORIGIN, FF_SEEK );
                 /* To supress a compiler warning. */
                 ulPosition = ( uint32_t ) 0u;
             }
@@ -2626,7 +2626,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
                 }
                 else
                 {
-                    xError = ( FF_Error_t ) ( FF_SEEK | FF_ERR_FILE_SEEK_INVALID_POSITION );
+                    xError = FF_createERR( FF_ERR_FILE_SEEK_INVALID_POSITION, FF_SEEK );
                 }
             }
         }
@@ -2769,7 +2769,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
         {
             if( pxFile->ulValidFlags & FF_VALID_FLAG_DELETED )
             { /*if (pxFile->FileDeleted) */
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETFILETIME );
+                xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_SETFILETIME );
             }
             else if( ( pxFile->ucMode & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) == 0 )
             {

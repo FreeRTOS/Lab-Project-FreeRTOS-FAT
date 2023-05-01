@@ -372,7 +372,7 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
 
         if( FF_isERR( xError ) )
         {
-            xError = FF_GETERROR( xError ) | FF_GETFATENTRY;
+            xError = FF_CreateError(FF_GETERROR( xError ), FF_GETFATENTRY);
         }
         else
         {
@@ -505,7 +505,7 @@ uint32_t FF_getFATEntry( FF_IOManager_t * pxIOManager,
 
         if( FF_isERR( xError ) )
         {
-            xError = ( FF_Error_t ) ( FF_GETERROR( xError ) | FF_GETFATENTRY );
+            xError = FF_createERR( FF_GETERROR( xError ), FF_GETFATENTRY );
         }
         else
         {
@@ -946,7 +946,7 @@ FF_Error_t FF_putFATEntry( FF_IOManager_t * pxIOManager,
 
             if( FF_isERR( xError ) )
             {
-                xError = (FF_Error_t) ( FF_GETERROR( xError ) | FF_PUTFATENTRY );
+                xError = FF_createERR( FF_GETERROR( xError ), FF_PUTFATENTRY );
                 break;
             }
 
@@ -1055,7 +1055,7 @@ FF_Error_t FF_putFATEntry( FF_IOManager_t * pxIOManager,
         {
             /* There is no free cluster any more. */
             ulCluster = 0;
-            xError = ( FF_Error_t ) ( FF_FINDFREECLUSTER | FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE );
+            xError = FF_createERR( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE, FF_FINDFREECLUSTER );
         }
 
         *pxError = xError;

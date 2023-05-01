@@ -924,7 +924,7 @@ int ff_rename( const char * pcOldName,
     /* Find the i/o manager which can handle this path */
     if( FF_FS_Find( pcOldName, &xHandlers[ 0 ] ) == pdFALSE )
     {
-        xError = ( int32_t ) ( FF_ERR_NULL_POINTER | FF_MOVE );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
         ff_errno = pdFREERTOS_ERRNO_ENXIO; /* No such device or address */
     }
     else
@@ -938,7 +938,7 @@ int ff_rename( const char * pcOldName,
                 {
                     /* Could not allocate space to store a file name. */
                     ff_errno = pdFREERTOS_ERRNO_ENOMEM;
-                    xError = ( int32_t ) ( FF_ERR_NOT_ENOUGH_MEMORY | FF_MOVE );
+                    xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_MOVE );
                 }
                 else
                 {
@@ -960,12 +960,12 @@ int ff_rename( const char * pcOldName,
             /* Find the i/o manager which can handle this path */
             if( FF_FS_Find( pcNewName, &( xHandlers[ 1 ] ) ) == pdFALSE )
             {
-                xError = ( int32_t ) ( FF_ERR_NULL_POINTER | FF_MOVE );
+                xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
                 ff_errno = pdFREERTOS_ERRNO_ENXIO; /* No such device or address */
             }
             else if( xHandlers[ 0 ].pxManager != xHandlers[ 1 ].pxManager )
             {
-                xError = ( int32_t ) ( FF_ERR_NULL_POINTER | FF_MOVE );
+                xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
                 /* Cross-device link, which can not be done. */
                 ff_errno = pdFREERTOS_ERRNO_EXDEV;
             }
@@ -1039,7 +1039,7 @@ int ff_stat( const char * pcName,
     if( FF_FS_Find( pcName, &xHandler ) == pdFALSE )
     {
         /* No such device or address. */
-        xError = ( FF_Error_t ) ( pdFREERTOS_ERRNO_ENXIO | FF_STAT_FUNC );
+        xError = FF_createERR( pdFREERTOS_ERRNO_ENXIO, FF_STAT_FUNC );
     }
     else
     {
@@ -1300,7 +1300,7 @@ int ff_findfirst( const char * pcPath,
     {
         if( ( iIsRootDir == pdFALSE ) || ( FF_FS_Count() == 0 ) )
         {
-            stdioSET_ERRNO( prvFFErrorToErrno( ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_FINDFIRST ) ) );
+            stdioSET_ERRNO( prvFFErrorToErrno( FF_createERR( FF_ERR_NULL_POINTER, FF_FINDFIRST ) ) );
             iReturn = -1;
         }
     }
@@ -1351,12 +1351,12 @@ int ff_findnext( FF_FindData_t * pxFindData )
 
     if( pxFindData->xDirectoryHandler.u.bits.bIsValid == pdFALSE )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_DIR_INVALID_PARAMETER | FF_FINDNEXT );
+        xError = FF_createERR( FF_ERR_DIR_INVALID_PARAMETER, FF_FINDNEXT );
         FF_PRINTF( "ff_findnext: xDirectoryHandler not valid\n" );
     }
     else
     {
-        xError = ( FF_Error_t ) ( FF_ERR_DIR_END_OF_DIR | FF_FINDNEXT );
+        xError = FF_createERR( FF_ERR_DIR_END_OF_DIR, FF_FINDNEXT );
 
         if( pxFindData->xDirectoryHandler.pxManager != NULL )
         {

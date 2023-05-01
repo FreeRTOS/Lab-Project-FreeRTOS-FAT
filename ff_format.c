@@ -1008,7 +1008,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
             if( ulSummedSizes > 100 )
             {
-                return ( FF_Error_t ) ( FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE );
+                return FF_createERR ( FF_ERR_IOMAN_BAD_MEMSIZE, FF_FORMATPARTITION );
             }
 
             ulSummedSizes = 100;
@@ -1018,7 +1018,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
             if( ulSummedSizes > ulAvailable )
             {
-                return ( FF_Error_t ) ( FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE );
+                return FF_createERR( FF_ERR_IOMAN_BAD_MEMSIZE, FF_FORMATPARTITION );
             }
 
             break;
