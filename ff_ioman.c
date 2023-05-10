@@ -662,7 +662,7 @@ int32_t FF_BlockWrite( FF_IOManager_t * pxIOManager,
     if( ( slRetVal == 0ul ) && ( pxIOManager->xBlkDevice.fnpWriteBlocks != NULL ) )
     {
         do
-        { /* Make sure we don't execute a NULL. */
+        {   /* Make sure we don't execute a NULL. */
             if( ( xSemLocked == pdFALSE ) &&
                 ( ( pxIOManager->ucFlags & FF_IOMAN_BLOCK_DEVICE_IS_REENTRANT ) == pdFALSE ) )
             {
@@ -1518,7 +1518,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
         }
 
         if( pxPartition->ulSectorsPerFAT == 0 )
-        { /* FAT32 */
+        {   /* FAT32 */
             pxPartition->ulSectorsPerFAT = FF_getLong( pxBuffer->pucBuffer, FF_FAT_32_SECTORS_PER_FAT );
             pxPartition->ulRootDirCluster = FF_getLong( pxBuffer->pucBuffer, FF_FAT_ROOT_DIR_CLUSTER );
             memcpy( pxPartition->pcVolumeLabel, pxBuffer->pucBuffer + FF_FAT_32_VOL_LABEL, sizeof( pxPartition->pcVolumeLabel ) - 1 );

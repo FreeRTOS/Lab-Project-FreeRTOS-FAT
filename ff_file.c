@@ -2499,7 +2499,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
     FF_Error_t xResult;
 
     if( pxFile == NULL )
-    { /* Ensure we don't have a Null file pointer on a Public interface. */
+    {   /* Ensure we don't have a Null file pointer on a Public interface. */
         xResult = FF_ERR_NULL_POINTER | FF_PUTC;
     }
     else if( ( pxFile->ucMode & FF_MODE_WRITE ) == 0 )
@@ -3163,7 +3163,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
 
         /* Handle Linked list! */
         FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
-        { /* Semaphore is required, or linked list could become corrupted. */
+        {   /* Semaphore is required, or linked list could become corrupted. */
             pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
 
             if( pxFileChain == pxFile )
