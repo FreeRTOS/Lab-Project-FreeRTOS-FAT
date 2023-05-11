@@ -144,6 +144,7 @@ BaseType_t FF_SDDiskMount( FF_Disk_t * pxDisk )
         FF_PRINTF( "****** FreeRTOS+FAT initialized %u sectors\n", ( unsigned ) pxDisk->pxIOManager->xPartition.ulTotalSectors );
         return pdPASS;
     }
+
     return pdFAIL;
 }
 /*-----------------------------------------------------------*/
@@ -173,6 +174,7 @@ BaseType_t FF_SDDiskDelete( FF_Disk_t * pxDisk )
     {
         vPortFree( pxDisk );
     }
+
     return pdTRUE;
 }
 /*-----------------------------------------------------------*/

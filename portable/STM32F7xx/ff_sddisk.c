@@ -342,7 +342,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
         else
         {
             /* Some error occurred. */
-            FF_PRINTF( "prvFFRead: %u: %lu (%s)\n", (unsigned) ulSectorNumber, sd_result, prvSDCodePrintable( sd_result ) );
+            FF_PRINTF( "prvFFRead: %u: %lu (%s)\n", ( unsigned ) ulSectorNumber, sd_result, prvSDCodePrintable( sd_result ) );
         }
     }
     else
@@ -352,7 +352,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
 
         if( pxDisk->xStatus.bIsInitialised != pdFALSE )
         {
-            FF_PRINTF( "prvFFRead: warning: %u + %u > %u\n", (unsigned) ulSectorNumber, (unsigned)ulSectorCount, (unsigned)pxDisk->ulNumberOfSectors );
+            FF_PRINTF( "prvFFRead: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors );
         }
     }
 
@@ -441,14 +441,14 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
         }
         else
         {
-            FF_PRINTF( "prvFFWrite: %u: %lu (%s)\n", (unsigned)ulSectorNumber, sd_result, prvSDCodePrintable( sd_result ) );
+            FF_PRINTF( "prvFFWrite: %u: %lu (%s)\n", ( unsigned ) ulSectorNumber, sd_result, prvSDCodePrintable( sd_result ) );
         }
     }
     else
     {
         if( pxDisk->xStatus.bIsInitialised != pdFALSE )
         {
-            FF_PRINTF( "prvFFWrite: warning: %u + %u > %u\n", (unsigned) ulSectorNumber, (unsigned) ulSectorCount, (unsigned) pxDisk->ulNumberOfSectors );
+            FF_PRINTF( "prvFFWrite: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors );
         }
     }
 
@@ -727,7 +727,7 @@ BaseType_t FF_SDDiskMount( FF_Disk_t * pxDisk )
     else
     {
         pxDisk->xStatus.bIsMounted = pdTRUE;
-        FF_PRINTF( "****** FreeRTOS+FAT initialized %u sectors\n", (unsigned) pxDisk->pxIOManager->xPartition.ulTotalSectors );
+        FF_PRINTF( "****** FreeRTOS+FAT initialized %u sectors\n", ( unsigned ) pxDisk->pxIOManager->xPartition.ulTotalSectors );
         xReturn = pdPASS;
     }
 
@@ -830,10 +830,10 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "Partition Nr   %8u\n", pxDisk->xStatus.bPartitionNumber );
         FF_PRINTF( "Type           %8u (%s)\n", pxIOManager->xPartition.ucType, pcTypeName );
         FF_PRINTF( "VolLabel       '%8s' \n", pxIOManager->xPartition.pcVolumeLabel );
-        FF_PRINTF( "TotalSectors   %8u\n", (unsigned) pxIOManager->xPartition.ulTotalSectors );
-        FF_PRINTF( "SecsPerCluster %8u\n", (unsigned) pxIOManager->xPartition.ulSectorsPerCluster );
-        FF_PRINTF( "Size           %8u MB\n", (unsigned) ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", (unsigned) ulFreeSizeMB, iPercentageFree );
+        FF_PRINTF( "TotalSectors   %8u\n", ( unsigned ) pxIOManager->xPartition.ulTotalSectors );
+        FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
+        FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
+        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
     }
 
     return xReturn;
@@ -988,7 +988,7 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
     FF_PRINTF( "HAL_SD_Init: %d: %s type: %s Capacity: %u MB\n",
                SD_state, prvSDCodePrintable( ( uint32_t ) SD_state ),
                xSDHandle.CardType == HIGH_CAPACITY_SD_CARD ? "SDHC" : "SD",
-               (unsigned)(xSDCardInfo.CardCapacity / ( 1024 * 1024 ) ));
+               ( unsigned ) ( xSDCardInfo.CardCapacity / ( 1024 * 1024 ) ) );
 
     return ( SD_state == SD_OK ) ? pdPASS : pdFAIL;
 }

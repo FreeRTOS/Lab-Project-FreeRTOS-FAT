@@ -251,7 +251,7 @@
         pxTimeBuf->tm_mon = iMonth;
 
         /* Month days are counted as 1..31 */
-        pxTimeBuf->tm_mday = ( int )ulDayNumber + 1;
+        pxTimeBuf->tm_mday = ( int ) ulDayNumber + 1;
 
         return pxTimeBuf;
     }
@@ -282,7 +282,7 @@
 
         /* Add days past before this year: */
         ulDays +=
-            + ( time_t ) ( iYear * 365 )         /* Every normal year. */
+            +( time_t ) ( iYear * 365 )         /* Every normal year. */
             + ( time_t ) ( iYear / 4 )          /* Plus a day for every leap year. */
             - ( time_t ) ( iYear / 100 )        /* Minus the centuries. */
             + ( time_t ) ( iYear / 400 )        /* Except every fourth century. */
