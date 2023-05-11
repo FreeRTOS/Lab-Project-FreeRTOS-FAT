@@ -3140,7 +3140,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
 
         /* Handle Linked list! */
         FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
-        { /* Semaphore is required, or linked list could become corrupted. */
+        {   /* Semaphore is required, or linked list could become corrupted. */
             pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
 
             if( pxFileChain == pxFile )
