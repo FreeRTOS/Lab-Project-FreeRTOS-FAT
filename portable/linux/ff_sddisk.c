@@ -76,8 +76,9 @@ void FF_SDDiskFlush( FF_Disk_t * pxDisk )
 
 FF_Disk_t * FF_SDDiskInit( const char * pcName )
 {
-    ( void ) pcName; /* Unused */
     FF_Disk_t * pxDisk = NULL;
+
+    ( void ) pcName; /* Unused */
 
     pxDisk = ( FF_Disk_t * ) pvPortMalloc( sizeof( *pxDisk ) );
 

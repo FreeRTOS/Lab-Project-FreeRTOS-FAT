@@ -186,22 +186,16 @@ target_compile_definitions( freertos_plus_fat
 
 target_compile_options( freertos_plus_fat
   PRIVATE
+    $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-array-bounds>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-cast-qual>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-constant-conversion>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-covered-switch-default>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation-unknown-command>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-extra-semi-stmt>
+    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-declaration-after-statement>
     $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wno-format>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-implicit-int-conversion>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-missing-variable-declarations>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-overflow>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-padded>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-pedantic>
 
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-reserved-macro-identifier>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-shorten-64-to-32>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-sign-conversion>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-tautological-constant-out-of-range-compare>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-type-limits>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-undef>

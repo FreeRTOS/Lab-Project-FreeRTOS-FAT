@@ -339,7 +339,7 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
         {
             /* Setting an error code without the Module/Function,
              * will be filled-in by the caller. */
-            xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_ERRFLAG );
+            xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_ERRFLAG );
         }
     }
 
@@ -372,7 +372,7 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
 
         if( FF_isERR( xError ) )
         {
-            xError = FF_GETERROR( xError ) | FF_GETFATENTRY;
+            xError = FF_CreateError( FF_GETERROR( xError ), FF_GETFATENTRY );
         }
         else
         {
@@ -394,7 +394,7 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
 
                 if( pxBuffer == NULL )
                 {
-                    xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_GETFATENTRY );
+                    xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_GETFATENTRY );
                 }
                 else
                 {
@@ -444,7 +444,7 @@ uint32_t FF_getFATEntry( FF_IOManager_t * pxIOManager,
     {
         /* _HT_ find a more specific error code.
          * Probably not really important as this is a function internal to the library. */
-        xError = ( FF_Error_t ) ( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE | FF_GETFATENTRY );
+        xError = FF_createERR( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE, FF_GETFATENTRY );
     }
     else
     {
@@ -505,7 +505,7 @@ uint32_t FF_getFATEntry( FF_IOManager_t * pxIOManager,
 
         if( FF_isERR( xError ) )
         {
-            xError = FF_GETERROR( xError ) | FF_GETFATENTRY;
+            xError = FF_createERR( FF_GETERROR( xError ), FF_GETFATENTRY );
         }
         else
         {
@@ -568,7 +568,7 @@ uint32_t FF_getFATEntry( FF_IOManager_t * pxIOManager,
         *pxError = xError;
     }
 
-    return ( int32_t ) ulFATEntry;
+    return ulFATEntry;
 } /* FF_getFATEntry() */
 /*-----------------------------------------------------------*/
 
@@ -595,14 +595,14 @@ FF_Error_t FF_ClearCluster( FF_IOManager_t * pxIOManager,
 
             if( pxBuffer == NULL )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_CLEARCLUSTER );
+                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_CLEARCLUSTER );
                 break;
             }
 
             memset( pxBuffer->pucBuffer, 0x00, pxIOManager->usSectorSize );
         }
 
-        xError = FF_BlockWrite( pxIOManager, ulBaseLBA + xIndex, 1, pxBuffer->pucBuffer, pdFALSE );
+        xError = FF_BlockWrite( pxIOManager, ( uint32_t ) ( ulBaseLBA + xIndex ), 1U, pxBuffer->pucBuffer, pdFALSE );
 
         if( FF_isERR( xError ) )
         {
@@ -631,13 +631,11 @@ FF_Error_t FF_ClearCluster( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief	Returns the Cluster address of the Cluster number from the beginning of a chain.
  *
  *	@param	pxIOManager	FF_IOManager_t Object
  *	@param	ulStart		Cluster address of the first cluster in the chain.
  *	@param	ulCount		Number of Cluster in the chain,
- *
  *
  *
  **/
@@ -728,7 +726,6 @@ uint32_t FF_FindEndOfChain( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief	Tests if the ulFATEntry is an End of Chain Marker.
  *
  *	@param	pxIOManager	FF_IOManager_t Object
@@ -826,7 +823,7 @@ BaseType_t FF_isEndOfChain( FF_IOManager_t * pxIOManager,
                 {
                     if( pxBuffer == NULL )
                     {
-                        xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_PUTFATENTRY );
+                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_PUTFATENTRY );
                         break;
                     }
 
@@ -844,7 +841,7 @@ BaseType_t FF_isEndOfChain( FF_IOManager_t * pxIOManager,
                 {
                     if( pxBuffer == NULL )
                     {
-                        xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_PUTFATENTRY );
+                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_PUTFATENTRY );
                         break;
                     }
 
@@ -864,7 +861,6 @@ BaseType_t FF_isEndOfChain( FF_IOManager_t * pxIOManager,
 #endif /* if ( ffconfigFAT12_SUPPORT != 0 ) */
 
 /**
- *	@private
  *	@brief	Writes a new Entry to the FAT Tables.
  *
  *	@param	pxIOManager		IOMAN object.
@@ -899,7 +895,7 @@ FF_Error_t FF_putFATEntry( FF_IOManager_t * pxIOManager,
     if( ( ulCluster == 0ul ) || ( ulCluster >= pxIOManager->xPartition.ulNumClusters ) )
     {
         /* find a more specific error code. */
-        xError = ( FF_Error_t ) ( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE | FF_PUTFATENTRY );
+        xError = FF_createERR( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE, FF_PUTFATENTRY );
     }
     else
     {
@@ -950,7 +946,7 @@ FF_Error_t FF_putFATEntry( FF_IOManager_t * pxIOManager,
 
             if( FF_isERR( xError ) )
             {
-                xError = FF_GETERROR( xError ) | FF_PUTFATENTRY;
+                xError = FF_createERR( FF_GETERROR( xError ), FF_PUTFATENTRY );
                 break;
             }
 
@@ -1007,13 +1003,12 @@ FF_Error_t FF_putFATEntry( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief	Finds a Free Cluster and returns its number.
  *
  *	@param	pxIOManager	IOMAN Object.
  *
  *	@return	The number of the cluster found to be free.
- *	@return 0 on error.
+ *	@retval 0 on error.
  **/
 #if ( ffconfigFAT12_SUPPORT != 0 )
     static uint32_t prvFindFreeClusterSimple( FF_IOManager_t * pxIOManager,
@@ -1060,7 +1055,7 @@ FF_Error_t FF_putFATEntry( FF_IOManager_t * pxIOManager,
         {
             /* There is no free cluster any more. */
             ulCluster = 0;
-            xError = ( FF_Error_t ) ( FF_FINDFREECLUSTER | FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE );
+            xError = FF_createERR( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE, FF_FINDFREECLUSTER );
         }
 
         *pxError = xError;
@@ -1112,7 +1107,7 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
 
                     if( pxBuffer == NULL )
                     {
-                        xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_FINDFREECLUSTER );
+                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_FINDFREECLUSTER );
                     }
                     else
                     {
@@ -1134,8 +1129,8 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
             uint32_t ulFATSector;
             uint32_t ulFATOffset;
 
-            ulEntriesPerSector = pxIOManager->usSectorSize / xEntrySize;
-            ulFATOffset = ulCluster * xEntrySize;
+            ulEntriesPerSector = ( uint32_t ) ( pxIOManager->usSectorSize / xEntrySize );
+            ulFATOffset = ( uint32_t ) ( ulCluster * xEntrySize );
 
             /* Start from a sector where the first free entry is expected,
              * and iterate through every FAT sector. */
@@ -1147,7 +1142,7 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
 
                 if( pxBuffer == NULL )
                 {
-                    xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_FINDFREECLUSTER );
+                    xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_FINDFREECLUSTER );
                     break;
                 }
 
@@ -1156,7 +1151,7 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
                     /* Double-check: don't use non-existing clusters */
                     if( ulCluster >= uNumClusters )
                     {
-                        xError = ( FF_Error_t ) ( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE | FF_FINDFREECLUSTER );
+                        xError = FF_createERR( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE, FF_FINDFREECLUSTER );
                         break;
                     }
 
@@ -1201,7 +1196,7 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
             if( ( FF_isERR( xError ) == pdFALSE ) &&
                 ( ulFATSector == pxIOManager->xPartition.ulSectorsPerFAT ) )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE | FF_FINDFREECLUSTER );
+                xError = FF_createERR( FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE, FF_FINDFREECLUSTER );
             }
         } /* if( FF_isERR( xError ) == pdFALSE ) */
     }     /* if( pxIOManager->xPartition.ucType != FF_T_FAT12 ) */
@@ -1243,10 +1238,9 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- * @private
  * @brief	Creates a Cluster Chain
- *	@return > 0 New created cluster
- *	@return = 0 See pxError
+ *	@retval > 0 New created cluster
+ *	@retval = 0 See pxError
  **/
 uint32_t FF_CreateClusterChain( FF_IOManager_t * pxIOManager,
                                 FF_Error_t * pxError )
@@ -1316,17 +1310,16 @@ uint32_t FF_GetChainLength( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief Free's Disk space by freeing unused links on Cluster Chains
  *
- *	@param	pxIOManager,			IOMAN object.
+ *	@param	pxIOManager	    IOMAN object.
  *	@param	ulStartCluster	Cluster Number that starts the chain.
- *	@param	ulCount			Number of Clusters from the end of the chain to unlink.
- *	@param	ulCount			0 Means Free the entire chain (delete file).
- *	@param	ulCount			1 Means mark the start cluster with EOF.
+ *	@param	xDoTruncate		Perform truncation of the FAT entry
+ *                          when non-zero - truncate
+ *                          when 0 - do not perform truncation
  *
- *	@return 0 On Success.
- *	@return	-1 If the device driver failed to provide access.
+ *	@retval 0 On Success.
+ *	@retval	-1 If the device driver failed to provide access.
  *
  **/
 FF_Error_t FF_UnlinkClusterChain( FF_IOManager_t * pxIOManager,
@@ -1494,7 +1487,7 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
 
                     if( pxBuffer == NULL )
                     {
-                        xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_COUNTFREECLUSTERS );
+                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_COUNTFREECLUSTERS );
                     }
                     else
                     {
@@ -1542,7 +1535,7 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
 
                 if( pxBuffer == NULL )
                 {
-                    xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_COUNTFREECLUSTERS );
+                    xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_COUNTFREECLUSTERS );
                     break;
                 }
 

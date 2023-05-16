@@ -219,9 +219,9 @@ static portINLINE uint32_t ulMin32( uint32_t a,
 
 /**
  * @brief: Decide whether FAT32 or FAT16 shall be used and try to find an optimum cluster size.
- * @param[in] pxSet: A set of parameters describing this format session.
- * @param[in] xPreferFAT16: When pdTRUE, it will use FAT16 in stead of FAT32.
- * @param[in] xSmallClusters: When pdTRUE, it will make the cluster size as small as possible.
+ * @param[in] pxSet A set of parameters describing this format session.
+ * @param[in] xPreferFAT16 When pdTRUE, it will use FAT16 in stead of FAT32.
+ * @param[in] xSmallClusters When pdTRUE, it will make the cluster size as small as possible.
  * @return A standard +FAT error code ( not an errno ).
  * @note In order to get the best speed, use pdFALSE, pdFALSE: to get FAT32 with large clusters.
  */
@@ -252,13 +252,13 @@ static FF_Error_t prvFormatGetClusterSize( struct xFormatSet * pxSet,
 
     for( ; ; )
     {
-        int32_t groupSize;
+        uint32_t groupSize;
         /* Usable sectors */
         pxSet->ulUsableDataSectors = pxSet->ulSectorCount - pxSet->ulNonDataSectors;
         /* Each group consists of 'xFATCount' sectors + 'ulClustersPerFATSector' clusters */
-        groupSize = pxSet->xFATCount + pxSet->ulClustersPerFATSector * pxSet->ulSectorsPerCluster;
+        groupSize = ( uint32_t ) pxSet->xFATCount + pxSet->ulClustersPerFATSector * pxSet->ulSectorsPerCluster;
         /* This amount of groups will fit: */
-        pxSet->ulSectorsPerFAT = ( pxSet->ulUsableDataSectors + groupSize - pxSet->ulSectorsPerCluster - pxSet->xFATCount ) / groupSize;
+        pxSet->ulSectorsPerFAT = ( uint32_t ) ( ( pxSet->ulUsableDataSectors + groupSize - pxSet->ulSectorsPerCluster - ( uint32_t ) pxSet->xFATCount ) / groupSize );
 
         pxSet->ulUsableDataClusters = ulMin32(
             ( uint32_t ) ( pxSet->ulUsableDataSectors - pxSet->xFATCount * pxSet->ulSectorsPerFAT ) / pxSet->ulSectorsPerCluster,
@@ -283,7 +283,7 @@ static FF_Error_t prvFormatGetClusterSize( struct xFormatSet * pxSet,
                        pxSet->ucFATType == FF_T_FAT32 ? 32 : 16,
                        xPreferFAT16 ? 16 : 32,
                        ( unsigned ) pxSet->ulSectorCount );
-            xReturn = FF_ERR_IOMAN_BAD_MEMSIZE | FF_MODULE_FORMAT;
+            xReturn = FF_createERR( FF_ERR_IOMAN_BAD_MEMSIZE, FF_MODULE_FORMAT );
             break;
         }
 
@@ -304,7 +304,7 @@ static FF_Error_t prvFormatGetClusterSize( struct xFormatSet * pxSet,
 
 /**
  * @brief: Optimise FAT location: for bigger disks, let the FAT start at 4MB.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  */
 static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
 {
@@ -321,7 +321,7 @@ static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
          * http://3gfp.com/wp/2014/07/formatting-sd-cards-for-speed-and-lifetime/
          */
         pxSet->ulFATReservedSectors = MX_LBA_TO_MOVE_FAT - pxSet->ulHiddenSectors;
-        pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + pxSet->iFAT16RootSectors;
+        pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + ( uint32_t ) pxSet->iFAT16RootSectors;
 
         ulRemaining = ( pxSet->ulNonDataSectors + 2U * pxSet->ulSectorsPerFAT ) % 128U;
 
@@ -329,7 +329,7 @@ static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
         {
             /* In order to get ClusterBeginLBA well aligned (on a 128 sector boundary) */
             pxSet->ulFATReservedSectors += ( 128U - ulRemaining );
-            pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + pxSet->iFAT16RootSectors;
+            pxSet->ulNonDataSectors = pxSet->ulFATReservedSectors + ( uint32_t ) pxSet->iFAT16RootSectors;
         }
 
         pxSet->ulUsableDataSectors = pxSet->ulSectorCount - pxSet->ulNonDataSectors - 2 * pxSet->ulSectorsPerFAT;
@@ -340,7 +340,7 @@ static void prvFormatOptimiseFATLocation( struct xFormatSet * pxSet )
 
 /**
  * @brief: Write the so-called BIOS Parameter Block ( BPB ). It describes the FAT partition.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
@@ -373,8 +373,8 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
     FF_putLong( pxSet->pucSectorBuffer, OFS_BPB_HiddSec_32, ( uint32_t ) pxSet->ulHiddenSectors );       /* 0x01C / n.a.	0 for nonparitioned volume */
 
     FF_putChar( pxSet->pucSectorBuffer, OFS_BPB_SecPerClus_8, ( uint32_t ) pxSet->ulSectorsPerCluster ); /*  0x00D / Only 1, 2, 4, 8, 16, 32, 64, 128 */
-    FF_PRINTF( "FF_Format: SecCluster %lu DatSec %lu DataClus %lu pxSet->ulClusterBeginLBA %lu\n",
-               pxSet->ulSectorsPerCluster, pxSet->ulUsableDataSectors, pxSet->ulUsableDataClusters, pxSet->ulClusterBeginLBA );
+    FF_PRINTF( "FF_Format: SecCluster %u DatSec %u DataClus %u pxSet->ulClusterBeginLBA %lu\n",
+               ( unsigned ) pxSet->ulSectorsPerCluster, ( unsigned ) pxSet->ulUsableDataSectors, ( unsigned ) pxSet->ulUsableDataClusters, pxSet->ulClusterBeginLBA );
 
     /* This field is the new 32-bit total count of sectors on the volume. */
     /* This count includes the count of all sectors in all four regions of the volume */
@@ -427,8 +427,8 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
 
 /**
  * @brief: Initialise and clear the File Allocation Table ( FAT ).
- * @param[in] pxSet: A set of parameters describing this format session.
- * @param[in] lFatBeginLBA: The number of first sector of the FAT.
+ * @param[in] pxSet A set of parameters describing this format session.
+ * @param[in] lFatBeginLBA The number of first sector of the FAT.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvFormatInitialiseFAT( struct xFormatSet * pxSet,
@@ -462,7 +462,7 @@ static FF_Error_t prvFormatInitialiseFAT( struct xFormatSet * pxSet,
         xReturn = FF_BlockWrite( pxSet->pxIOManager, ( uint32_t ) lFatBeginLBA + pxSet->ulSectorsPerFAT, 1, pxSet->pucSectorBuffer, pdFALSE );
     }
 
-    FF_PRINTF( "FF_Format: Clearing entire FAT (2 x %lu sectors):\n", pxSet->ulSectorsPerFAT );
+    FF_PRINTF( "FF_Format: Clearing entire FAT (2 x %u sectors):\n", ( unsigned ) pxSet->ulSectorsPerFAT );
     {
         int32_t addr;
 
@@ -489,7 +489,7 @@ static FF_Error_t prvFormatInitialiseFAT( struct xFormatSet * pxSet,
 
 /**
  * @brief: Initialise and clear the root directory.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvFormatInitialiseRootDir( struct xFormatSet * pxSet,
@@ -511,7 +511,7 @@ static FF_Error_t prvFormatInitialiseRootDir( struct xFormatSet * pxSet,
     }
     else
     {
-        lLastAddress = lDirectoryBegin + pxSet->ulSectorsPerCluster;
+        lLastAddress = lDirectoryBegin + ( int32_t ) pxSet->ulSectorsPerCluster;
     }
 
     FF_PRINTF( "FF_Format: Clearing root directory at %08lX: %lu sectors\n", lDirectoryBegin, lLastAddress - lDirectoryBegin );
@@ -535,10 +535,10 @@ static FF_Error_t prvFormatInitialiseRootDir( struct xFormatSet * pxSet,
 
 /**
  * @brief Now deprecated, please use the new function 'FF_FormatDisk()'.
- * @param[in] pxDisk: The disk object.
- * @param[in] xPartitionNumber: the numer of the partitioned that must be FAT-formatted.
- * @param[in] xPreferFAT16: When pdTRUE, it will use FAT16 in stead of FAT32.
- * @param[in] xSmallClusters: When pdTRUE, it will make the cluster size as small as possible.
+ * @param[in] pxDisk The disk object.
+ * @param[in] xPartitionNumber the numer of the partitioned that must be FAT-formatted.
+ * @param[in] xPreferFAT16 When pdTRUE, it will use FAT16 in stead of FAT32.
+ * @param[in] xSmallClusters When pdTRUE, it will make the cluster size as small as possible.
  * @return A standard +FAT error code ( not an errno ).
  */
 FF_Error_t FF_Format( FF_Disk_t * pxDisk,
@@ -555,11 +555,11 @@ FF_Error_t FF_Format( FF_Disk_t * pxDisk,
 /**
  * @brief Format a partition of a disk, either as FAT16 or FAT32. It assumes that
  *        is has already been partitioned.
- * @param[in] pxDisk: The disk object.
- * @param[in] xPartitionNumber: the numer of the partitioned that must be FAT-formatted.
- * @param[in] xPreferFAT16: When pdTRUE, it will use FAT16 in stead of FAT32.
- * @param[in] xSmallClusters: When pdTRUE, it will make the cluster size as small as possible.
- * @param[in] pcVolumeName: A  string of 11 characters representing the name of the disk.
+ * @param[in] pxDisk The disk object.
+ * @param[in] xPartitionNumber the numer of the partitioned that must be FAT-formatted.
+ * @param[in] xPreferFAT16 When pdTRUE, it will use FAT16 in stead of FAT32.
+ * @param[in] xSmallClusters When pdTRUE, it will make the cluster size as small as possible.
+ * @param[in] pcVolumeName A  string of 11 characters representing the name of the disk.
  * @return A standard +FAT error code ( not an errno ).
  */
 FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
@@ -587,7 +587,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
     {
         if( xPartitionNumber >= xSet.xPartitionsFound.iCount )
         {
-            xReturn = FF_ERR_IOMAN_INVALID_PARTITION_NUM | FF_MODULE_FORMAT;
+            xReturn = FF_createERR( FF_ERR_IOMAN_INVALID_PARTITION_NUM, FF_MODULE_FORMAT );
             break;
         }
 
@@ -617,10 +617,10 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         xSet.pxIOManager->xPartition.ulBeginLBA = xSet.pxMyPartition->ulStartLBA;
 
         /* TODO: Find some solution here to get a unique disk ID */
-        xSet.ulVolumeID = ( rand() << 16 ) | rand(); /*_RB_ rand() has proven problematic in some environments. */
+        xSet.ulVolumeID = ( ( uint32_t ) rand() << 16 ) | ( uint32_t ) rand(); /*_RB_ rand() has proven problematic in some environments. */
 
         /* Sectors within partition which can not be used */
-        xSet.ulNonDataSectors = xSet.ulFATReservedSectors + xSet.iFAT16RootSectors;
+        xSet.ulNonDataSectors = xSet.ulFATReservedSectors + ( uint32_t ) xSet.iFAT16RootSectors;
 
         /* A fs dependent constant: */
         if( xSet.ucFATType == FF_T_FAT32 )
@@ -636,8 +636,9 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
             xSet.ulClustersPerFATSector = xSet.pxIOManager->usSectorSize / sizeof( uint16_t );
         }
 
-        FF_PRINTF( "FF_Format: Secs %lu Rsvd %lu Hidden %lu Root %lu Data %lu\n",
-                   xSet.ulSectorCount, xSet.ulFATReservedSectors, xSet.ulHiddenSectors, xSet.iFAT16RootSectors, xSet.ulSectorCount - xSet.ulNonDataSectors );
+        FF_PRINTF( "FF_Format: Secs %u Rsvd %u Hidden %u Root %u Data %u\n",
+                   ( unsigned ) xSet.ulSectorCount, ( unsigned ) xSet.ulFATReservedSectors, ( unsigned ) xSet.ulHiddenSectors,
+                   ( unsigned ) xSet.iFAT16RootSectors, ( unsigned ) xSet.ulSectorCount - xSet.ulNonDataSectors );
 
         /*****************************/
 
@@ -664,7 +665,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
 
         if( xSet.pucSectorBuffer == NULL )
         {
-            xReturn = FF_ERR_NOT_ENOUGH_MEMORY | FF_MODULE_FORMAT;
+            xReturn = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_MODULE_FORMAT );
             break;
         }
 
@@ -699,7 +700,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         }
 
         /*****************************/
-        lFatBeginLBA = xSet.ulHiddenSectors + xSet.ulFATReservedSectors;
+        lFatBeginLBA = ( int32_t ) ( xSet.ulHiddenSectors + xSet.ulFATReservedSectors );
 
         /* Initialise the FAT. */
         xReturn = prvFormatInitialiseFAT( &( xSet ), lFatBeginLBA );
@@ -710,22 +711,22 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         }
 
         /*****************************/
-        lDirectoryBegin = lFatBeginLBA + ( 2 * xSet.ulSectorsPerFAT );
+        lDirectoryBegin = lFatBeginLBA + ( int32_t ) ( 2 * xSet.ulSectorsPerFAT );
         #if ( ffconfigTIME_SUPPORT != 0 )
             {
                 FF_SystemTime_t str_t;
-                int16_t myShort;
+                uint16_t myShort;
 
                 FF_GetSystemTime( &str_t );
 
-                myShort = ( ( str_t.Hour << 11 ) & 0xF800 ) |
-                          ( ( str_t.Minute << 5 ) & 0x07E0 ) |
-                          ( ( str_t.Second / 2 ) & 0x001F );
+                myShort = ( ( uint16_t ) ( str_t.Hour << 11U ) & 0xF800U ) |
+                          ( ( uint16_t ) ( str_t.Minute << 5U ) & 0x07E0U ) |
+                          ( ( uint16_t ) ( str_t.Second / 2U ) & 0x001FU );
                 FF_putShort( xSet.pucSectorBuffer, 22, ( uint32_t ) myShort );
 
-                myShort = ( ( ( str_t.Year - 1980 ) << 9 ) & 0xFE00 ) |
-                          ( ( str_t.Month << 5 ) & 0x01E0 ) |
-                          ( str_t.Day & 0x001F );
+                myShort = ( ( uint16_t ) ( ( str_t.Year - 1980 ) << 9U ) & 0xFE00U ) |
+                          ( ( uint16_t ) ( str_t.Month << 5U ) & 0x01E0U ) |
+                          ( ( uint16_t ) ( str_t.Day & 0x001FU ) );
                 FF_putShort( xSet.pucSectorBuffer, 24, ( uint32_t ) myShort );
             }
         #endif /* ffconfigTIME_SUPPORT */
@@ -744,7 +745,7 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
 
 /**
  * @brief Create primary and extended partitions.
- * @param[in] pxSet: A set of parameters describing this format session.
+ * @param[in] pxSet A set of parameters describing this format session.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvPartitionPrimary( struct xPartitionSet * pxSet )
@@ -793,8 +794,8 @@ static FF_Error_t prvPartitionPrimary( struct xPartitionSet * pxSet )
 
 /**
  * @brief Create primary and extended partitions.
- * @param[in] pxSet: A set of parameters describing this format session.
- * @param[in] pParams: A set of variables describing the partitions.
+ * @param[in] pxSet A set of parameters describing this format session.
+ * @param[in] pParams A set of variables describing the partitions.
  * @return A standard +FAT error code.
  */
 static FF_Error_t prvPartitionExtended( struct xPartitionSet * pxSet,
@@ -909,8 +910,8 @@ static FF_Error_t prvPartitionExtended( struct xPartitionSet * pxSet,
 
 /**
  * @brief Create/initialise the partitions of a disk.
- * @param[in] pxDisk : The definition of the disk.
- * @param[in] pParams : A description of how the partitions shall be formatted.
+ * @param[in] pxDisk  The definition of the disk.
+ * @param[in] pParams  A description of how the partitions shall be formatted.
  * @return A standard +FAT error code ( not an errno ).
  */
 FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
@@ -963,7 +964,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
             pParams->xSizes[ 0 ] = 100;
         }
 
-        ulSummedSizes = pParams->xSizes[ 0 ];
+        ulSummedSizes = ( uint32_t ) pParams->xSizes[ 0 ];
     }
 
     /* Correct PrimaryCount if necessary. */
@@ -982,7 +983,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
             pParams->ulHiddenSectors = 4096;
         }
 
-        ulReservedSpace = xSet.ulInterSpace * ( xSet.xPartitionCount - pParams->xPrimaryCount );
+        ulReservedSpace = xSet.ulInterSpace * ( uint32_t ) ( xSet.xPartitionCount - pParams->xPrimaryCount );
     }
     else
     {
@@ -1007,7 +1008,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
             if( ulSummedSizes > 100 )
             {
-                return FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE;
+                return FF_createERR( FF_ERR_IOMAN_BAD_MEMSIZE, FF_FORMATPARTITION );
             }
 
             ulSummedSizes = 100;
@@ -1017,7 +1018,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
             if( ulSummedSizes > ulAvailable )
             {
-                return FF_FORMATPARTITION | FF_ERR_IOMAN_BAD_MEMSIZE;
+                return FF_createERR( FF_ERR_IOMAN_BAD_MEMSIZE, FF_FORMATPARTITION );
             }
 
             break;
@@ -1044,7 +1045,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
                     case eSizeIsSectors: /* Assign fixed number of sectors (512 byte each) */
                     default:             /* Just for the compiler(s) */
-                        ulSize = pParams->xSizes[ xPartitionNumber ];
+                        ulSize = ( uint32_t ) pParams->xSizes[ xPartitionNumber ];
                         break;
                 }
 

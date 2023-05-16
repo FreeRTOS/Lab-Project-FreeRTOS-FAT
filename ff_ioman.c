@@ -76,18 +76,14 @@ static BaseType_t prvHasActiveHandles( FF_IOManager_t * pxIOManager );
 
 
 /**
- *	@public
  *	@brief	Creates an FF_IOManager_t object, to initialise FreeRTOS+FAT
  *
- *	@param	pucCacheMem			Pointer to a buffer for the cache. (NULL if ok to Malloc).
- *	@param	ulCacheSize			The size of the provided buffer, or size of the cache to be created.
- *								(Must be at least 2 * ulSectorSize). Always a multiple of ulSectorSize.
- *	@param	usSectorSize		The block size of devices to be attached. If in doubt use 512.
+ *	@param	pxParameters		The Creation parameters to create the IO manager with
  *	@param	pError				Pointer to a signed byte for error checking. Can be NULL if not required.
  *								To be checked when a NULL pointer is returned.
  *
- *	@Return	Returns a pointer to an FF_IOManager_t type object. NULL on xError, check the contents of
- *	@Return pError
+ *	@return	Returns a pointer to an FF_IOManager_t type object. NULL on xError, check the contents of
+ *          pError
  **/
 FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
                                      FF_Error_t * pError )
@@ -95,7 +91,7 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
     FF_IOManager_t * pxIOManager = NULL;
     FF_Error_t xError;
     uint32_t ulCacheSize = pxParameters->ulMemorySize;
-    uint32_t usSectorSize = pxParameters->ulSectorSize;
+    uint32_t usSectorSize = ( uint32_t ) pxParameters->ulSectorSize;
 
     /* Normally:
      * ulSectorSize = 512
@@ -103,13 +99,13 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
     if( ( ( usSectorSize % 512 ) != 0 ) || ( usSectorSize == 0 ) )
     {
         /* ulSectorSize Size not a multiple of 512 or it is zero*/
-        xError = FF_ERR_IOMAN_BAD_BLKSIZE | FF_CREATEIOMAN;
+        xError = FF_createERR( FF_ERR_IOMAN_BAD_BLKSIZE, FF_CREATEIOMAN );
     }
     else if( ( ( ulCacheSize % ( uint32_t ) usSectorSize ) != 0 ) || ( ulCacheSize == 0 ) ||
              ( ulCacheSize == ( uint32_t ) usSectorSize ) )
     {
         /* The size of the caching memory (ulCacheSize) must now be atleast 2 * ulSectorSize (or a deadlock will occur). */
-        xError = FF_ERR_IOMAN_BAD_MEMSIZE | FF_CREATEIOMAN;
+        xError = FF_createERR( FF_ERR_IOMAN_BAD_MEMSIZE, FF_CREATEIOMAN );
     }
     else
     {
@@ -128,13 +124,13 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
             else
             {
                 /* xEventGroupCreate() probably failed. */
-                xError = FF_ERR_NOT_ENOUGH_MEMORY | FF_CREATEIOMAN;
+                xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_CREATEIOMAN );
             }
         }
         else
         {
             /* ffconfigMALLOC() failed. */
-            xError = FF_ERR_NOT_ENOUGH_MEMORY | FF_CREATEIOMAN;
+            xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_CREATEIOMAN );
         }
     }
 
@@ -158,7 +154,7 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
             }
             else
             {
-                xError = FF_ERR_NOT_ENOUGH_MEMORY | FF_CREATEIOMAN;
+                xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_CREATEIOMAN );
             }
         }
 
@@ -170,7 +166,7 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
 
     if( FF_isERR( xError ) == pdFALSE )
     {
-        pxIOManager->usSectorSize = usSectorSize;
+        pxIOManager->usSectorSize = ( uint16_t ) usSectorSize;
         pxIOManager->usCacheSize = ( uint16_t ) ( ulCacheSize / ( uint32_t ) usSectorSize );
 
         /* Malloc() memory for buffer objects. FreeRTOS+FAT never refers to a
@@ -195,7 +191,7 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
                 if( pxIOManager->pvSemaphoreOpen == NULL )
                 {
                     /* Tell the user that there was not enough mmory. */
-                    xError = FF_ERR_NOT_ENOUGH_MEMORY | FF_CREATEIOMAN;
+                    xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_CREATEIOMAN );
                 }
                 else
             #endif /* ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE */
@@ -212,7 +208,7 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
         }
         else
         {
-            xError = FF_ERR_NOT_ENOUGH_MEMORY | FF_CREATEIOMAN;
+            xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_CREATEIOMAN );
         }
     }
 
@@ -235,12 +231,11 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Destroys an FF_IOManager_t object, and frees all assigned memory.
  *
  *	@param	pxIOManager	Pointer to an FF_IOManager_t object, as returned from FF_CreateIOManager.
  *
- *	@Return	FF_ERR_NONE on sucess, or a documented error code on failure. (FF_ERR_NULL_POINTER)
+ *	@return	FF_ERR_NONE on sucess, or a documented error code on failure. (FF_ERR_NULL_POINTER)
  *
  **/
 FF_Error_t FF_DeleteIOManager( FF_IOManager_t * pxIOManager )
@@ -250,7 +245,7 @@ FF_Error_t FF_DeleteIOManager( FF_IOManager_t * pxIOManager )
     /* Ensure no NULL pointer was provided. */
     if( pxIOManager == NULL )
     {
-        xError = FF_ERR_NULL_POINTER | FF_DESTROYIOMAN;
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_DESTROYIOMAN );
     }
     else
     {
@@ -290,7 +285,6 @@ FF_Error_t FF_DeleteIOManager( FF_IOManager_t * pxIOManager )
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief	Initialises Buffer Descriptions as part of the FF_IOManager_t object initialisation.
  *
  *	@param	pxIOManager		IOMAN Object.
@@ -315,12 +309,11 @@ void FF_IOMAN_InitBufferDescriptors( FF_IOManager_t * pxIOManager )
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief		Flushes all Write cache buffers with no active Handles.
  *
  *	@param		pxIOManager	IOMAN Object.
  *
- *	@Return		FF_ERR_NONE on Success.
+ *	@return		FF_ERR_NONE on Success.
  **/
 FF_Error_t FF_FlushCache( FF_IOManager_t * pxIOManager )
 {
@@ -329,7 +322,7 @@ FF_Error_t FF_FlushCache( FF_IOManager_t * pxIOManager )
 
     if( pxIOManager == NULL )
     {
-        xError = FF_ERR_NULL_POINTER | FF_FLUSHCACHE;
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_FLUSHCACHE );
     }
     else
     {
@@ -539,7 +532,6 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief	Releases a buffer resource.
  *
  *	@param	pxIOManager	Pointer to an FF_IOManager_t object.
@@ -602,7 +594,7 @@ int32_t FF_BlockRead( FF_IOManager_t * pxIOManager,
          * In that case this test will be skipped. */
         if( ( ulSectorLBA + ulNumSectors ) > ( pxIOManager->xPartition.ulTotalSectors + pxIOManager->xPartition.ulBeginLBA ) )
         {
-            slRetVal = FF_ERR_IOMAN_OUT_OF_BOUNDS_READ | FF_BLOCKREAD;
+            slRetVal = FF_createERR( FF_ERR_IOMAN_OUT_OF_BOUNDS_READ, FF_BLOCKREAD );
         }
     }
 
@@ -655,7 +647,7 @@ int32_t FF_BlockWrite( FF_IOManager_t * pxIOManager,
          * In that case this test will be skipped. */
         if( ( ulSectorLBA + ulNumSectors ) > ( pxIOManager->xPartition.ulTotalSectors + pxIOManager->xPartition.ulBeginLBA ) )
         {
-            slRetVal = FF_ERR_IOMAN_OUT_OF_BOUNDS_WRITE | FF_BLOCKWRITE;
+            slRetVal = FF_createERR( FF_ERR_IOMAN_OUT_OF_BOUNDS_WRITE, FF_BLOCKWRITE );
         }
     }
 
@@ -698,7 +690,7 @@ int32_t FF_BlockWrite( FF_IOManager_t * pxIOManager,
  * It may be set to one of these values: FF_T_FAT[12,16,32]
  * just to force the driver to assume a certain FAT type.
  */
-uint8_t ucAssumeFATType;
+static uint8_t ucAssumeFATType = 0;
 
 /* The history of FAT types:
  * The Microsoft documents says that the actual type: FAT-12, FAT-16 and FAT-32
@@ -755,7 +747,7 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
 
         if( pxBuffer == NULL )
         {
-            xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_DETERMINEFATTYPE;
+            xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_DETERMINEFATTYPE );
         }
         else
         {
@@ -774,7 +766,7 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
                 #if ( ffconfigFAT_CHECK != 0 )
                     if( ( ulFirstWord & 0x3FF ) != 0x3F8 )
                     {
-                        xError = FF_ERR_IOMAN_NOT_FAT_FORMATTED | FF_DETERMINEFATTYPE;
+                        xError = FF_createERR( FF_ERR_IOMAN_NOT_FAT_FORMATTED, FF_DETERMINEFATTYPE );
                     }
                     else
                 #endif /* ffconfigFAT_CHECK */
@@ -807,7 +799,7 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
                                        pxIOManager->xPartition.ulFATBeginLBA, ulFirstWord );
                         }
 
-                        xError = FF_ERR_IOMAN_INVALID_FORMAT | FF_DETERMINEFATTYPE;
+                        xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_DETERMINEFATTYPE );
                     }
                 }
             #endif /* ffconfigFAT_CHECK */
@@ -896,10 +888,10 @@ void FF_ReadParts( uint8_t * pucBuffer,
      */
     for( xPartNr = 0; xPartNr < 4; xPartNr++, uxOffset += 16, pxParts++ )
     {
-        pxParts->ucActive = FF_getChar( pucBuffer, uxOffset + FF_FAT_PTBL_ACTIVE );
-        pxParts->ucPartitionID = FF_getChar( pucBuffer, uxOffset + FF_FAT_PTBL_ID );
-        pxParts->ulSectorCount = FF_getLong( pucBuffer, uxOffset + FF_FAT_PTBL_SECT_COUNT );
-        pxParts->ulStartLBA = FF_getLong( pucBuffer, uxOffset + FF_FAT_PTBL_LBA );
+        pxParts->ucActive = FF_getChar( pucBuffer, ( uint32_t ) ( uxOffset + FF_FAT_PTBL_ACTIVE ) );
+        pxParts->ucPartitionID = FF_getChar( pucBuffer, ( uint32_t ) ( uxOffset + FF_FAT_PTBL_ID ) );
+        pxParts->ulSectorCount = FF_getLong( pucBuffer, ( uint32_t ) ( uxOffset + FF_FAT_PTBL_SECT_COUNT ) );
+        pxParts->ulStartLBA = FF_getLong( pucBuffer, ( uint32_t ) ( uxOffset + FF_FAT_PTBL_LBA ) );
     }
 }
 /*-----------------------------------------------------------*/
@@ -952,7 +944,7 @@ static FF_Error_t FF_ParseExtended( FF_IOManager_t * pxIOManager,
 
             if( pxBuffer == NULL )
             {
-                xError = FF_PARSEEXTENDED | FF_ERR_DEVICE_DRIVER_FAILED; /* | FUNCTION...; */
+                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_PARSEEXTENDED );
                 break;
             }
         }
@@ -1063,15 +1055,14 @@ static FF_Error_t FF_ParseExtended( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Searches a disk for all primary and extended/logical partitions
- *	@brief	Previously called FF_PartitionCount
+ *	        Previously called FF_PartitionCount
  *
  *	@param	pxIOManager		FF_IOManager_t object.
  *	@param	pPartsFound		Contains an array of ffconfigMAX_PARTITIONS partitions
  *
- *	@Return	>=0 Number of partitions found
- *	@Return	<0 error
+ *	@return	>=0 Number of partitions found
+ *	        <0 error
  **/
 FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
                                FF_SPartFound_t * pPartsFound )
@@ -1092,7 +1083,7 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
 
         if( pxBuffer == NULL )
         {
-            xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_PARTITIONSEARCH;
+            xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_PARTITIONSEARCH );
             break;
         }
 
@@ -1125,7 +1116,7 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
                            FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE + 1 ) );
 
                 /* No MBR and no PBR then no partition found. */
-                xError = FF_ERR_IOMAN_INVALID_FORMAT | FF_PARTITIONSEARCH;
+                xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_PARTITIONSEARCH );
                 break;
             }
         }
@@ -1157,7 +1148,7 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
                 }
                 else
                 {
-                    xError = FF_ERR_IOMAN_INVALID_FORMAT | FF_PARTITIONSEARCH;
+                    xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_PARTITIONSEARCH );
                     break;
                 }
             }
@@ -1207,7 +1198,7 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
             if( !prvIsValidMedia( media ) )
             {
                 FF_PRINTF( "FF_Part: Looks like PBR but media %02X\n", media );
-                xError = FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION | FF_PARTITIONSEARCH;
+                xError = FF_createERR( FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION, FF_PARTITIONSEARCH );
                 goto done;
             }
 
@@ -1275,7 +1266,7 @@ static FF_Error_t FF_GetEfiPartitionEntry( FF_IOManager_t * pxIOManager,
     {
         if( ulPartitionNumber >= 128 )
         {
-            xError = FF_ERR_IOMAN_INVALID_PARTITION_NUM | FF_GETEFIPARTITIONENTRY;
+            xError = FF_createERR( FF_ERR_IOMAN_INVALID_PARTITION_NUM, FF_GETEFIPARTITIONENTRY );
             break;
         }
 
@@ -1283,7 +1274,7 @@ static FF_Error_t FF_GetEfiPartitionEntry( FF_IOManager_t * pxIOManager,
 
         if( pxBuffer == NULL )
         {
-            xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_GETEFIPARTITIONENTRY;
+            xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_GETEFIPARTITIONENTRY );
             break;
         }
 
@@ -1295,7 +1286,7 @@ static FF_Error_t FF_GetEfiPartitionEntry( FF_IOManager_t * pxIOManager,
 
             if( FF_isERR( xError ) == pdFALSE )
             {
-                xError = FF_ERR_IOMAN_INVALID_FORMAT | FF_GETEFIPARTITIONENTRY;
+                xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_GETEFIPARTITIONENTRY );
             }
 
             break;
@@ -1326,7 +1317,7 @@ static FF_Error_t FF_GetEfiPartitionEntry( FF_IOManager_t * pxIOManager,
         /* Check CRC */
         if( ulGPTHeadCRC != ulGPTCrcCheck )
         {
-            xError = FF_ERR_IOMAN_GPT_HEADER_CORRUPT | FF_GETEFIPARTITIONENTRY;
+            xError = FF_createERR( FF_ERR_IOMAN_GPT_HEADER_CORRUPT, FF_GETEFIPARTITIONENTRY );
             break;
         }
 
@@ -1338,7 +1329,7 @@ static FF_Error_t FF_GetEfiPartitionEntry( FF_IOManager_t * pxIOManager,
         {
             if( pxBuffer == NULL )
             {
-                xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_GETEFIPARTITIONENTRY;
+                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_GETEFIPARTITIONENTRY );
                 break;
             }
 
@@ -1351,7 +1342,7 @@ static FF_Error_t FF_GetEfiPartitionEntry( FF_IOManager_t * pxIOManager,
         {
             if( pxPartition->ulBeginLBA == 0ul )
             {
-                xError = FF_ERR_IOMAN_INVALID_PARTITION_NUM | FF_GETEFIPARTITIONENTRY;
+                xError = FF_createERR( FF_ERR_IOMAN_INVALID_PARTITION_NUM, FF_GETEFIPARTITIONENTRY );
             }
         }
     }
@@ -1362,24 +1353,23 @@ static FF_Error_t FF_GetEfiPartitionEntry( FF_IOManager_t * pxIOManager,
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Mounts the Specified partition, the volume specified by the FF_IOManager_t object provided.
  *
  *	The device drivers must adhere to the specification provided by
  *	FF_WriteBlocks_t and FF_ReadBlocks_t.
  *
- *	@param	pxIOManager			FF_IOManager_t object.
- *	@param	PartitionNumber	The primary or logical partition number to be mounted,
+ *	@param	pxDisk			Disk instance.
+ *	@param	xPartitionNumber The primary or logical partition number to be mounted,
  *                          ranging between 0 and ffconfigMAX_PARTITIONS-1 (normally 0)
  *                          Note that FF_PartitionSearch can be called in advance to
  *                          enumerate all available partitions
  *
- *	@Return	0 on success.
- *	@Return FF_ERR_NULL_POINTER if a pxIOManager object wasn't provided.
- *	@Return FF_ERR_IOMAN_INVALID_PARTITION_NUM if the partition number is out of range.
- *	@Return FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION if no partition was found.
- *	@Return FF_ERR_IOMAN_INVALID_FORMAT if the master boot record or partition boot block didn't provide sensible data.
- *	@Return FF_ERR_IOMAN_NOT_FAT_FORMATTED if the volume or partition couldn't be determined to be FAT. (@see FreeRTOSFATConfig.h)
+ *	@return	0 on success.
+ *	        FF_ERR_NULL_POINTER if a pxIOManager object wasn't provided.
+ *	        FF_ERR_IOMAN_INVALID_PARTITION_NUM if the partition number is out of range.
+ *	        FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION if no partition was found.
+ *	        FF_ERR_IOMAN_INVALID_FORMAT if the master boot record or partition boot block didn't provide sensible data.
+ *	        FF_ERR_IOMAN_NOT_FAT_FORMATTED if the volume or partition couldn't be determined to be FAT. (@see FreeRTOSFATConfig.h)
  *
  **/
 FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
@@ -1388,7 +1378,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
     FF_Partition_t * pxPartition;
     FF_Buffer_t * pxBuffer = 0;
     FF_Error_t xError = FF_ERR_NONE;
-    int16_t rootEntryCount;
+    uint16_t rootEntryCount;
     FF_IOManager_t * pxIOManager = pxDisk->pxIOManager;
 
 /* HT TODO: find a method to safely determine the FAT type: 32/16/12 */
@@ -1407,7 +1397,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
     {
         if( pxIOManager == NULL )
         {
-            xError = FF_ERR_NULL_POINTER | FF_MOUNT;
+            xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOUNT );
             break;
         }
 
@@ -1451,13 +1441,13 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
 
         if( xPartitionCount == 0 )
         {
-            xError = FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION | FF_MOUNT;
+            xError = FF_createERR( FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION, FF_MOUNT );
             break;
         }
 
         if( xPartitionNumber >= xPartitionCount )
         {
-            xError = FF_ERR_IOMAN_INVALID_PARTITION_NUM | FF_MOUNT;
+            xError = FF_createERR( FF_ERR_IOMAN_INVALID_PARTITION_NUM, FF_MOUNT );
             break;
         }
 
@@ -1467,7 +1457,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
 
         if( pxMyPartition->ucPartitionID == 0xEE )
         {
-            xError = FF_GetEfiPartitionEntry( pxIOManager, xPartitionNumber );
+            xError = FF_GetEfiPartitionEntry( pxIOManager, ( uint32_t ) xPartitionNumber );
 
             if( FF_isERR( xError ) )
             {
@@ -1480,7 +1470,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
 
         if( pxBuffer == NULL )
         {
-            xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_MOUNT;
+            xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_MOUNT );
             break;
         }
 
@@ -1493,7 +1483,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
 
             if( FF_isERR( xError ) == pdFALSE )
             {
-                xError = FF_ERR_IOMAN_INVALID_FORMAT | FF_MOUNT;
+                xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_MOUNT );
             }
 
             break;
@@ -1539,12 +1529,12 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
 
         if( pxPartition->usBlkSize == 0 )
         {
-            xError = FF_ERR_IOMAN_INVALID_FORMAT | FF_MOUNT;
+            xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_MOUNT );
             break;
         }
 
-        rootEntryCount = FF_getShort( pxBuffer->pucBuffer, FF_FAT_ROOT_ENTRY_COUNT );
-        pxPartition->ulRootDirSectors = ( ( rootEntryCount * 32 ) + pxPartition->usBlkSize - 1 ) / pxPartition->usBlkSize;
+        rootEntryCount = FF_getShort( pxBuffer->pucBuffer, ( uint32_t ) FF_FAT_ROOT_ENTRY_COUNT );
+        pxPartition->ulRootDirSectors = ( uint32_t ) ( ( ( rootEntryCount * 32 ) + pxPartition->usBlkSize - 1 ) / pxPartition->usBlkSize );
         pxPartition->ulFirstDataSector = pxPartition->ulClusterBeginLBA + pxPartition->ulRootDirSectors;
         pxPartition->ulDataSectors = pxPartition->ulTotalSectors - ( pxPartition->usReservedSectors + ( pxPartition->ucNumFATS * pxPartition->ulSectorsPerFAT ) + pxPartition->ulRootDirSectors );
 
@@ -1562,7 +1552,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
          */
         if( pxPartition->ulSectorsPerCluster == 0 )
         {
-            xError = FF_ERR_IOMAN_INVALID_FORMAT | FF_MOUNT;
+            xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_MOUNT );
             break;
         }
 
@@ -1629,12 +1619,11 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief		Checks the cache for Active Handles
  *
  *	@param		pxIOManager FF_IOManager_t Object.
  *
- *	@Return		pdTRUE if an active handle is found, else pdFALSE.
+ *	@return		pdTRUE if an active handle is found, else pdFALSE.
  *
  *	@pre		This function must be wrapped with the cache handling semaphore.
  **/
@@ -1666,12 +1655,11 @@ static BaseType_t prvHasActiveHandles( FF_IOManager_t * pxIOManager )
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Unmounts the active partition.
  *
- *	@param	pxIOManager	FF_IOManager_t Object.
+ *	@param	pxDisk	Disk instance.
  *
- *	@Return FF_ERR_NONE on success.
+ *	@return FF_ERR_NONE on success.
  **/
 FF_Error_t FF_Unmount( FF_Disk_t * pxDisk )
 {
@@ -1685,7 +1673,7 @@ FF_Error_t FF_Unmount( FF_Disk_t * pxDisk )
 
     if( pxDisk->pxIOManager == NULL )
     {
-        xError = FF_ERR_NULL_POINTER | FF_UNMOUNT;
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_UNMOUNT );
     }
     else if( pxDisk->pxIOManager->xPartition.ucPartitionMounted == 0 )
     {
@@ -1699,12 +1687,12 @@ FF_Error_t FF_Unmount( FF_Disk_t * pxDisk )
             if( prvHasActiveHandles( pxIOManager ) != 0 )
             {
                 /* Active handles found on the cache. */
-                xError = FF_ERR_IOMAN_ACTIVE_HANDLES | FF_UNMOUNT;
+                xError = FF_createERR( FF_ERR_IOMAN_ACTIVE_HANDLES, FF_UNMOUNT );
             }
             else if( pxIOManager->FirstFile != NULL )
             {
                 /* Open files in this partition. */
-                xError = FF_ERR_IOMAN_ACTIVE_HANDLES | FF_UNMOUNT;
+                xError = FF_createERR( FF_ERR_IOMAN_ACTIVE_HANDLES, FF_UNMOUNT );
             }
             else
             {
@@ -1729,7 +1717,7 @@ FF_Error_t FF_Unmount( FF_Disk_t * pxDisk )
 
                                 if( !pxBuffer )
                                 {
-                                    xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_UNMOUNT;
+                                    xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_UNMOUNT );
                                     break;
                                 }
 
@@ -1820,7 +1808,7 @@ FF_Error_t FF_IncreaseFreeClusters( FF_IOManager_t * pxIOManager,
 
                     if( pxBuffer == NULL )
                     {
-                        xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_INCREASEFREECLUSTERS;
+                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_INCREASEFREECLUSTERS );
                     }
                     else
                     {
@@ -1894,7 +1882,7 @@ FF_Error_t FF_DecreaseFreeClusters( FF_IOManager_t * pxIOManager,
 
                     if( pxBuffer == NULL )
                     {
-                        xError = FF_ERR_DEVICE_DRIVER_FAILED | FF_DECREASEFREECLUSTERS;
+                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_DECREASEFREECLUSTERS );
                     }
                     else
                     {
@@ -1927,8 +1915,8 @@ FF_Error_t FF_DecreaseFreeClusters( FF_IOManager_t * pxIOManager,
  *
  *	@param	pxIOManager		FF_IOManager_t Object returned from FF_CreateIOManager()
  *
- *	@Return	The blocksize of the partition. A value less than 0 when an error occurs.
- *	@Return	Any negative value can be cast to the FF_Error_t type.
+ *	@return	The blocksize of the partition. A value less than 0 when an error occurs.
+ *	        Any negative value can be cast to the FF_Error_t type.
  **/
 int32_t FF_GetPartitionBlockSize( FF_IOManager_t * pxIOManager )
 {
@@ -1940,7 +1928,7 @@ int32_t FF_GetPartitionBlockSize( FF_IOManager_t * pxIOManager )
     }
     else
     {
-        lReturn = FF_ERR_NULL_POINTER | FF_GETPARTITIONBLOCKSIZE;
+        lReturn = FF_createERR( FF_ERR_NULL_POINTER, FF_GETPARTITIONBLOCKSIZE );
     }
 
     return lReturn;
@@ -1954,7 +1942,7 @@ int32_t FF_GetPartitionBlockSize( FF_IOManager_t * pxIOManager )
  *
  *	@param	pxIOManager		FF_IOManager_t Object returned from FF_CreateIOManager()
  *
- *	@Return The total number of bytes that the mounted partition or volume contains.
+ *	@return The total number of bytes that the mounted partition or volume contains.
  *
  **/
     uint64_t FF_GetVolumeSize( FF_IOManager_t * pxIOManager )
