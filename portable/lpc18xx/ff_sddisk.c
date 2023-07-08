@@ -126,7 +126,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
 
         if( pxDisk->xStatus.bIsInitialised != 0 )
         {
-            FF_PRINTF( "prvFFRead: warning: %u + %u > %u\n", (unsigned)ulSectorNumber, (unsigned)ulSectorCount, (unsigned)pxDisk->ulNumberOfSectors );
+            FF_PRINTF( "prvFFRead: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors );
         }
 
         iReturn = ( FF_ERR_IOMAN_OUT_OF_BOUNDS_READ | FF_ERRFLAG );
@@ -167,7 +167,7 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
 
         if( pxDisk->xStatus.bIsInitialised )
         {
-            FF_PRINTF( "prvFFWrite: warning: %u + %u > %u\n", (unsigned)ulSectorNumber, (unsigned)ulSectorCount, (unsigned)pxDisk->ulNumberOfSectors );
+            FF_PRINTF( "prvFFWrite: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors );
         }
 
         iReturn = ( FF_ERR_IOMAN_OUT_OF_BOUNDS_WRITE | FF_ERRFLAG );
@@ -440,10 +440,10 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "Partition Nr   %8u\n", pxDisk->xStatus.bPartitionNumber );
         FF_PRINTF( "Type           %8u (%s)\n", pxIOManager->xPartition.ucType, pcTypeName );
         FF_PRINTF( "VolLabel       '%8s' \n", pxIOManager->xPartition.pcVolumeLabel );
-        FF_PRINTF( "TotalSectors   %8u\n", (unsigned) pxIOManager->xPartition.ulTotalSectors );
-        FF_PRINTF( "SecsPerCluster %8u\n", (unsigned) pxIOManager->xPartition.ulSectorsPerCluster );
-        FF_PRINTF( "Size           %8u MB\n", (unsigned) ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", (unsigned) ulFreeSizeMB, iPercentageFree );
+        FF_PRINTF( "TotalSectors   %8u\n", ( unsigned ) pxIOManager->xPartition.ulTotalSectors );
+        FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
+        FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
+        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
     }
 
     return xReturn;

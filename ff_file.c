@@ -1134,11 +1134,11 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xReturn = FF_createERR(FF_ERR_NULL_POINTER, FF_BYTESLEFT);
+        xReturn = FF_createERR( FF_ERR_NULL_POINTER, FF_BYTESLEFT );
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
-        xReturn = FF_createERR(FF_ERR_FILE_NOT_OPENED_IN_READ_MODE, FF_BYTESLEFT);
+        xReturn = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_READ_MODE, FF_BYTESLEFT );
     }
     else if( pxFile->ulFilePointer >= pxFile->ulFileSize )
     {
@@ -1149,7 +1149,7 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
         xReturn = pxFile->ulFileSize - pxFile->ulFilePointer;
     }
 
-    return (int32_t) xReturn;
+    return ( int32_t ) xReturn;
 } /* FF_BytesLeft() */
 /*-----------------------------------------------------------*/
 
@@ -1737,7 +1737,7 @@ static uint32_t FF_ReadPartial( FF_FILE * pxFile,
  *	@param	pxFile			FF_FILE object that was created by FF_Open().
  *	@param	ulElementSize	The size of an element to read.
  *	@param	ulCount			The number of elements to read.
- *	@param	pucBuffer   	A pointer to a buffer of adequate size to be filled with the requested data.
+ *	@param	pucBuffer       A pointer to a buffer of adequate size to be filled with the requested data.
  *
  *	@return Number of bytes read.
  *
@@ -1990,7 +1990,7 @@ int32_t FF_GetC( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xResult = FF_createERR(FF_ERR_NULL_POINTER, FF_GETC); /* Ensure this is a signed error. */
+        xResult = FF_createERR( FF_ERR_NULL_POINTER, FF_GETC ); /* Ensure this is a signed error. */
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
@@ -2079,7 +2079,7 @@ int32_t FF_GetLine( FF_FILE * pxFile,
                 {
                     /* Although FF_GetC() returns an End Of File,
                      * the last few characters will be returned first. */
-                    iChar = ( int32_t )xIndex;
+                    iChar = ( int32_t ) xIndex;
                 }
 
                 break;
@@ -2482,8 +2482,8 @@ int32_t FF_PutC( FF_FILE * pxFile,
     FF_Error_t xResult;
 
     if( pxFile == NULL )
-    { /* Ensure we don't have a Null file pointer on a Public interface. */
-        xResult = FF_createERR(FF_ERR_NULL_POINTER, FF_PUTC);
+    {   /* Ensure we don't have a Null file pointer on a Public interface. */
+        xResult = FF_createERR( FF_ERR_NULL_POINTER, FF_PUTC );
     }
     else if( ( pxFile->ucMode & FF_MODE_WRITE ) == 0 )
     {
@@ -3140,7 +3140,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
 
         /* Handle Linked list! */
         FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
-        { /* Semaphore is required, or linked list could become corrupted. */
+        {   /* Semaphore is required, or linked list could become corrupted. */
             pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
 
             if( pxFileChain == pxFile )

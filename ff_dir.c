@@ -429,7 +429,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                 if( ( pxFindParams->lFreeEntry < 0 ) && ( ++freeCount == entriesNeeded ) )
                 {
                     /* Remember the beginning entry in the sequential sequence. */
-                    pxFindParams->lFreeEntry = ( pxDirEntry->usCurrentItem - ( int32_t )( entriesNeeded - 1 ) );
+                    pxFindParams->lFreeEntry = ( pxDirEntry->usCurrentItem - ( int32_t ) ( entriesNeeded - 1 ) );
                 }
 
                 continue;
@@ -1143,7 +1143,7 @@ static FF_Error_t FF_Traverse( FF_IOManager_t * pxIOManager,
     /* Check if we're past the last cluster ( ulChainLength is also valid for root sectors ). */
     if( ( ulClusterNum + 1 ) > pxContext->ulChainLength )
     {
-        xError = FF_createERR(FF_ERR_DIR_END_OF_DIR, FF_TRAVERSE); /* End of Dir was reached! */
+        xError = FF_createERR( FF_ERR_DIR_END_OF_DIR, FF_TRAVERSE ); /* End of Dir was reached! */
     }
     else if( ( pxIOManager->xPartition.ucType != FF_T_FAT32 ) &&
              ( pxContext->ulDirCluster == pxIOManager->xPartition.ulRootDirCluster ) )

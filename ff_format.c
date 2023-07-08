@@ -374,7 +374,7 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
 
     FF_putChar( pxSet->pucSectorBuffer, OFS_BPB_SecPerClus_8, ( uint32_t ) pxSet->ulSectorsPerCluster ); /*  0x00D / Only 1, 2, 4, 8, 16, 32, 64, 128 */
     FF_PRINTF( "FF_Format: SecCluster %u DatSec %u DataClus %u pxSet->ulClusterBeginLBA %lu\n",
-               (unsigned) pxSet->ulSectorsPerCluster, (unsigned) pxSet->ulUsableDataSectors, (unsigned) pxSet->ulUsableDataClusters, pxSet->ulClusterBeginLBA );
+               ( unsigned ) pxSet->ulSectorsPerCluster, ( unsigned ) pxSet->ulUsableDataSectors, ( unsigned ) pxSet->ulUsableDataClusters, pxSet->ulClusterBeginLBA );
 
     /* This field is the new 32-bit total count of sectors on the volume. */
     /* This count includes the count of all sectors in all four regions of the volume */
@@ -462,7 +462,7 @@ static FF_Error_t prvFormatInitialiseFAT( struct xFormatSet * pxSet,
         xReturn = FF_BlockWrite( pxSet->pxIOManager, ( uint32_t ) lFatBeginLBA + pxSet->ulSectorsPerFAT, 1, pxSet->pucSectorBuffer, pdFALSE );
     }
 
-    FF_PRINTF( "FF_Format: Clearing entire FAT (2 x %u sectors):\n", (unsigned) pxSet->ulSectorsPerFAT );
+    FF_PRINTF( "FF_Format: Clearing entire FAT (2 x %u sectors):\n", ( unsigned ) pxSet->ulSectorsPerFAT );
     {
         int32_t addr;
 
@@ -637,8 +637,8 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         }
 
         FF_PRINTF( "FF_Format: Secs %u Rsvd %u Hidden %u Root %u Data %u\n",
-                   (unsigned) xSet.ulSectorCount, (unsigned) xSet.ulFATReservedSectors, (unsigned) xSet.ulHiddenSectors, 
-                   (unsigned) xSet.iFAT16RootSectors, (unsigned) xSet.ulSectorCount - xSet.ulNonDataSectors );
+                   ( unsigned ) xSet.ulSectorCount, ( unsigned ) xSet.ulFATReservedSectors, ( unsigned ) xSet.ulHiddenSectors,
+                   ( unsigned ) xSet.iFAT16RootSectors, ( unsigned ) xSet.ulSectorCount - xSet.ulNonDataSectors );
 
         /*****************************/
 
@@ -1008,7 +1008,7 @@ FF_Error_t FF_Partition( FF_Disk_t * pxDisk,
 
             if( ulSummedSizes > 100 )
             {
-                return FF_createERR ( FF_ERR_IOMAN_BAD_MEMSIZE, FF_FORMATPARTITION );
+                return FF_createERR( FF_ERR_IOMAN_BAD_MEMSIZE, FF_FORMATPARTITION );
             }
 
             ulSummedSizes = 100;

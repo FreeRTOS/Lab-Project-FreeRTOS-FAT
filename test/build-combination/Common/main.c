@@ -67,40 +67,40 @@ int main( void )
 /*-----------------------------------------------------------*/
 #if ( configUSE_IDLE_HOOK != 0 )
 
-void vApplicationIdleHook( void )
-{
-    /* Exit. Just a stub. */
-}
+    void vApplicationIdleHook( void )
+    {
+        /* Exit. Just a stub. */
+    }
 #endif
 /*-----------------------------------------------------------*/
 
 #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
 
-void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
-                                    StackType_t ** ppxIdleTaskStackBuffer,
-                                    uint32_t * pulIdleTaskStackSize )
-{
-    /* Provide a stub for this function. */
-    ( void ) ppxIdleTaskTCBBuffer;
-    ( void ) ppxIdleTaskStackBuffer;
-    ( void ) pulIdleTaskStackSize;
-}
-#endif
+    void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
+                                        StackType_t ** ppxIdleTaskStackBuffer,
+                                        uint32_t * pulIdleTaskStackSize )
+    {
+        /* Provide a stub for this function. */
+        ( void ) ppxIdleTaskTCBBuffer;
+        ( void ) ppxIdleTaskStackBuffer;
+        ( void ) pulIdleTaskStackSize;
+    }
+#endif /* if ( configSUPPORT_STATIC_ALLOCATION == 1 ) */
 
 /*-----------------------------------------------------------*/
 #if  ( configUSE_TICK_HOOK != 0 )
-void vApplicationTickHook( void )
-{
-    /* Provide a stub for this function. */
-}
+    void vApplicationTickHook( void )
+    {
+        /* Provide a stub for this function. */
+    }
 #endif
 
 /*-----------------------------------------------------------*/
 #if  ( configUSE_DAEMON_TASK_STARTUP_HOOK != 0 )
-void vApplicationDaemonTaskStartupHook( void )
-{
-    /* Provide a stub for this function. */
-}
+    void vApplicationDaemonTaskStartupHook( void )
+    {
+        /* Provide a stub for this function. */
+    }
 #endif
 
 #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
@@ -111,16 +111,16 @@ void vApplicationDaemonTaskStartupHook( void )
  * THAT RETURNS A PSEUDO RANDOM NUMBER SO IS NOT INTENDED FOR USE IN PRODUCTION
  * SYSTEMS.
  */
-void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
-                                     StackType_t ** ppxTimerTaskStackBuffer,
-                                     uint32_t * pulTimerTaskStackSize )
-{
-    /* Provide a stub for this function. */
-    (void) ppxTimerTaskTCBBuffer;
-    (void) ppxTimerTaskStackBuffer;
-    (void) pulTimerTaskStackSize;
-}
-#endif
+    void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
+                                         StackType_t ** ppxTimerTaskStackBuffer,
+                                         uint32_t * pulTimerTaskStackSize )
+    {
+        /* Provide a stub for this function. */
+        ( void ) ppxTimerTaskTCBBuffer;
+        ( void ) ppxTimerTaskStackBuffer;
+        ( void ) pulTimerTaskStackSize;
+    }
+#endif /* if ( configSUPPORT_STATIC_ALLOCATION == 1 ) */
 
 void vApplicationMallocFailedHook( void )
 {

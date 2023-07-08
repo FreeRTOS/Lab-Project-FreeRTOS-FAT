@@ -372,7 +372,7 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
 
         if( FF_isERR( xError ) )
         {
-            xError = FF_CreateError(FF_GETERROR( xError ), FF_GETFATENTRY);
+            xError = FF_CreateError( FF_GETERROR( xError ), FF_GETFATENTRY );
         }
         else
         {
@@ -1130,7 +1130,7 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
             uint32_t ulFATOffset;
 
             ulEntriesPerSector = ( uint32_t ) ( pxIOManager->usSectorSize / xEntrySize );
-            ulFATOffset =  ( uint32_t ) ( ulCluster * xEntrySize );
+            ulFATOffset = ( uint32_t ) ( ulCluster * xEntrySize );
 
             /* Start from a sector where the first free entry is expected,
              * and iterate through every FAT sector. */

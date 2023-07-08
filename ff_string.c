@@ -196,7 +196,7 @@
 
         if( xLength == 0 )
         {
-            xLength = (BaseType_t) strlen( str1 );
+            xLength = ( BaseType_t ) strlen( str1 );
 
             if( xLength != ( BaseType_t ) strlen( str2 ) )
             {
