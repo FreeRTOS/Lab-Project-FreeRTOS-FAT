@@ -432,17 +432,17 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 }
 /*-----------------------------------------------------------*/
 
-/* Initialise the SDIO driver and mount an SD card */
-BaseType_t xMountFailIgnore = 0;
-
-/* _HT_ : the function FF_SDDiskInit() used to mount partition-0.
- * It would be nice if it has a parameter indicating the partition
- * number.
- * As for now, the partion can be set with a global variable 'xDiskPartition'.
- */
-BaseType_t xDiskPartition = 0;
-
 FF_Disk_t * FF_SDDiskInit( const char * pcName )
+{
+  return FF_SDDiskInitWithSettings( pcName, pdFALSE, 0U );
+}
+
+/**
+ * Initialize the SD Disk with configurable settings
+ * @param[in] uxMountFailIgnore ignore fails on mount, set to true when have systems where may not have initialized mount
+ * @param[in] uxDiskPartition the disk partition number to use
+ */
+FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName, BaseType_t xMountFailIgnore, BaseType_t xDiskPartition )
 {
     FF_Error_t xFFError;
     BaseType_t xPartitionNumber = xDiskPartition;
