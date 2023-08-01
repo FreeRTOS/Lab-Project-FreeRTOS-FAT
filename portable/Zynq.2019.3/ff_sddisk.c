@@ -434,7 +434,7 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 
 FF_Disk_t * FF_SDDiskInit( const char * pcName )
 {
-  return FF_SDDiskInitWithSettings( pcName, pdFALSE, 0U );
+    return FF_SDDiskInitWithSettings( pcName, pdFALSE, 0U );
 }
 
 /**
@@ -442,7 +442,9 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
  * @param[in] uxMountFailIgnore ignore fails on mount, set to true when have systems where may not have initialized mount
  * @param[in] uxDiskPartition the disk partition number to use
  */
-FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName, BaseType_t xMountFailIgnore, BaseType_t xDiskPartition )
+FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                       BaseType_t xMountFailIgnore,
+                                       BaseType_t xDiskPartition )
 {
     FF_Error_t xFFError;
     BaseType_t xPartitionNumber = xDiskPartition;
