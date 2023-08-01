@@ -87,10 +87,11 @@
         uint16_t st_dev;  /* The device on which the file can be found (see ff_sys.c) */
         uint16_t st_mode; /* The mode (attribute bits) of this file or directory. */
 
+        /* Note time_t must be used here otherwise will have bugs when 2032 (uint32_t second clock rolls over) */
         #if ( ffconfigTIME_SUPPORT == 1 )
-            uint32_t st_atime;
-            uint32_t st_mtime;
-            uint32_t st_ctime;
+            time_t st_atime;
+            time_t st_mtime;
+            time_t st_ctime;
         #endif /* ffconfigTIME_SUPPORT */
     } FF_Stat_t;
 

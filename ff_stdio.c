@@ -72,7 +72,7 @@ int prvFFErrorToErrno( FF_Error_t xError );
  * Generate a time stamp for the file.
  */
 #if ( ffconfigTIME_SUPPORT == 1 )
-    static uint32_t prvFileTime( FF_SystemTime_t * pxTime );
+    static time_t prvFileTime( FF_SystemTime_t * pxTime );
 #endif
 
 #if ( ffconfigHAS_CWD == 1 )
@@ -87,10 +87,10 @@ int prvFFErrorToErrno( FF_Error_t xError );
  * to extend relative paths to absolute paths. */
     typedef struct WORKING_DIR
     {
-        char pcCWD[ ffconfigMAX_FILENAME-2 ];		/* The current working directory.  To eliminate warnings in path building
-        											 * code below we make this ffconfigMAX_FILENAME-2. In reality you would have
-        											 * a least one character for filename and one for '/' so this not unreasonable.
-        											 */
+        char pcCWD[ ffconfigMAX_FILENAME - 2 ];  /* The current working directory.  To eliminate warnings in path building
+                                                  * code below we make this ffconfigMAX_FILENAME-2. In reality you would have
+                                                  * a least one character for filename and one for '/' so this not unreasonable.
+                                                  */
         char pcFileName[ ffconfigMAX_FILENAME ]; /* The created absolute path. */
     } WorkingDirectory_t;
 
@@ -230,12 +230,12 @@ int ff_fseek( FF_FILE * pxStream,
     #if ( ffconfigDEV_SUPPORT != 0 )
         if( pxStream->pxDevNode != NULL )
         {
-            xError = FF_Device_Seek( pxStream, lOffset, iWhence );
+            xError = FF_Device_Seek( pxStream, ( int32_t ) lOffset, iWhence );
         }
         else
     #endif
     {
-        xError = FF_Seek( pxStream, lOffset, iWhence );
+        xError = FF_Seek( pxStream, ( int32_t ) lOffset, iWhence );
     }
 
     ff_errno = prvFFErrorToErrno( xError );
@@ -350,7 +350,7 @@ size_t ff_fread( void * pvBuffer,
         else
     #endif
     {
-        iReturned = FF_Read( pxStream, xSize, xItems, ( uint8_t * ) pvBuffer );
+        iReturned = FF_Read( pxStream, ( uint32_t ) xSize, ( uint32_t ) xItems, ( uint8_t * ) pvBuffer );
     }
 
     ff_errno = prvFFErrorToErrno( iReturned );
@@ -391,7 +391,7 @@ size_t ff_fwrite( const void * pvBuffer,
         else
     #endif
     {
-        iReturned = FF_Write( pxStream, xSize, xItems, ( uint8_t * ) pvBuffer );
+        iReturned = FF_Write( pxStream, ( uint32_t ) xSize, ( uint32_t ) xItems, ( uint8_t * ) pvBuffer );
     }
 
     ff_errno = prvFFErrorToErrno( iReturned );
@@ -509,7 +509,7 @@ char * ff_fgets( char * pcBuffer,
     int32_t xResult;
     int ff_errno;
 
-    xResult = FF_GetLine( pxStream, ( char * ) pcBuffer, xCount );
+    xResult = FF_GetLine( pxStream, ( char * ) pcBuffer, ( uint32_t ) xCount );
 
     /* This call seems to result in errno being incorrectly set to
      * FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION when an EOF is encountered. */
@@ -582,7 +582,7 @@ FF_FILE * ff_truncate( const char * pcFileName,
     else if( ulLength > ( uint32_t ) lTruncateSize )
     {
         /* Seek the desired position */
-        xResult = FF_Seek( pxStream, lTruncateSize, FF_SEEK_SET );
+        xResult = FF_Seek( pxStream, ( int32_t ) lTruncateSize, FF_SEEK_SET );
 
         /* Make the current position equal to its length */
         if( FF_isERR( xResult ) == pdFALSE )
@@ -924,7 +924,7 @@ int ff_rename( const char * pcOldName,
     /* Find the i/o manager which can handle this path */
     if( FF_FS_Find( pcOldName, &xHandlers[ 0 ] ) == pdFALSE )
     {
-        xError = ( int32_t ) ( FF_ERR_NULL_POINTER | FF_MOVE );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
         ff_errno = pdFREERTOS_ERRNO_ENXIO; /* No such device or address */
     }
     else
@@ -938,7 +938,7 @@ int ff_rename( const char * pcOldName,
                 {
                     /* Could not allocate space to store a file name. */
                     ff_errno = pdFREERTOS_ERRNO_ENOMEM;
-                    xError = ( int32_t ) ( FF_ERR_NOT_ENOUGH_MEMORY | FF_MOVE );
+                    xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_MOVE );
                 }
                 else
                 {
@@ -960,12 +960,12 @@ int ff_rename( const char * pcOldName,
             /* Find the i/o manager which can handle this path */
             if( FF_FS_Find( pcNewName, &( xHandlers[ 1 ] ) ) == pdFALSE )
             {
-                xError = ( int32_t ) ( FF_ERR_NULL_POINTER | FF_MOVE );
+                xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
                 ff_errno = pdFREERTOS_ERRNO_ENXIO; /* No such device or address */
             }
             else if( xHandlers[ 0 ].pxManager != xHandlers[ 1 ].pxManager )
             {
-                xError = ( int32_t ) ( FF_ERR_NULL_POINTER | FF_MOVE );
+                xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
                 /* Cross-device link, which can not be done. */
                 ff_errno = pdFREERTOS_ERRNO_EXDEV;
             }
@@ -1039,7 +1039,7 @@ int ff_stat( const char * pcName,
     if( FF_FS_Find( pcName, &xHandler ) == pdFALSE )
     {
         /* No such device or address. */
-        xError = ( FF_Error_t ) ( pdFREERTOS_ERRNO_ENXIO | FF_STAT_FUNC );
+        xError = FF_createERR( pdFREERTOS_ERRNO_ENXIO, FF_STAT_FUNC );
     }
     else
     {
@@ -1076,7 +1076,7 @@ int ff_stat( const char * pcName,
         FF_CreateShortName( &xFindParams, pcFileName );
 
         /* Lookup the path and find the cluster pointing to the directory: */
-        xFindParams.ulDirCluster = FF_FindDir( xHandler.pxManager, pcName, xIndex, &xError );
+        xFindParams.ulDirCluster = FF_FindDir( xHandler.pxManager, pcName, ( uint16_t ) xIndex, &xError );
     }
 
     if( FF_isERR( xError ) == pdFALSE )
@@ -1103,7 +1103,7 @@ int ff_stat( const char * pcName,
         /* Test 'ulFileCluster' again, it might have been changed. */
         if( ulFileCluster == 0ul )
         {
-            xError = FF_ERR_FILE_NOT_FOUND | FF_STAT_FUNC;
+            xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_STAT_FUNC );
         }
     }
 
@@ -1133,13 +1133,13 @@ int ff_stat( const char * pcName,
          * if xDirEntry has not been initialised. */
         pxStatBuffer->st_size = xDirEntry.ulFileSize;
         pxStatBuffer->st_ino = xDirEntry.ulObjectCluster;
-        pxStatBuffer->st_dev = ( short ) xHandler.xFSIndex;
+        pxStatBuffer->st_dev = ( uint16_t ) xHandler.xFSIndex;
 
         #if ( ffconfigTIME_SUPPORT == 1 )
             {
-                pxStatBuffer->st_atime = ( unsigned long ) prvFileTime( &( xDirEntry.xAccessedTime ) );
-                pxStatBuffer->st_mtime = ( unsigned long ) prvFileTime( &( xDirEntry.xModifiedTime ) );
-                pxStatBuffer->st_ctime = ( unsigned long ) prvFileTime( &( xDirEntry.xCreateTime ) );
+                pxStatBuffer->st_atime = prvFileTime( &( xDirEntry.xAccessedTime ) );
+                pxStatBuffer->st_mtime = prvFileTime( &( xDirEntry.xModifiedTime ) );
+                pxStatBuffer->st_ctime = prvFileTime( &( xDirEntry.xCreateTime ) );
             }
         #endif
     }
@@ -1188,7 +1188,7 @@ int ff_stat( const char * pcName,
             {
                 /* The CWD will be stored without a trailing '/'.  If "/"
                  * happens to be the CWD, it will be stored as an empty string. */
-                iLength = strlen( pcDirectoryName );
+                iLength = ( int ) strlen( pcDirectoryName );
 
                 /* Knock off the trailing / if one exits - being careful not to
                  * remove the trailing slash if this is the root directory. */
@@ -1300,7 +1300,7 @@ int ff_findfirst( const char * pcPath,
     {
         if( ( iIsRootDir == pdFALSE ) || ( FF_FS_Count() == 0 ) )
         {
-            stdioSET_ERRNO( prvFFErrorToErrno( ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_FINDFIRST ) ) );
+            stdioSET_ERRNO( prvFFErrorToErrno( FF_createERR( FF_ERR_NULL_POINTER, FF_FINDFIRST ) ) );
             iReturn = -1;
         }
     }
@@ -1351,12 +1351,12 @@ int ff_findnext( FF_FindData_t * pxFindData )
 
     if( pxFindData->xDirectoryHandler.u.bits.bIsValid == pdFALSE )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_DIR_INVALID_PARAMETER | FF_FINDNEXT );
+        xError = FF_createERR( FF_ERR_DIR_INVALID_PARAMETER, FF_FINDNEXT );
         FF_PRINTF( "ff_findnext: xDirectoryHandler not valid\n" );
     }
     else
     {
-        xError = ( FF_Error_t ) ( FF_ERR_DIR_END_OF_DIR | FF_FINDNEXT );
+        xError = FF_createERR( FF_ERR_DIR_END_OF_DIR, FF_FINDNEXT );
 
         if( pxFindData->xDirectoryHandler.pxManager != NULL )
         {
@@ -1432,7 +1432,7 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     int found;
 
                     pxFindData->xDirectoryHandler.xFSIndex--;
-                    found = FF_FS_Get( pxFindData->xDirectoryHandler.xFSIndex, &xSubSystem );
+                    found = FF_FS_Get( ( int ) pxFindData->xDirectoryHandler.xFSIndex, &xSubSystem );
 
                     if( ( found == pdFALSE ) || ( xSubSystem.pcPath[ 1 ] == '\0' ) )
                     {
@@ -1535,11 +1535,11 @@ int ff_isdirempty( const char * pcPath )
     /* Find the i/o manager which can handle this path */
     if( FF_FS_Find( pcPath, &xHandler ) == pdFALSE )
     {
-        iResult = ( int ) ( FF_ERR_NULL_POINTER | FF_ISDIREMPTY );
+        iResult = ( int ) FF_createERR( FF_ERR_NULL_POINTER, FF_ISDIREMPTY );
     }
     else
     {
-        iResult = FF_isDirEmpty( xHandler.pxManager, xHandler.pcPath );
+        iResult = ( int ) FF_isDirEmpty( xHandler.pxManager, xHandler.pcPath );
     }
 
     /* Store the errno to thread local storage. */
@@ -1548,6 +1548,7 @@ int ff_isdirempty( const char * pcPath )
 }
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* */
 #if ( ffconfig64_NUM_SUPPORT != 0 )
     int64_t ff_diskfree( const char * pcPath,
                          uint32_t * pxSectorCount )
@@ -1555,6 +1556,7 @@ int ff_isdirempty( const char * pcPath )
     int32_t ff_diskfree( const char * pcPath,
                          uint32_t * pxSectorCount )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirHandler_t xHandler;
     FF_Error_t xError;
@@ -1573,7 +1575,7 @@ int ff_isdirempty( const char * pcPath )
         lReturn = 0ul;
 
         /* Store the errno to thread local storage. */
-        stdioSET_ERRNO( pdFREERTOS_ERRNO_ENXIO );   /* No such device or address */
+        stdioSET_ERRNO( pdFREERTOS_ERRNO_ENXIO ); /* No such device or address */
     }
     else
     {
@@ -1824,160 +1826,160 @@ int prvFFErrorToErrno( FF_Error_t xError )
     {
         /* Global Error Codes. */
         case FF_ERR_NONE:
-            return 0;                                               /* No Error. */
+            return 0; /* No Error. */
 
         case FF_ERR_NULL_POINTER:
-            return pdFREERTOS_ERRNO_EBADF;                                          /* pxIOManager was NULL. */
+            return pdFREERTOS_ERRNO_EBADF; /* pxIOManager was NULL. */
 
         case FF_ERR_NOT_ENOUGH_MEMORY:
-            return pdFREERTOS_ERRNO_ENOMEM;                                         /* malloc() failed! - Could not allocate handle memory. */
+            return pdFREERTOS_ERRNO_ENOMEM; /* malloc() failed! - Could not allocate handle memory. */
 
         case FF_ERR_DEVICE_DRIVER_FAILED:
-            return pdFREERTOS_ERRNO_EIO;                                            /* The Block Device driver reported a FATAL error, cannot continue. */
+            return pdFREERTOS_ERRNO_EIO; /* The Block Device driver reported a FATAL error, cannot continue. */
 
         /* User return codes for Rd/Wr functions:. */
         case FF_ERR_IOMAN_DRIVER_BUSY:
-            return pdFREERTOS_ERRNO_EBUSY;                                          /* 10. */
+            return pdFREERTOS_ERRNO_EBUSY; /* 10. */
 
         case FF_ERR_IOMAN_DRIVER_FATAL_ERROR:
-            return pdFREERTOS_ERRNO_EUNATCH;                                        /* Protocol driver not attached. */
+            return pdFREERTOS_ERRNO_EUNATCH; /* Protocol driver not attached. */
 
         /* IOMAN Error Codes. */
         case FF_ERR_IOMAN_BAD_BLKSIZE:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* The provided blocksize was not a multiple of 512. */
+            return pdFREERTOS_ERRNO_EINVAL; /* The provided blocksize was not a multiple of 512. */
 
         case FF_ERR_IOMAN_BAD_MEMSIZE:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* The memory size was not a multiple of the blocksize. */
+            return pdFREERTOS_ERRNO_EINVAL; /* The memory size was not a multiple of the blocksize. */
 
         case FF_ERR_IOMAN_DEV_ALREADY_REGD:
-            return pdFREERTOS_ERRNO_EADDRINUSE;                                     /* Device was already registered. Use FF_UnRegister() to re-use this IOMAN with another device. */
+            return pdFREERTOS_ERRNO_EADDRINUSE; /* Device was already registered. Use FF_UnRegister() to re-use this IOMAN with another device. */
 
         case FF_ERR_IOMAN_NO_MOUNTABLE_PARTITION:
-            return pdFREERTOS_ERRNO_ENOMEDIUM;                                      /* A mountable partition could not be found on the device. */
+            return pdFREERTOS_ERRNO_ENOMEDIUM; /* A mountable partition could not be found on the device. */
 
         case FF_ERR_IOMAN_INVALID_FORMAT:
-            return pdFREERTOS_ERRNO_EFTYPE;                                         /* The. */
+            return pdFREERTOS_ERRNO_EFTYPE; /* The. */
 
         case FF_ERR_IOMAN_INVALID_PARTITION_NUM:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* The partition number provided was out of range. */
+            return pdFREERTOS_ERRNO_EINVAL; /* The partition number provided was out of range. */
 
         case FF_ERR_IOMAN_NOT_FAT_FORMATTED:
-            return pdFREERTOS_ERRNO_EFTYPE;                                         /* The partition did not look like a FAT partition. */
+            return pdFREERTOS_ERRNO_EFTYPE; /* The partition did not look like a FAT partition. */
 
         case FF_ERR_IOMAN_DEV_INVALID_BLKSIZE:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* IOMAN object BlkSize is not compatible with the blocksize of this device driver. */
+            return pdFREERTOS_ERRNO_EINVAL; /* IOMAN object BlkSize is not compatible with the blocksize of this device driver. */
 
         case FF_ERR_IOMAN_PARTITION_MOUNTED:
-            return pdFREERTOS_ERRNO_EADDRINUSE;                                     /* Device is in use by an actively mounted partition. Unmount the partition first. */
+            return pdFREERTOS_ERRNO_EADDRINUSE; /* Device is in use by an actively mounted partition. Unmount the partition first. */
 
         case FF_ERR_IOMAN_ACTIVE_HANDLES:
-            return pdFREERTOS_ERRNO_EBUSY;                                          /* The partition cannot be unmounted until all active file handles are closed. (There may also be active handles on the cache). */
+            return pdFREERTOS_ERRNO_EBUSY; /* The partition cannot be unmounted until all active file handles are closed. (There may also be active handles on the cache). */
 
         case FF_ERR_IOMAN_GPT_HEADER_CORRUPT:
-            return pdFREERTOS_ERRNO_EBADE;                                          /* The GPT partition table appears to be corrupt, refusing to mount. */
+            return pdFREERTOS_ERRNO_EBADE; /* The GPT partition table appears to be corrupt, refusing to mount. */
 
         case FF_ERR_IOMAN_NOT_ENOUGH_FREE_SPACE:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* 22. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* 22. */
 
         case FF_ERR_IOMAN_OUT_OF_BOUNDS_READ:
-            return pdFREERTOS_ERRNO_ESPIPE;                                         /* 23, return 'Illegal seek'. */
+            return pdFREERTOS_ERRNO_ESPIPE; /* 23, return 'Illegal seek'. */
 
         case FF_ERR_IOMAN_OUT_OF_BOUNDS_WRITE:
-            return pdFREERTOS_ERRNO_ESPIPE;                                         /* 24. */
+            return pdFREERTOS_ERRNO_ESPIPE; /* 24. */
 
         case FF_ERR_IOMAN_DRIVER_NOMEDIUM:
-            return pdFREERTOS_ERRNO_ENOMEDIUM;                                      /* The medium (e.g. SD-card) has been extracted. */
+            return pdFREERTOS_ERRNO_ENOMEDIUM; /* The medium (e.g. SD-card) has been extracted. */
 
         /* File Error Codes                         30 +. */
         case FF_ERR_FILE_ALREADY_OPEN:
-            return pdFREERTOS_ERRNO_EALREADY;                                       /* File is in use. */
+            return pdFREERTOS_ERRNO_EALREADY; /* File is in use. */
 
         case FF_ERR_FILE_NOT_FOUND:
-            return pdFREERTOS_ERRNO_ENOENT;                                         /* File was not found. */
+            return pdFREERTOS_ERRNO_ENOENT; /* File was not found. */
 
         case FF_ERR_FILE_OBJECT_IS_A_DIR:
-            return pdFREERTOS_ERRNO_EISDIR;                                         /* Tried to FF_Open() a Directory. */
+            return pdFREERTOS_ERRNO_EISDIR; /* Tried to FF_Open() a Directory. */
 
         case FF_ERR_FILE_IS_READ_ONLY:
-            return pdFREERTOS_ERRNO_EROFS;                                          /* Tried to FF_Open() a file marked read only. */
+            return pdFREERTOS_ERRNO_EROFS; /* Tried to FF_Open() a file marked read only. */
 
         case FF_ERR_FILE_INVALID_PATH:
-            return pdFREERTOS_ERRNO_ENOTDIR;                                        /* The path of the file was not found. */
+            return pdFREERTOS_ERRNO_ENOTDIR; /* The path of the file was not found. */
 
         case FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE:
-            return pdFREERTOS_ERRNO_EACCES;                                         /* 35. */
+            return pdFREERTOS_ERRNO_EACCES; /* 35. */
 
         case FF_ERR_FILE_NOT_OPENED_IN_READ_MODE:
-            return pdFREERTOS_ERRNO_EACCES;                                         /* 36. */
+            return pdFREERTOS_ERRNO_EACCES; /* 36. */
 
         case FF_ERR_FILE_EXTEND_FAILED:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* Could not extend the file. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* Could not extend the file. */
 
         case FF_ERR_FILE_DESTINATION_EXISTS:
-            return pdFREERTOS_ERRNO_EEXIST;                                         /* 38. */
+            return pdFREERTOS_ERRNO_EEXIST; /* 38. */
 
         case FF_ERR_FILE_SOURCE_NOT_FOUND:
-            return pdFREERTOS_ERRNO_ENOENT;                                         /* 39. */
+            return pdFREERTOS_ERRNO_ENOENT; /* 39. */
 
         case FF_ERR_FILE_DIR_NOT_FOUND:
-            return pdFREERTOS_ERRNO_ENOENT;                                         /* 40. */
+            return pdFREERTOS_ERRNO_ENOENT; /* 40. */
 
         case FF_ERR_FILE_COULD_NOT_CREATE_DIRENT:
-            return pdFREERTOS_ERRNO_EIO;                                            /* 41. */
+            return pdFREERTOS_ERRNO_EIO; /* 41. */
 
         case FF_ERR_FILE_BAD_HANDLE:
-            return pdFREERTOS_ERRNO_EBADF;                                          /* A file handle was invalid. */
+            return pdFREERTOS_ERRNO_EBADF; /* A file handle was invalid. */
 
         case FF_ERR_FILE_MEDIA_REMOVED:
-            return pdFREERTOS_ERRNO_ENODEV;                                         /* File handle got invalid because media was removed. */
+            return pdFREERTOS_ERRNO_ENODEV; /* File handle got invalid because media was removed. */
 
         case FF_ERR_FILE_SEEK_INVALID_POSITION:
-            return pdFREERTOS_ERRNO_ESPIPE;                                         /* Illegal position, outside the file's space */
+            return pdFREERTOS_ERRNO_ESPIPE; /* Illegal position, outside the file's space */
 
         case FF_ERR_FILE_SEEK_INVALID_ORIGIN:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* Seeking beyond end of file. */
+            return pdFREERTOS_ERRNO_EINVAL; /* Seeking beyond end of file. */
 
         /* Directory Error Codes                    50 +. */
         case FF_ERR_DIR_OBJECT_EXISTS:
-            return pdFREERTOS_ERRNO_EEXIST;                                         /* A file or folder of the same name already exists in the current directory. */
+            return pdFREERTOS_ERRNO_EEXIST; /* A file or folder of the same name already exists in the current directory. */
 
         case FF_ERR_DIR_DIRECTORY_FULL:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* No more items could be added to the directory. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* No more items could be added to the directory. */
 
         case FF_ERR_DIR_END_OF_DIR:
-            return pdFREERTOS_ERRNO_ENMFILE;                                        /*/. */
+            return pdFREERTOS_ERRNO_ENMFILE; /*/. */
 
         case FF_ERR_DIR_NOT_EMPTY:
-            return pdFREERTOS_ERRNO_ENOTEMPTY;                                      /* Cannot delete a directory that contains files or folders. */
+            return pdFREERTOS_ERRNO_ENOTEMPTY; /* Cannot delete a directory that contains files or folders. */
 
         case FF_ERR_DIR_INVALID_PATH:
-            return pdFREERTOS_ERRNO_EINVAL;                                         /* Could not find the directory specified by the path. */
+            return pdFREERTOS_ERRNO_EINVAL; /* Could not find the directory specified by the path. */
 
         case FF_ERR_DIR_CANT_EXTEND_ROOT_DIR:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* Can't extend the root dir. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* Can't extend the root dir. */
 
         case FF_ERR_DIR_EXTEND_FAILED:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* Not enough space to extend the directory. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* Not enough space to extend the directory. */
 
         case FF_ERR_DIR_NAME_TOO_LONG:
-            return pdFREERTOS_ERRNO_ENAMETOOLONG;                                    /* Name exceeds the number of allowed characters for a filename. */
+            return pdFREERTOS_ERRNO_ENAMETOOLONG; /* Name exceeds the number of allowed characters for a filename. */
 
         /* Fat Error Codes                          70 +. */
         case FF_ERR_FAT_NO_FREE_CLUSTERS:
-            return pdFREERTOS_ERRNO_ENOSPC;                                         /* No more free space is available on the disk. */
+            return pdFREERTOS_ERRNO_ENOSPC; /* No more free space is available on the disk. */
 
         /* UNICODE Error Codes                      100 +. */
         case FF_ERR_UNICODE_INVALID_CODE:
-            return pdFREERTOS_ERRNO_EBADE;                                          /* An invalid Unicode character was provided!. */
+            return pdFREERTOS_ERRNO_EBADE; /* An invalid Unicode character was provided!. */
 
         case FF_ERR_UNICODE_DEST_TOO_SMALL:
-            return pdFREERTOS_ERRNO_ENOBUFS;                                        /* Not enough space in the UTF-16 buffer to encode the entire sequence as UTF-16. */
+            return pdFREERTOS_ERRNO_ENOBUFS; /* Not enough space in the UTF-16 buffer to encode the entire sequence as UTF-16. */
 
         case FF_ERR_UNICODE_INVALID_SEQUENCE:
-            return pdFREERTOS_ERRNO_EILSEQ;                                         /* An invalid UTF-16 sequence was encountered. */
+            return pdFREERTOS_ERRNO_EILSEQ; /* An invalid UTF-16 sequence was encountered. */
 
         case FF_ERR_UNICODE_CONVERSION_EXCEEDED:
-            return pdFREERTOS_ERRNO_ENAMETOOLONG;                                    /* Filename exceeds MAX long-filename length when converted to UTF-16. */
+            return pdFREERTOS_ERRNO_ENAMETOOLONG; /* Filename exceeds MAX long-filename length when converted to UTF-16. */
     }
 
     return pdFREERTOS_ERRNO_EFAULT;
@@ -2142,9 +2144,9 @@ int prvFFErrorToErrno( FF_Error_t xError )
             {
                 /* In the root, so don't add a '/' between the CWD and the
                  * file name.
-            	 * The length parameter also needs a -1 here because we are adding the '/' which would cause
-            	 * truncation on a full file path length it silences the associated compiler warning.
-            	 */
+                 * The length parameter also needs a -1 here because we are adding the '/' which would cause
+                 * truncation on a full file path length it silences the associated compiler warning.
+                 */
                 snprintf( pxWorkingDirectory->pcFileName, sizeof( pxWorkingDirectory->pcFileName ) - 1, "/%s", pcPath );
             }
             else
@@ -2165,10 +2167,9 @@ int prvFFErrorToErrno( FF_Error_t xError )
 
 #if ( ffconfigTIME_SUPPORT == 1 )
 
-    static uint32_t prvFileTime( FF_SystemTime_t * pxTime )
+    time_t prvFileTime( FF_SystemTime_t * pxTime )
     {
         FF_TimeStruct_t xTime;
-        time_t xReturn;
 
         xTime.tm_sec = pxTime->Second;
         xTime.tm_min = pxTime->Minute;
@@ -2177,9 +2178,7 @@ int prvFFErrorToErrno( FF_Error_t xError )
         xTime.tm_mon = pxTime->Month - 1;
         xTime.tm_year = pxTime->Year - 1900;
 
-        xReturn = FreeRTOS_mktime( &xTime );
-
-        return xReturn;
+        return FreeRTOS_mktime( &xTime );
     }
 
 #endif /* if ( ffconfigTIME_SUPPORT == 1 ) */

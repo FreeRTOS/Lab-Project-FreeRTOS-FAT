@@ -146,7 +146,7 @@ FF_Disk_t * FF_RAMDiskInit( char * pcName,
         xParameters.pvSemaphore = ( void * ) xSemaphoreCreateRecursiveMutex();
         xParameters.xBlockDeviceIsReentrant = pdFALSE;
 
-        pxDisk->pxIOManager = FF_CreateIOManger( &xParameters, &xError );
+        pxDisk->pxIOManager = FF_CreateIOManager( &xParameters, &xError );
 
         if( ( pxDisk->pxIOManager != NULL ) && ( FF_isERR( xError ) == pdFALSE ) )
         {
@@ -181,7 +181,7 @@ FF_Disk_t * FF_RAMDiskInit( char * pcName,
         }
         else
         {
-            FF_PRINTF( "FF_RAMDiskInit: FF_CreateIOManger: %s\n", ( const char * ) FF_GetErrMessage( xError ) );
+            FF_PRINTF( "FF_RAMDiskInit: FF_CreateIOManager: %s\n", ( const char * ) FF_GetErrMessage( xError ) );
 
             /* The disk structure was allocated, but the disk's IO manager could
              * not be allocated, so free the disk again. */
@@ -419,10 +419,10 @@ BaseType_t FF_RAMDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "Partition Nr   %8u\n", pxDisk->xStatus.bPartitionNumber );
         FF_PRINTF( "Type           %8u (%s)\n", pxIOManager->xPartition.ucType, pcTypeName );
         FF_PRINTF( "VolLabel       '%8s' \n", pxIOManager->xPartition.pcVolumeLabel );
-        FF_PRINTF( "TotalSectors   %8lu\n", ( unsigned long ) pxIOManager->xPartition.ulTotalSectors );
-        FF_PRINTF( "SecsPerCluster %8lu\n", ( unsigned long ) pxIOManager->xPartition.ulSectorsPerCluster );
-        FF_PRINTF( "Size           %8lu KB\n", ( unsigned long ) ulTotalSizeKB );
-        FF_PRINTF( "FreeSize       %8lu KB ( %d perc free )\n", ( unsigned long ) ulFreeSizeKB, iPercentageFree );
+        FF_PRINTF( "TotalSectors   %8u\n", ( unsigned ) pxIOManager->xPartition.ulTotalSectors );
+        FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
+        FF_PRINTF( "Size           %8u KB\n", ( unsigned ) ulTotalSizeKB );
+        FF_PRINTF( "FreeSize       %8u KB ( %d perc free )\n", ( unsigned ) ulFreeSizeKB, iPercentageFree );
     }
 
     return xReturn;

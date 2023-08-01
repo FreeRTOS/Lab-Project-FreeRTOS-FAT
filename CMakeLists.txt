@@ -18,7 +18,7 @@ endif()
 ########################################################################
 # Options
 
-# Optional:  FREERTOS_PLUS_FAT_DEV_SUPPORT 
+# Optional:  FREERTOS_PLUS_FAT_DEV_SUPPORT
 #   - when OFF - device support is disabled and not used.
 #   - When ON  - device support is enabled and the ff_devices.h API is used.
 # Optional:  FREERTOS_PLUS_FAT_PORT
@@ -32,13 +32,13 @@ option(FREERTOS_PLUS_FAT_DEV_SUPPORT "FreeRTOS Plus FAT Device selection support
 set(FREERTOS_PLUS_FAT_PORT "" CACHE STRING "FreeRTOS Plus FAT Port selection")
 set(FREERTOS_PLUS_FAT_PORT_LIST
     A_CUSTOM_PORT
-    ATSAM4E    
-    AVR32_UC3  
+    ATSAM4E
+    AVR32_UC3
     LPC18XX
-    POSIX    
-    STM32FXX   
-    STM32HXX   
-    ZYNQ       
+    POSIX
+    STM32FXX
+    STM32HXX
+    ZYNQ
     ZYNQ_2019_3
 )
 if(NOT FREERTOS_PLUS_FAT_PORT)
@@ -107,6 +107,15 @@ else()
     endif()
 endif()
 
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS
+#   - when OFF - disable automatic fetch of FreeRTOS-kernel, user must make sure that
+#                target freertos_kernel is available
+#   - When ON  - FreeRTOS-kernel will be fetch using CMake FetchContent_Declare function.
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO
+# Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG
+option(FREERTOS_PLUS_FAT_FETCH_FREERTOS "FreeRTOS-Kernel automatic fecth support" ON)
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO "https://github.com/FreeRTOS/FreeRTOS-Kernel.git" CACHE STRING "")
+set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG "main" CACHE STRING "")
 
 ########################################################################
 # External Dependencies
@@ -115,12 +124,14 @@ endif()
 #   README.md `Consume with CMake`
 # This will allow you to upgrade submodules and have one common submodule for
 # all your builds despite multiple submodules having different versions.
-include(FetchContent)
+if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
+  include(FetchContent)
 
-FetchContent_Declare( freertos_kernel
-  GIT_REPOSITORY https://github.com/phelter/FreeRTOS-Kernel.git #https://github.com/FreeRTOS/FreeRTOS-Kernel.git
-  GIT_TAG        feature/fixing-clang-gnu-compiler-warnings #master
-)
+  FetchContent_Declare( freertos_kernel
+    GIT_REPOSITORY ${FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO}
+    GIT_TAG        ${FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG}
+  )
+endif()
 
 ########################################################################
 add_library( freertos_plus_fat STATIC )
@@ -175,22 +186,16 @@ target_compile_definitions( freertos_plus_fat
 
 target_compile_options( freertos_plus_fat
   PRIVATE
+    $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-array-bounds>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-cast-qual>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-constant-conversion>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-covered-switch-default>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation-unknown-command>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-documentation>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-extra-semi-stmt>
+    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-declaration-after-statement>
     $<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:-Wno-format>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-implicit-int-conversion>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-missing-variable-declarations>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-overflow>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-padded>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-pedantic>
 
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-reserved-macro-identifier>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-shorten-64-to-32>
-    $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-sign-conversion>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-tautological-constant-out-of-range-compare>
     $<$<COMPILE_LANG_AND_ID:C,GNU>:-Wno-type-limits>
     $<$<COMPILE_LANG_AND_ID:C,Clang>:-Wno-undef>
@@ -208,6 +213,6 @@ target_link_libraries( freertos_plus_fat
 add_subdirectory(portable)
 add_subdirectory(test)
 
-
-
-FetchContent_MakeAvailable(freertos_kernel)
+if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
+  FetchContent_MakeAvailable(freertos_kernel)
+endif()

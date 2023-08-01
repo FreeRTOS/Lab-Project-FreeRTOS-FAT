@@ -43,19 +43,19 @@
 static FF_Error_t FF_Truncate( FF_FILE * pxFile,
                                BaseType_t bClosing );
 
-static int32_t FF_ReadPartial( FF_FILE * pxFile,
-                               uint32_t ulItemLBA,
-                               uint32_t ulRelBlockPos,
-                               uint32_t ulCount,
-                               uint8_t * pucBuffer,
-                               FF_Error_t * pxError );
-
-static int32_t FF_WritePartial( FF_FILE * pxFile,
+static uint32_t FF_ReadPartial( FF_FILE * pxFile,
                                 uint32_t ulItemLBA,
                                 uint32_t ulRelBlockPos,
                                 uint32_t ulCount,
-                                const uint8_t * pucBuffer,
+                                uint8_t * pucBuffer,
                                 FF_Error_t * pxError );
+
+static uint32_t FF_WritePartial( FF_FILE * pxFile,
+                                 uint32_t ulItemLBA,
+                                 uint32_t ulRelBlockPos,
+                                 uint32_t ulCount,
+                                 const uint8_t * pucBuffer,
+                                 FF_Error_t * pxError );
 
 static uint32_t FF_SetCluster( FF_FILE * pxFile,
                                FF_Error_t * pxError );
@@ -67,10 +67,9 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Converts STDIO mode strings into the equivalent FreeRTOS+FAT mode.
  *
- *	@param	Mode	The mode string e.g. "rb" "rb+" "w" "a" "r" "w+" "a+" etc
+ *	@param	pcMode	The mode string e.g. "rb" "rb+" "w" "a" "r" "w+" "a+" etc
  *
  *	@return	Returns the mode bits that should be passed to the FF_Open function.
  **/
@@ -136,7 +135,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 
     if( pxFile == NULL )
     {
-        *pxError = ( FF_Error_t ) ( FF_ERR_NOT_ENOUGH_MEMORY | FF_OPEN );
+        *pxError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_OPEN );
     }
     else
     {
@@ -152,7 +151,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
                 else
                 {
-                    *pxError = ( FF_Error_t ) ( FF_ERR_NOT_ENOUGH_MEMORY | FF_OPEN );
+                    *pxError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_OPEN );
                     ffconfigFREE( pxFile );
                     /* Make sure that NULL will be returned. */
                     pxFile = NULL;
@@ -207,10 +206,9 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  **/
 
 /**
- *	@public
  *	@brief	Opens a File for Access
  *
- *	@param	pxIOManager	FF_IOManager_t object that was created by FF_CreateIOManger().
+ *	@param	pxIOManager	FF_IOManager_t object that was created by FF_CreateIOManager().
  *	@param	pcPath		Path to the File or object.
  *	@param	ucMode		Access Mode required. Modes are a little complicated, the function FF_GetModeBits()
  *	@param	ucMode		will convert a stdio Mode string into the equivalent Mode bits for this parameter.
@@ -218,16 +216,20 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *	@param	pxError		To be checked when a NULL pointer is returned.
  *
  *	@return	NULL pointer on error, in which case pxError should be checked for more information.
- *	@return	pxError can be:
  **/
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_FILE * FF_Open( FF_IOManager_t * pxIOManager,
                        const FF_T_WCHAR * pcPath,
                        uint8_t ucMode,
                        FF_Error_t * pxError )
 #else
-    FF_FILE * FF_Open( FF_IOManager_t * pxIOManager, const char * pcPath, uint8_t ucMode, FF_Error_t * pxError )
+    FF_FILE * FF_Open( FF_IOManager_t * pxIOManager,
+                       const char * pcPath,
+                       uint8_t ucMode,
+                       FF_Error_t * pxError )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile = NULL;
     FF_FILE * pxFileChain;
@@ -264,13 +266,13 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     {
         /* Use the error function code 'FF_OPEN' as this static
          * function is only called from that function. */
-        xError = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_OPEN );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_OPEN );
     }
 
     #if ( ffconfigREMOVABLE_MEDIA != 0 )
         else if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0 )
         {
-            xError = ( FF_Error_t ) ( FF_ERR_IOMAN_DRIVER_NOMEDIUM | FF_OPEN );
+            xError = FF_createERR( FF_ERR_IOMAN_DRIVER_NOMEDIUM, FF_OPEN );
         }
     #endif /* ffconfigREMOVABLE_MEDIA */
     else
@@ -306,7 +308,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         FF_CreateShortName( &xFindParams, pcFileName );
 
         /* Lookup the path and find the cluster pointing to the directory: */
-        xFindParams.ulDirCluster = FF_FindDir( pxIOManager, pcPath, xIndex, &xError );
+        xFindParams.ulDirCluster = FF_FindDir( pxIOManager, pcPath, ( uint16_t ) xIndex, &xError );
 
         if( xFindParams.ulDirCluster == 0ul )
         {
@@ -355,7 +357,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
              * Maybe the user wants to create it? */
             if( ( ucMode & FF_MODE_CREATE ) == 0 )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_OPEN );
+                xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_OPEN );
             }
             else
             {
@@ -376,12 +378,12 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         if( ( xDirEntry.ucAttrib == FF_FAT_ATTR_DIR ) && ( ( ucMode & FF_MODE_DIR ) == 0 ) )
         {
             /* Not the object, File Not Found! */
-            xError = ( FF_Error_t ) ( FF_ERR_FILE_OBJECT_IS_A_DIR | FF_OPEN );
+            xError = FF_createERR( FF_ERR_FILE_OBJECT_IS_A_DIR, FF_OPEN );
         }
         /*---------- Ensure Read-Only files don't get opened for Writing. */
         else if( ( ( ucMode & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) != 0 ) && ( ( xDirEntry.ucAttrib & FF_FAT_ATTR_READONLY ) != 0 ) )
         {
-            xError = ( FF_Error_t ) ( FF_ERR_FILE_IS_READ_ONLY | FF_OPEN );
+            xError = FF_createERR( FF_ERR_FILE_IS_READ_ONLY, FF_OPEN );
         }
     }
 
@@ -428,7 +430,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                         if( ( ( pxFileChain->ucMode | pxFile->ucMode ) & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) != 0 )
                         {
                             /* File is already open! DON'T ALLOW IT! */
-                            xError = ( FF_Error_t ) ( FF_ERR_FILE_ALREADY_OPEN | FF_OPEN );
+                            xError = FF_createERR( FF_ERR_FILE_ALREADY_OPEN, FF_OPEN );
                             break;
                         }
                     }
@@ -488,16 +490,16 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return pxFile;
-}  /* FF_Open() */
+} /* FF_Open() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Tests if a Directory contains any other files or folders.
  *
- *	@param	pxIOManager	FF_IOManager_t object returned from the FF_CreateIOManger() function.
+ *	@param	pxIOManager	FF_IOManager_t object returned from the FF_CreateIOManager() function.
  *
  **/
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     BaseType_t FF_isDirEmpty( FF_IOManager_t * pxIOManager,
                               const FF_T_WCHAR * pcPath )
@@ -505,6 +507,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     BaseType_t FF_isDirEmpty( FF_IOManager_t * pxIOManager,
                               const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xDirEntry;
     FF_Error_t xError = FF_ERR_NONE;
@@ -542,7 +545,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return xReturn;
-}   /* FF_isDirEmpty() */
+} /* FF_isDirEmpty() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigPATH_CACHE != 0 )
@@ -559,16 +562,15 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
          * The directory 'path' will be removed or renamed
          * now clear all entries starting with 'path' in the path cache
          */
-        BaseType_t xIndex;
-        BaseType_t pathLen = STRLEN( pcPath );
+        UBaseType_t pathLen = STRLEN( pcPath );
 
         FF_PendSemaphore( pxIOManager->pvSemaphore );
         {
-            for( xIndex = 0; xIndex < ffconfigPATH_CACHE_DEPTH; xIndex++ )
+            for( UBaseType_t xIndex = 0; xIndex < ffconfigPATH_CACHE_DEPTH; xIndex++ )
             {
-                BaseType_t len2 = STRLEN( pxIOManager->xPartition.pxPathCache[ xIndex ].pcPath );
+                UBaseType_t len2 = STRLEN( pxIOManager->xPartition.pxPathCache[ xIndex ].pcPath );
 
-                if( ( len2 >= pathLen ) && FF_strmatch( pxIOManager->xPartition.pxPathCache[ xIndex ].pcPath, pcPath, pathLen ) )
+                if( ( len2 >= pathLen ) && FF_strmatch( pxIOManager->xPartition.pxPathCache[ xIndex ].pcPath, pcPath, ( BaseType_t ) pathLen ) )
                 {
                     pxIOManager->xPartition.pxPathCache[ xIndex ].pcPath[ 0 ] = '\0';
                     pxIOManager->xPartition.pxPathCache[ xIndex ].ulDirCluster = 0;
@@ -581,7 +583,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 #endif /* ffconfigPATH_CACHE */
 /*-----------------------------------------------------------*/
 
-
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_RmDir( FF_IOManager_t * pxIOManager,
                          const FF_T_WCHAR * pcPath )
@@ -589,6 +591,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_RmDir( FF_IOManager_t * pxIOManager,
                          const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile;
     uint8_t ucEntryBuffer[ 32 ];
@@ -597,13 +600,13 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 
     if( pxIOManager == NULL )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_RMDIR );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_RMDIR );
     }
 
     #if ( ffconfigREMOVABLE_MEDIA != 0 )
         else if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0 )
         {
-            xError = ( FF_Error_t ) ( FF_ERR_IOMAN_DRIVER_NOMEDIUM | FF_RMDIR );
+            xError = FF_createERR( FF_ERR_IOMAN_DRIVER_NOMEDIUM, FF_RMDIR );
         }
     #endif /* ffconfigREMOVABLE_MEDIA */
     else
@@ -627,7 +630,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                  * statements. */
                 if( FF_isDirEmpty( pxIOManager, pcPath ) == pdFALSE )
                 {
-                    xError = ( FF_ERR_DIR_NOT_EMPTY | FF_RMDIR );
+                    xError = FF_createERR( FF_ERR_DIR_NOT_EMPTY, FF_RMDIR );
                     break;
                 }
 
@@ -735,9 +738,10 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }     /* else if( pxIOManager != NULL ) */
 
     return xError;
-}   /* FF_RmDir() */
+} /* FF_RmDir() */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_RmFile( FF_IOManager_t * pxIOManager,
                           const FF_T_WCHAR * pcPath )
@@ -745,6 +749,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_Error_t FF_RmFile( FF_IOManager_t * pxIOManager,
                           const char * pcPath )
 #endif
+/* *INDENT-ON* */
 {
     FF_FILE * pxFile;
     FF_Error_t xError = FF_ERR_NONE;
@@ -846,28 +851,28 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
             }
         }
-    }   /* if( pxFile != NULL ) */
+    } /* if( pxFile != NULL ) */
 
     return xError;
-}   /* FF_RmFile() */
+} /* FF_RmFile() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Moves a file or directory from source to destination.
  *
  *	@param	pxIOManager				The FF_IOManager_t object pointer.
  *	@param	szSourceFile		String of the source file to be moved or renamed.
  *	@param	szDestinationFile	String of the destination file to where the source should be moved or renamed.
  *
- *	@return	FF_ERR_NONE on success.
- *	@return FF_ERR_FILE_DESTINATION_EXISTS if the destination file exists.
- *	@return FF_ERR_FILE_COULD_NOT_CREATE_DIRENT if dirent creation failed (fatal error!).
- *	@return FF_ERR_FILE_DIR_NOT_FOUND if destination directory was not found.
- *	@return FF_ERR_FILE_SOURCE_NOT_FOUND if the source file was not found.
+ *	@retval	FF_ERR_NONE on success.
+ *	@retval FF_ERR_FILE_DESTINATION_EXISTS if the destination file exists.
+ *	@retval FF_ERR_FILE_COULD_NOT_CREATE_DIRENT if dirent creation failed (fatal error!).
+ *	@retval FF_ERR_FILE_DIR_NOT_FOUND if destination directory was not found.
+ *	@retval FF_ERR_FILE_SOURCE_NOT_FOUND if the source file was not found.
  *
  **/
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_Move( FF_IOManager_t * pxIOManager,
                         const FF_T_WCHAR * szSourceFile,
@@ -879,12 +884,13 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                         const char * szDestinationFile,
                         BaseType_t xDeleteIfExists )
 #endif
+/* *INDENT-ON* */
 {
     FF_Error_t xError;
     FF_FILE * pSrcFile, * pxDestFile;
     FF_DirEnt_t xMyFile;
     uint8_t ucEntryBuffer[ 32 ];
-    BaseType_t xIndex;
+    UBaseType_t xIndex;
     uint32_t ulDirCluster = 0ul;
     FF_FetchContext_t xFetchContext;
 
@@ -896,13 +902,13 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 
     if( pxIOManager == NULL )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_MOVE );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
     }
 
     #if ( ffconfigREMOVABLE_MEDIA != 0 )
         else if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0 )
         {
-            xError = ( FF_Error_t ) ( FF_ERR_IOMAN_DRIVER_NOMEDIUM | FF_MOVE );
+            xError = FF_createERR( FF_ERR_IOMAN_DRIVER_NOMEDIUM, FF_MOVE );
         }
     #endif /* ffconfigREMOVABLE_MEDIA */
     else
@@ -912,7 +918,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 
         if( ( pxDestFile != NULL ) || ( FF_GETERROR( xError ) == FF_ERR_FILE_OBJECT_IS_A_DIR ) )
         {
-            xError = ( FF_Error_t ) ( FF_ERR_FILE_DESTINATION_EXISTS | FF_MOVE );
+            xError = FF_createERR( FF_ERR_FILE_DESTINATION_EXISTS, FF_MOVE );
 
             if( pxDestFile != NULL )
             {
@@ -963,7 +969,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                     xMyFile.ulObjectCluster = pSrcFile->ulObjectCluster;
                     xMyFile.usCurrentItem = 0;
 
-                    xIndex = ( BaseType_t ) STRLEN( szDestinationFile );
+                    xIndex = ( UBaseType_t ) STRLEN( szDestinationFile );
 
                     while( xIndex != 0 )
                     {
@@ -986,7 +992,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 
                     /* Find the (cluster of the) directory in which the target file will be located.
                      * It must exist before calling FF_Move(). */
-                    ulDirCluster = FF_FindDir( pxIOManager, szDestinationFile, xIndex, &xError );
+                    ulDirCluster = FF_FindDir( pxIOManager, szDestinationFile, ( uint16_t ) xIndex, &xError );
                 }
             }
         }
@@ -1052,9 +1058,9 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                     }
                 #endif
             }
-            else    /* ulDirCluster == 0ul */
+            else /* ulDirCluster == 0ul */
             {
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_DIR_NOT_FOUND | FF_MOVE );
+                xError = FF_createERR( FF_ERR_FILE_DIR_NOT_FOUND, FF_MOVE );
             }
         }
 
@@ -1086,17 +1092,16 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     return xError;
-}   /* FF_Move() */
+} /* FF_Move() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Get's the next Entry based on the data recorded in the FF_DirEnt_t object.
  *
  *	@param	pxFile	FF_FILE object that was created by FF_Open().
  *
- *	@return pdTRUE if End of File was reached. pdFALSE if not.
- *	@return pdFALSE if a null pointer was provided.
+ *	@retval pdTRUE if End of File was reached. pdFALSE if not.
+ *	@retval pdFALSE if a null pointer was provided.
  *
  **/
 BaseType_t FF_isEOF( FF_FILE * pxFile )
@@ -1113,17 +1118,15 @@ BaseType_t FF_isEOF( FF_FILE * pxFile )
     }
 
     return xReturn;
-}   /* FF_isEOF() */
+} /* FF_isEOF() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Checks the number of bytes left on a read handle
  *
  *	@param	pxFile		An open file handle
  *
- *	@return	Less than zero: an error code
- *	@return	Number of bytes left to read from handle
+ *	@return	Less than zero: an error code, or Number of bytes left to read from handle
  **/
 int32_t FF_BytesLeft( FF_FILE * pxFile )
 {
@@ -1131,11 +1134,11 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xReturn = FF_ERR_NULL_POINTER | FF_BYTESLEFT;
+        xReturn = FF_createERR( FF_ERR_NULL_POINTER, FF_BYTESLEFT );
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
-        xReturn = FF_ERR_FILE_NOT_OPENED_IN_READ_MODE | FF_BYTESLEFT;
+        xReturn = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_READ_MODE, FF_BYTESLEFT );
     }
     else if( pxFile->ulFilePointer >= pxFile->ulFileSize )
     {
@@ -1146,42 +1149,41 @@ int32_t FF_BytesLeft( FF_FILE * pxFile )
         xReturn = pxFile->ulFileSize - pxFile->ulFilePointer;
     }
 
-    return xReturn;
-}   /* FF_BytesLeft() */
+    return ( int32_t ) xReturn;
+} /* FF_BytesLeft() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Returns the file size of a read handle
  *
- *	@param	pxFile		An open file handle
+ *	@param	    pxFile		An open file handle
+ *  @param[out] pulSize     Writes # of bytes in a file to the parameter.
  *
- *	@return	Less than zero: an error code
- *	@return	Number of bytes left to read from handle
+ *	@return	Less than zero: an error code, or Number of bytes left to read from handle
  **/
 FF_Error_t FF_GetFileSize( FF_FILE * pxFile,
-                           uint32_t * pulSize )                 /* Writes # of bytes in a file to the parameter. */
+                           uint32_t * pulSize ) /* Writes # of bytes in a file to the parameter. */
 {
-    BaseType_t xReturn;
+    FF_Error_t xReturn;
 
     if( pxFile == NULL )
     {
-        xReturn = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_BYTESLEFT );
+        xReturn = FF_createERR( FF_ERR_NULL_POINTER, FF_BYTESLEFT );
         *( pulSize ) = ( uint32_t ) 0u;
     }
     else if( FF_isERR( FF_CheckValid( pxFile ) ) )
     {
-        xReturn = ( FF_Error_t ) ( FF_ERR_FILE_BAD_HANDLE | FF_BYTESLEFT );
+        xReturn = FF_createERR( FF_ERR_FILE_BAD_HANDLE, FF_BYTESLEFT );
         *( pulSize ) = ( uint32_t ) 0u;
     }
     else
     {
-        xReturn = 0;
+        xReturn = FF_ERR_NONE;
         *( pulSize ) = pxFile->ulFileSize;
     }
 
     return xReturn;
-}   /* FF_GetFileSize */
+} /* FF_GetFileSize */
 
 int32_t FF_FileSize( FF_FILE * pxFile )
 {
@@ -1197,7 +1199,7 @@ int32_t FF_FileSize( FF_FILE * pxFile )
     }
 
     return ( int32_t ) xResult;
-}   /* FF_FileSize() */
+} /* FF_FileSize() */
 /*-----------------------------------------------------------*/
 
 static uint32_t FF_GetSequentialClusters( FF_IOManager_t * pxIOManager,
@@ -1249,7 +1251,7 @@ static uint32_t FF_GetSequentialClusters( FF_IOManager_t * pxIOManager,
     *pxError = FF_ReleaseFATBuffers( pxIOManager, &xFATBuffers );
 
     return ulIndex;
-}   /* FF_GetSequentialClusters() */
+} /* FF_GetSequentialClusters() */
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_ReadClusters( FF_FILE * pxFile,
@@ -1305,7 +1307,7 @@ static FF_Error_t FF_ReadClusters( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_ReadClusters ()*/
+} /* FF_ReadClusters ()*/
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
@@ -1323,7 +1325,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
 
     if( ( pxFile->ucMode & FF_MODE_WRITE ) != FF_MODE_WRITE )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE | FF_EXTENDFILE );
+        xError = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE, FF_EXTENDFILE );
     }
     else
     {
@@ -1389,7 +1391,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
 
                 if( ( FF_isERR( xError ) == pdFALSE ) && ( ulNextCluster == 0UL ) )
                 {
-                    xError = ( FF_Error_t ) ( FF_ERR_FAT_NO_FREE_CLUSTERS | FF_EXTENDFILE );
+                    xError = FF_createERR( FF_ERR_FAT_NO_FREE_CLUSTERS, FF_EXTENDFILE );
                 }
 
                 if( FF_isERR( xError ) )
@@ -1428,7 +1430,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
 
         {
             FF_Error_t xTempError;
-            xTempError = FF_DecreaseFreeClusters( pxIOManager, ( uint32_t ) xIndex );   /* Keep Tab of Numbers for fast FreeSize() */
+            xTempError = FF_DecreaseFreeClusters( pxIOManager, ( uint32_t ) xIndex ); /* Keep Tab of Numbers for fast FreeSize() */
 
             if( FF_isERR( xError ) == pdFALSE )
             {
@@ -1491,7 +1493,7 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
     } /* if( ulTotalClustersNeeded > pxFile->ulChainLength ) */
 
     return xError;
-}   /* FF_ExtendFile() */
+} /* FF_ExtendFile() */
 /*-----------------------------------------------------------*/
 
 static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
@@ -1551,11 +1553,10 @@ static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_WriteClusters */
+} /* FF_WriteClusters */
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief	Calculate the Logical Block Address (LBA)
  *
  *	@param	pxFile       The file handle
@@ -1576,13 +1577,12 @@ static uint32_t FF_FileLBA( FF_FILE * pxFile )
     ulItemLBA += FF_getMinorBlockNumber( pxFile->pxIOManager, pxFile->ulFilePointer, 1 );
 
     return ulItemLBA;
-}   /* FF_FileLBA() */
+} /* FF_FileLBA() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@private
  *	@brief	Depending on FilePointer, calculate CurrentCluster
- *  @brief	and traverse the FAT to find the right ulAddrCurrentCluster
+ *          and traverse the FAT to find the right ulAddrCurrentCluster
  *
  *	@param	pxFile       The file handle
  *
@@ -1636,15 +1636,15 @@ static uint32_t FF_SetCluster( FF_FILE * pxFile,
     *pxError = xResult;
 
     return ulReturn;
-}   /* FF_SetCluster() */
+} /* FF_SetCluster() */
 /*-----------------------------------------------------------*/
 
-static int32_t FF_ReadPartial( FF_FILE * pxFile,
-                               uint32_t ulItemLBA,
-                               uint32_t ulRelBlockPos,
-                               uint32_t ulCount,
-                               uint8_t * pucBuffer,
-                               FF_Error_t * pxError )
+static uint32_t FF_ReadPartial( FF_FILE * pxFile,
+                                uint32_t ulItemLBA,
+                                uint32_t ulRelBlockPos,
+                                uint32_t ulCount,
+                                uint8_t * pucBuffer,
+                                FF_Error_t * pxError )
 {
     FF_Error_t xError = FF_ERR_NONE;
     uint32_t ulBytesRead;
@@ -1709,7 +1709,7 @@ static int32_t FF_ReadPartial( FF_FILE * pxFile,
 
             if( pxBuffer == NULL )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_READ );
+                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_READ );
                 ulBytesRead = 0ul;
             }
             else
@@ -1728,17 +1728,16 @@ static int32_t FF_ReadPartial( FF_FILE * pxFile,
     *pxError = xError;
 
     return ulBytesRead;
-}   /* FF_ReadPartial() */
+} /* FF_ReadPartial() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Equivalent to fread()
  *
  *	@param	pxFile			FF_FILE object that was created by FF_Open().
  *	@param	ulElementSize	The size of an element to read.
  *	@param	ulCount			The number of elements to read.
- *	@param	buffer			A pointer to a buffer of adequate size to be filled with the requested data.
+ *	@param	pucBuffer       A pointer to a buffer of adequate size to be filled with the requested data.
  *
  *	@return Number of bytes read.
  *
@@ -1768,7 +1767,7 @@ int32_t FF_Read( FF_FILE * pxFile,
 
     if( pxFile == NULL )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_READ );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_READ );
     }
     else
     {
@@ -1780,13 +1779,13 @@ int32_t FF_Read( FF_FILE * pxFile,
             if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
             {
                 /* File was not opened with READ mode access. */
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_OPENED_IN_READ_MODE | FF_READ );
+                xError = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_READ_MODE, FF_READ );
             }
             else if( pxFile->ulFilePointer >= pxFile->ulFileSize )
             {
                 /* The end-of-file is reached.  The error READ_ZERO will not be
                  * returned, it is just used to avoid further processing. */
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_READ_ZERO | FF_READ );
+                xError = FF_createERR( FF_ERR_FILE_READ_ZERO, FF_READ );
             }
             else if( ( pxFile->ulFilePointer + ulBytesLeft ) > pxFile->ulFileSize )
             {
@@ -1798,7 +1797,7 @@ int32_t FF_Read( FF_FILE * pxFile,
         {
             /* The file handle is not valid. */
         }
-    }   /* else pxFile != NULL */
+    } /* else pxFile != NULL */
 
     if( FF_isERR( xError ) == pdFALSE )
     {
@@ -1969,18 +1968,17 @@ int32_t FF_Read( FF_FILE * pxFile,
     }
 
     return lResult;
-}   /* FF_Read() */
+} /* FF_Read() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Equivalent to fgetc()
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@return The character that was read (cast as a 32-bit interger). -1 on EOF.
- *	@return FF_Error_t code. (Check with if(FF_isERR(xRetVal)) {}).
- *	@return -1 EOF (end of file).
+ *	@retval The character that was read (cast as a 32-bit interger). -1 on EOF.
+ *	@retval FF_Error_t code. (Check with if(FF_isERR(xRetVal)) {}).
+ *	@retval -1 EOF (end of file).
  *
  **/
 int32_t FF_GetC( FF_FILE * pxFile )
@@ -1992,17 +1990,17 @@ int32_t FF_GetC( FF_FILE * pxFile )
 
     if( pxFile == NULL )
     {
-        xResult = FF_ERR_NULL_POINTER | FF_GETC;    /* Ensure this is a signed error. */
+        xResult = FF_createERR( FF_ERR_NULL_POINTER, FF_GETC ); /* Ensure this is a signed error. */
     }
     else if( ( pxFile->ucMode & FF_MODE_READ ) == 0 )
     {
-        xResult = FF_ERR_FILE_NOT_OPENED_IN_READ_MODE | FF_GETC;
+        xResult = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_READ_MODE, FF_GETC );
     }
     else if( pxFile->ulFilePointer >= pxFile->ulFileSize )
     {
         /* The end-of-file is reached.  The error READ_ZERO will not be
          * returned, it is just used to avoid further processing. */
-        xResult = FF_ERR_FILE_READ_ZERO | FF_READ;
+        xResult = FF_createERR( FF_ERR_FILE_READ_ZERO, FF_READ );
     }
     else
     {
@@ -2022,11 +2020,10 @@ int32_t FF_GetC( FF_FILE * pxFile )
     }
 
     return ( int32_t ) xResult;
-}   /* FF_GetC() */
+} /* FF_GetC() */
 /*-----------------------------------------------------------*/
 
 /**
- * @public
  * @brief	Gets a Line from a Text File, but no more than ulLimit characters. The line will be NULL terminated.
  *
  *			The behaviour of this function is undefined when called on a binary file.
@@ -2035,12 +2032,12 @@ int32_t FF_GetC( FF_FILE * pxFile )
  *			This function works for both UNIX line feeds, and Windows CRLF type files.
  *
  * @param	pxFile	The FF_FILE object pointer.
- * @param	szLine	The character buffer where the line should be stored.
+ * @param	pcLine	The character buffer where the line should be stored.
  * @param	ulLimit	This should be the max number of characters that szLine can hold.
  *
  * @return	The number of characters read from the line, on success.
- * @return	0 when no more lines are available, or when ulLimit is 0.
- * @return	FF_ERR_NULL_POINTER if pxFile or szLine are NULL;
+ *          0 when no more lines are available, or when ulLimit is 0.
+ *          FF_ERR_NULL_POINTER if pxFile or szLine are NULL;
  *
  **/
 int32_t FF_GetLine( FF_FILE * pxFile,
@@ -2053,7 +2050,7 @@ int32_t FF_GetLine( FF_FILE * pxFile,
 
     if( ( pxFile == NULL ) || ( pcLine == NULL ) )
     {
-        xResult = FF_ERR_NULL_POINTER | FF_GETLINE;
+        xResult = FF_createERR( FF_ERR_NULL_POINTER, FF_GETLINE );
     }
     else
     {
@@ -2082,7 +2079,7 @@ int32_t FF_GetLine( FF_FILE * pxFile,
                 {
                     /* Although FF_GetC() returns an End Of File,
                      * the last few characters will be returned first. */
-                    iChar = xIndex;
+                    iChar = ( int32_t ) xIndex;
                 }
 
                 break;
@@ -2097,7 +2094,7 @@ int32_t FF_GetLine( FF_FILE * pxFile,
         if( FF_isERR( iChar ) == pdFALSE )
         {
             /* Return the number of bytes read. */
-            xResult = xIndex;
+            xResult = ( int32_t ) xIndex;
         }
         else
         {
@@ -2107,15 +2104,15 @@ int32_t FF_GetLine( FF_FILE * pxFile,
     }
 
     return xResult;
-}   /* FF_GetLine() */
+} /* FF_GetLine() */
 /*-----------------------------------------------------------*/
 
-static int32_t FF_WritePartial( FF_FILE * pxFile,
-                                uint32_t ulItemLBA,
-                                uint32_t ulRelBlockPos,
-                                uint32_t ulCount,
-                                const uint8_t * pucBuffer,
-                                FF_Error_t * pxError )
+static uint32_t FF_WritePartial( FF_FILE * pxFile,
+                                 uint32_t ulItemLBA,
+                                 uint32_t ulRelBlockPos,
+                                 uint32_t ulCount,
+                                 const uint8_t * pucBuffer,
+                                 FF_Error_t * pxError )
 {
     FF_Error_t xError;
     uint32_t ulBytesWritten;
@@ -2186,7 +2183,7 @@ static int32_t FF_WritePartial( FF_FILE * pxFile,
 
             if( pxBuffer == NULL )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_DEVICE_DRIVER_FAILED | FF_WRITE );
+                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_WRITE );
             }
             else
             {
@@ -2216,11 +2213,10 @@ static int32_t FF_WritePartial( FF_FILE * pxFile,
     *pxError = xError;
 
     return ulBytesWritten;
-}   /* FF_WritePartial() */
+} /* FF_WritePartial() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Writes data to a File.
  *
  *	@param	pxFile			FILE Pointer.
@@ -2234,7 +2230,7 @@ static int32_t FF_WritePartial( FF_FILE * pxFile,
  *	3. Write complete clusters:            FF_WriteClusters()
  *	4. Write remaining sectors:            FF_BlockWrite()
  *	5. Write remaining bytes:              FF_WritePartial()
- *	@return
+ *	@return FF_ERR_NONE when success, otherwise one of FF_ERR_* when failure
  **/
 int32_t FF_Write( FF_FILE * pxFile,
                   uint32_t ulElementSize,
@@ -2255,7 +2251,7 @@ int32_t FF_Write( FF_FILE * pxFile,
 
     if( pxFile == NULL )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_READ );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_READ );
     }
     else
     {
@@ -2266,7 +2262,7 @@ int32_t FF_Write( FF_FILE * pxFile,
         {
             if( ( pxFile->ucMode & FF_MODE_WRITE ) == 0 )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE | FF_WRITE );
+                xError = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE, FF_WRITE );
             }
             /* Make sure a write is after the append point. */
             else if( ( pxFile->ucMode & FF_MODE_APPEND ) != 0 )
@@ -2466,11 +2462,10 @@ int32_t FF_Write( FF_FILE * pxFile,
     }
 
     return lResult;
-}   /* FF_Write() */
+} /* FF_Write() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Writes a char to a FILE.
  *
  *	@param	pxFile		FILE Pointer.
@@ -2488,11 +2483,11 @@ int32_t FF_PutC( FF_FILE * pxFile,
 
     if( pxFile == NULL )
     {   /* Ensure we don't have a Null file pointer on a Public interface. */
-        xResult = FF_ERR_NULL_POINTER | FF_PUTC;
+        xResult = FF_createERR( FF_ERR_NULL_POINTER, FF_PUTC );
     }
     else if( ( pxFile->ucMode & FF_MODE_WRITE ) == 0 )
     {
-        xResult = FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE | FF_PUTC;
+        xResult = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE, FF_PUTC );
     }
     else
     {
@@ -2542,21 +2537,20 @@ int32_t FF_PutC( FF_FILE * pxFile,
     }
 
     return xResult;
-}   /* FF_PutC() */
+} /* FF_PutC() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Equivalent to fseek()
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
- *	@param	ulOffset	An integer (+/-) to seek to, from the specified origin.
+ *	@param	lOffset	    An integer (+/-) to seek to, from the specified origin.
  *	@param	xOrigin		Where to seek from. (FF_SEEK_SET seek from start, FF_SEEK_CUR seek from current position, or FF_SEEK_END seek from end of file).
  *
- *	@return 0 on Sucess,
- *	@return -2 if offset results in an invalid position in the file.
- *	@return FF_ERR_NULL_POINTER if a FF_FILE pointer was not received.
- *	@return -3 if an invalid origin was provided.
+ *	@retval 0 on Sucess,
+ *	@retval -2 if offset results in an invalid position in the file.
+ *	@retval FF_ERR_NULL_POINTER if a FF_FILE pointer was not received.
+ *	@retval -3 if an invalid origin was provided.
  *
  **/
 FF_Error_t FF_Seek( FF_FILE * pxFile,
@@ -2615,7 +2609,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
             }
             else
             {
-                xError = ( FF_Error_t ) ( FF_SEEK | FF_ERR_FILE_SEEK_INVALID_ORIGIN );
+                xError = FF_createERR( FF_ERR_FILE_SEEK_INVALID_ORIGIN, FF_SEEK );
                 /* To supress a compiler warning. */
                 ulPosition = ( uint32_t ) 0u;
             }
@@ -2632,27 +2626,26 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
                 }
                 else
                 {
-                    xError = ( FF_Error_t ) ( FF_SEEK | FF_ERR_FILE_SEEK_INVALID_POSITION );
+                    xError = FF_createERR( FF_ERR_FILE_SEEK_INVALID_POSITION, FF_SEEK );
                 }
             }
         }
     }
 
     return xError;
-}   /* FF_Seek() */
+} /* FF_Seek() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigREMOVABLE_MEDIA != 0 )
 
 /**
- *	@public
  *	@brief	Invalidate all file handles belonging to pxIOManager
  *
- *	@param	pIoMan		FF_IOManager_t object that was created by FF_CreateIOManger().
+ *	@param	pIoMan		FF_IOManager_t object that was created by FF_CreateIOManager().
  *
- *	@return 0 if no handles were open
- *	@return >0 the amount of handles that were invalidated
- *	@return <0 probably an invalid FF_IOManager_t pointer
+ *	@retval 0 if no handles were open
+ *	@retval >0 the amount of handles that were invalidated
+ *	@retval <0 probably an invalid FF_IOManager_t pointer
  *
  **/
     int32_t FF_Invalidate( FF_IOManager_t * pxIOManager )
@@ -2690,20 +2683,19 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
         }
 
         return xResult;
-    }   /* FF_Invalidate() */
+    } /* FF_Invalidate() */
 #endif /* ffconfigREMOVABLE_MEDIA */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Check validity of file handle
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@return 0 on sucess.
- *	@return FF_ERR_NULL_POINTER       if a null pointer was provided.
- *	@return FF_ERR_FILE_BAD_HANDLE    if handle is not recognized
- *	@return FF_ERR_FILE_MEDIA_REMOVED please call FF_Close
+ *	@retval 0 on sucess.
+ *	@retval FF_ERR_NULL_POINTER       if a null pointer was provided.
+ *	@retval FF_ERR_FILE_BAD_HANDLE    if handle is not recognized
+ *	@retval FF_ERR_FILE_MEDIA_REMOVED please call FF_Close
  *
  **/
 FF_Error_t FF_CheckValid( FF_FILE * pxFile )
@@ -2713,14 +2705,14 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
     if( ( pxFile == NULL ) || ( pxFile->pxIOManager == NULL ) )
     {
-        xError = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_CHECKVALID );
+        xError = FF_createERR( FF_ERR_NULL_POINTER, FF_CHECKVALID );
     }
     else
     {
         FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
         {
             pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
-            xError = ( FF_Error_t ) ( FF_ERR_FILE_BAD_HANDLE | FF_CHECKVALID );
+            xError = FF_createERR( FF_ERR_FILE_BAD_HANDLE, FF_CHECKVALID );
 
             while( pxFileChain != NULL )
             {
@@ -2730,7 +2722,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                         if( ( pxFileChain->ulValidFlags & FF_VALID_FLAG_INVALID ) != 0 )
                         {
                             /* The medium has been removed while this file handle was open. */
-                            xError = ( FF_Error_t ) ( FF_ERR_FILE_MEDIA_REMOVED | FF_CHECKVALID );
+                            xError = FF_createERR( FF_ERR_FILE_MEDIA_REMOVED, FF_CHECKVALID );
                         }
                         else
                     #endif
@@ -2749,13 +2741,12 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
     }
 
     return xError;
-}   /* FF_CheckValid() */
+} /* FF_CheckValid() */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigTIME_SUPPORT != 0 )
 
 /**
- *	@public
  *	@brief	Set the time-stamp(s) of a file entry
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
@@ -2777,12 +2768,12 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
         if( FF_isERR( xError ) == pdFALSE )
         {
             if( pxFile->ulValidFlags & FF_VALID_FLAG_DELETED )
-            {   /*if (pxFile->FileDeleted) */
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETFILETIME );
+            { /*if (pxFile->FileDeleted) */
+                xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_SETFILETIME );
             }
             else if( ( pxFile->ucMode & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) == 0 )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE | FF_SETFILETIME );
+                xError = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE, FF_SETFILETIME );
             }
             else
             {
@@ -2793,7 +2784,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                 {
                     if( uxWhat & ETimeCreate )
                     {
-                        xOriginalEntry.xCreateTime = *pxTime;       /*/< Date and Time Created. */
+                        xOriginalEntry.xCreateTime = *pxTime; /*/< Date and Time Created. */
                     }
 
                     if( uxWhat & ETimeMod )
@@ -2811,20 +2802,19 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
                 if( FF_isERR( xError ) == pdFALSE )
                 {
-                    xError = FF_FlushCache( pxFile->pxIOManager );      /* Ensure all modfied blocks are flushed to disk! */
+                    xError = FF_FlushCache( pxFile->pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
                 }
             }
         }
 
         return xError;
-    }   /* FF_SetFileTime() */
+    } /* FF_SetFileTime() */
 #endif /* ffconfigTIME_SUPPORT */
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigTIME_SUPPORT != 0 )
 
 /**
- *	@public
  *	@brief	Set the time-stamp(s) of a file entry (by name)
  *
  *	@param	pxIOManager		FF_IOManager_t device handle
@@ -2887,7 +2877,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
         {
             if( xFindParams.ulDirCluster == 0 )
             {
-                xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETTIME );
+                xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_SETTIME );
             }
             else
             {
@@ -2898,7 +2888,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                     if( ulFileCluster == 0ul )
                     {
                         /*FF_PRINTF ("FF_SetTime: Can not find '%s'\n", pcFileName); */
-                        xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETTIME );
+                        xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_SETTIME );
                     }
                 }
             }
@@ -2935,6 +2925,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 #endif /* ffconfigTIME_SUPPORT */
 /*-----------------------------------------------------------*/
 
+/* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     FF_Error_t FF_SetPerm( FF_IOManager_t * pxIOManager,
                            const FF_T_WCHAR * pcPath,
@@ -2944,6 +2935,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
                            const char * pcPath,
                            UBaseType_t aPerm )
 #endif
+/* *INDENT-ON* */
 {
     FF_DirEnt_t xOriginalEntry;
     FF_Error_t xError;
@@ -2991,7 +2983,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
         if( !xFindParams.ulDirCluster )
         {
-            xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETTIME );
+            xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_SETTIME );
             break;
         }
 
@@ -3005,7 +2997,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
         if( ulFileCluster == 0ul )
         {
             /*FF_PRINTF ("FF_SetTime: Can not find '%s'\n", pcFileName); */
-            xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_FOUND | FF_SETTIME );
+            xError = FF_createERR( FF_ERR_FILE_NOT_FOUND, FF_SETTIME );
             break;
         }
 
@@ -3024,23 +3016,22 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
         if( FF_isERR( xError ) == pdFALSE )
         {
-            xError = FF_FlushCache( pxIOManager );          /* Ensure all modfied blocks are flushed to disk! */
+            xError = FF_FlushCache( pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
         }
     }
     while( pdFALSE );
 
     return xError;
-}   /* FF_SetPerm() */
+} /* FF_SetPerm() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Equivalent to fclose()
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@return 0 on sucess.
- *	@return -1 if a null pointer was provided.
+ *	@retval 0 on sucess.
+ *	@retval -1 if a null pointer was provided.
  *
  **/
 FF_Error_t FF_Close( FF_FILE * pxFile )
@@ -3054,7 +3045,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
     {
         if( pxFile == NULL )
         {
-            xError = ( FF_Error_t ) ( FF_ERR_NULL_POINTER | FF_CLOSE );
+            xError = FF_createERR( FF_ERR_NULL_POINTER, FF_CLOSE );
             break;
         }
 
@@ -3087,7 +3078,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                                 pxFileChain = pxFileChain->pxNext; /* Forgot this one */
                             }
                         }
-                    }               /* Semaphore released, linked list was shortened! */
+                    } /* Semaphore released, linked list was shortened! */
 
                     FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
                     #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
@@ -3170,7 +3161,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                     pxFileChain = pxFileChain->pxNext;
                 }
             }
-        }   /* Semaphore released, linked list was shortened! */
+        } /* Semaphore released, linked list was shortened! */
         FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
 
         #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
@@ -3205,17 +3196,16 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
     while( pdFALSE );
 
     return xError;
-}   /* FF_Close() */
+} /* FF_Close() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Make Filesize equal to the FilePointer and truncates the file to this position
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@return 0 on sucess.
- *	@return negative if some error occurred
+ *	@retval 0 on sucess.
+ *	@retval negative if some error occurred
  *
  **/
 FF_Error_t FF_SetEof( FF_FILE * pxFile )
@@ -3239,21 +3229,20 @@ FF_Error_t FF_SetEof( FF_FILE * pxFile )
     }
     else
     {
-        xError = ( FF_Error_t ) ( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE | FF_SETEOF );
+        xError = FF_createERR( FF_ERR_FILE_NOT_OPENED_IN_WRITE_MODE, FF_SETEOF );
     }
 
     return xError;
-}   /* FF_SetEof() */
+} /* FF_SetEof() */
 /*-----------------------------------------------------------*/
 
 /**
- *	@public
  *	@brief	Truncate a file to 'pxFile->ulFileSize'
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@return 0 on sucess.
- *	@return negative if some error occurred
+ *	@retval 0 on sucess.
+ *	@retval negative if some error occurred
  *
  **/
 static FF_Error_t FF_Truncate( FF_FILE * pxFile,
@@ -3339,5 +3328,5 @@ static FF_Error_t FF_Truncate( FF_FILE * pxFile,
     }
 
     return xError;
-}   /* FF_Truncate() */
+} /* FF_Truncate() */
 /*-----------------------------------------------------------*/

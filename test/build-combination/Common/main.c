@@ -35,12 +35,10 @@
 #include "task.h"
 
 /* System application includes. */
+#include "FreeRTOSConfig.h"
 #include "ff_headers.h"
 #include "ff_stdio.h"
 #include "ff_ramdisk.h"
-
-#define mainHOST_NAME                "Build Combination"
-#define mainDEVICE_NICK_NAME         "Build_Combination"
 
 /* The number and size of sectors that will make up the RAM disk.  The RAM disk
  * is huge to allow some verbose FTP tests used in previous demos. */
@@ -55,8 +53,6 @@
 int main( void )
 {
     /* Initialize the FAT RamDisk */
-    /* vLoggingPrint( "FF_RAMDiskInit\n" ); */
-
     static uint8_t ucRAMDisk[ mainRAM_DISK_SECTORS * mainRAM_DISK_SECTOR_SIZE ];
     FF_Disk_t * pxDisk;
 
@@ -69,65 +65,45 @@ int main( void )
     return 0;
 }
 /*-----------------------------------------------------------*/
+#if ( configUSE_IDLE_HOOK != 0 )
 
-void vApplicationIdleHook( void )
-{
-    /* Exit. Just a stub. */
-}
-/*-----------------------------------------------------------*/
-void vAssertCalled( const char * pcFile,
-                    unsigned long ulLine )
-{
-    ( void ) pcFile;
-    ( void ) ulLine;
-
-    taskDISABLE_INTERRUPTS();
+    void vApplicationIdleHook( void )
     {
-        while( 1 )
-        {
-        }
+        /* Exit. Just a stub. */
     }
-    taskENABLE_INTERRUPTS();
-}
+#endif
 /*-----------------------------------------------------------*/
 
-void vLoggingPrint( const char * pcMessage )
-{
-    ( void ) pcMessage;
-}
-/*-----------------------------------------------------------*/
+#if ( configSUPPORT_STATIC_ALLOCATION == 1 )
 
-void getUserCmd( char * pucUserCmd )
-{
-    /* Provide a stub for this function. */
-    ( void ) pucUserCmd;
-}
-
-/*-----------------------------------------------------------*/
-
-void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
-                                    StackType_t ** ppxIdleTaskStackBuffer,
-                                    uint32_t * pulIdleTaskStackSize )
-{
-    /* Provide a stub for this function. */
-    ( void ) ppxIdleTaskTCBBuffer;
-    ( void ) ppxIdleTaskStackBuffer;
-    ( void ) pulIdleTaskStackSize;
-}
+    void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
+                                        StackType_t ** ppxIdleTaskStackBuffer,
+                                        uint32_t * pulIdleTaskStackSize )
+    {
+        /* Provide a stub for this function. */
+        ( void ) ppxIdleTaskTCBBuffer;
+        ( void ) ppxIdleTaskStackBuffer;
+        ( void ) pulIdleTaskStackSize;
+    }
+#endif /* if ( configSUPPORT_STATIC_ALLOCATION == 1 ) */
 
 /*-----------------------------------------------------------*/
-
-void vApplicationTickHook( void )
-{
-    /* Provide a stub for this function. */
-}
+#if  ( configUSE_TICK_HOOK != 0 )
+    void vApplicationTickHook( void )
+    {
+        /* Provide a stub for this function. */
+    }
+#endif
 
 /*-----------------------------------------------------------*/
+#if  ( configUSE_DAEMON_TASK_STARTUP_HOOK != 0 )
+    void vApplicationDaemonTaskStartupHook( void )
+    {
+        /* Provide a stub for this function. */
+    }
+#endif
 
-void vApplicationDaemonTaskStartupHook( void )
-{
-    /* Provide a stub for this function. */
-}
+#if ( configSUPPORT_STATIC_ALLOCATION == 1 )
 
 /*
  * Callback that provides the inputs necessary to generate a randomized TCP
@@ -135,12 +111,16 @@ void vApplicationDaemonTaskStartupHook( void )
  * THAT RETURNS A PSEUDO RANDOM NUMBER SO IS NOT INTENDED FOR USE IN PRODUCTION
  * SYSTEMS.
  */
-void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
-                                     StackType_t ** ppxTimerTaskStackBuffer,
-                                     uint32_t * pulTimerTaskStackSize )
-{
-    /* Provide a stub for this function. */
-}
+    void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
+                                         StackType_t ** ppxTimerTaskStackBuffer,
+                                         uint32_t * pulTimerTaskStackSize )
+    {
+        /* Provide a stub for this function. */
+        ( void ) ppxTimerTaskTCBBuffer;
+        ( void ) ppxTimerTaskStackBuffer;
+        ( void ) pulTimerTaskStackSize;
+    }
+#endif /* if ( configSUPPORT_STATIC_ALLOCATION == 1 ) */
 
 void vApplicationMallocFailedHook( void )
 {
