@@ -89,9 +89,9 @@
 
         /* Note time_t must be used here otherwise will have bugs when 2032 (uint32_t second clock rolls over) */
         #if ( ffconfigTIME_SUPPORT == 1 )
-            time_t st_atime;
-            time_t st_mtime;
-            time_t st_ctime;
+            time_t ff_atime;
+            time_t ff_mtime;
+            time_t ff_ctime;
         #endif /* ffconfigTIME_SUPPORT */
     } FF_Stat_t;
 
