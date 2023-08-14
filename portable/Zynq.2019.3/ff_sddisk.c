@@ -441,7 +441,8 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
 /*-----------------------------------------------------------*/
 
 /* Initialise the SDIO driver and mount an SD card */
-FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName , const FFInitSettings_t * pxSettings)
+FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                       const FFInitSettings_t * pxSettings )
 {
     FF_Error_t xFFError;
     FF_CreationParameters_t xParameters;

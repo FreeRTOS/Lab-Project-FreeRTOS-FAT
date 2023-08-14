@@ -34,7 +34,7 @@
         extern "C" {
     #endif
 
-    /* @brief Initialization settings for more granular control on init. */
+/* @brief Initialization settings for more granular control on init. */
     typedef struct FFInitSettings_s
     {
         BaseType_t xMountFailIgnore; /**< Ignore failure when mounting */
@@ -47,7 +47,8 @@
     BaseType_t FF_SDDiskDetect( FF_Disk_t * pxDisk );
 
 /* Create a RAM disk, supplying enough memory to hold N sectors of 512 bytes each */
-    FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName, const FFInitSettings_t * pxSettings );
+    FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                           const FFInitSettings_t * pxSettings );
 
     FF_Disk_t * FF_SDDiskInit( const char * pcName );
 

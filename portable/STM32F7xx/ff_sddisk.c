@@ -539,7 +539,8 @@ static void vGPIO_SD_Init( SD_HandleTypeDef * xSDHandle )
 }
 /*-----------------------------------------------------------*/
 
-FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName , const FFInitSettings_t * pxSettings)
+FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                       const FFInitSettings_t * pxSettings )
 {
     ( void ) pxSettings; /* Unused */
 

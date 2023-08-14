@@ -310,7 +310,8 @@ void FF_SDDiskFlush( FF_Disk_t * pxDisk )
 }
 /*-----------------------------------------------------------*/
 
-FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName , const FFInitSettings_t * pxSettings)
+FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                       const FFInitSettings_t * pxSettings )
 {
     ( void ) pxSettings; /* Unused */
 
