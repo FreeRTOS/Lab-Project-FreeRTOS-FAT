@@ -371,6 +371,15 @@ static struct xCACHE_MEMORY_INFO * pucGetSDIOCacheMemory()
 }
 /*-----------------------------------------------------------*/
 
+FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                       const FFInitSettings_t * pxSettings )
+{
+    ( void ) pxSettings; /* Unused */
+
+    return FF_SDDiskInit( pcName );
+}
+/*-----------------------------------------------------------*/
+
 /* Initialise the SDIO driver and mount an SD card */
 FF_Disk_t * FF_SDDiskInit( const char * pcName )
 {

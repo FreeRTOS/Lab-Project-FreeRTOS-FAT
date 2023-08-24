@@ -432,20 +432,19 @@ static CacheMemoryInfo_t * pucGetSDIOCacheMemory( BaseType_t xPartition )
 }
 /*-----------------------------------------------------------*/
 
-/* Initialise the SDIO driver and mount an SD card */
-BaseType_t xMountFailIgnore = 0;
-
-/* _HT_ : the function FF_SDDiskInit() used to mount partition-0.
- * It would be nice if it has a parameter indicating the partition
- * number.
- * As for now, the partion can be set with a global variable 'xDiskPartition'.
- */
-BaseType_t xDiskPartition = 0;
-
 FF_Disk_t * FF_SDDiskInit( const char * pcName )
 {
+    const FFInitSettings_t defaultSettings = {};
+
+    return FF_SDDiskInitWithSettings( pcName, &defaultSettings );
+}
+/*-----------------------------------------------------------*/
+
+/* Initialise the SDIO driver and mount an SD card */
+FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                       const FFInitSettings_t * pxSettings )
+{
     FF_Error_t xFFError;
-    BaseType_t xPartitionNumber = xDiskPartition;
     FF_CreationParameters_t xParameters;
     FF_Disk_t * pxDisk = NULL;
     CacheMemoryInfo_t * pxCacheMem = NULL;
@@ -456,13 +455,13 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
 
     do
     {
-        if( pucGetSDIOCacheMemory( xPartitionNumber ) == NULL )
+        if( pucGetSDIOCacheMemory( pxSettings->xDiskPartition ) == NULL )
         {
             FF_PRINTF( "FF_SDDiskInit: Cached memory failed\n" );
             break;
         }
 
-        pxCacheMem = pxCacheMemories[ xPartitionNumber ];
+        pxCacheMem = pxCacheMemories[ pxSettings->xDiskPartition ];
 
         if( pxSDCardInstance == NULL )
         {
@@ -551,14 +550,14 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
         }
 
         pxDisk->xStatus.bIsInitialised = pdTRUE;
-        pxDisk->xStatus.bPartitionNumber = xPartitionNumber;
+        pxDisk->xStatus.bPartitionNumber = pxSettings->xDiskPartition;
 
         if( FF_SDDiskMount( pxDisk ) == 0 )
         {
             /* _HT_ Suppose that the partition is not yet
              * formatted, it might be desireable to have a valid
              * i/o manager. */
-            if( xMountFailIgnore == 0 )
+            if( pxSettings->xMountFailIgnore == 0 )
             {
                 FF_SDDiskDelete( pxDisk );
                 pxDisk = NULL;

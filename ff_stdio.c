@@ -1137,9 +1137,9 @@ int ff_stat( const char * pcName,
 
         #if ( ffconfigTIME_SUPPORT == 1 )
             {
-                pxStatBuffer->st_atime = prvFileTime( &( xDirEntry.xAccessedTime ) );
-                pxStatBuffer->st_mtime = prvFileTime( &( xDirEntry.xModifiedTime ) );
-                pxStatBuffer->st_ctime = prvFileTime( &( xDirEntry.xCreateTime ) );
+                pxStatBuffer->ff_atime = prvFileTime( &( xDirEntry.xAccessedTime ) );
+                pxStatBuffer->ff_mtime = prvFileTime( &( xDirEntry.xModifiedTime ) );
+                pxStatBuffer->ff_ctime = prvFileTime( &( xDirEntry.xCreateTime ) );
             }
         #endif
     }

@@ -28,11 +28,18 @@
 
     #define __SDDISK_H__
 
+    #include "ff_headers.h"
+
     #ifdef __cplusplus
         extern "C" {
     #endif
 
-    #include "ff_headers.h"
+/* @brief Initialization settings for more granular control on init. */
+    typedef struct FFInitSettings_s
+    {
+        BaseType_t xMountFailIgnore; /**< Ignore failure when mounting */
+        BaseType_t xDiskPartition;   /**< Default disk partition number */
+    } FFInitSettings_t;
 
 
 /* Return non-zero if the SD-card is present.
@@ -40,6 +47,9 @@
     BaseType_t FF_SDDiskDetect( FF_Disk_t * pxDisk );
 
 /* Create a RAM disk, supplying enough memory to hold N sectors of 512 bytes each */
+    FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
+                                           const FFInitSettings_t * pxSettings );
+
     FF_Disk_t * FF_SDDiskInit( const char * pcName );
 
     BaseType_t FF_SDDiskReinit( FF_Disk_t * pxDisk );
