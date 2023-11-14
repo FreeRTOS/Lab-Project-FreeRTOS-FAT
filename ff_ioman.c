@@ -705,18 +705,21 @@ static uint8_t ucAssumeFATType = 0;
  *
  * In practice however, this does not always seem to be a correct assumption.
  *
- * The first 12 or 16 bits in the FAT table may also help to determine the
+ * The end-of-chain value in the FAT table may also help to determine the
  * correct FAT-type:
  *
- *    FAT-12: ( firstWord & 0x3FF ) == 0x3F8 )
- *    FAT-16: ( firstWord == 0xFFF8 )
+ *    endOfChain = bits 4-32 at beginning of table
+ *    FAT-12: endOfChain == 0x0FF8
+ *    FAT-16: endOfChain == 0xFFF8
+ *    FAT-32: endOfChain == 0x0FFFFFF8
  */
 
 static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
 {
     FF_Partition_t * pxPartition;
     FF_Buffer_t * pxBuffer;
-    uint32_t ulFirstWord = 0ul;
+    /* final cluster sentinel value */
+    uint32_t ulEndOfChain = 0ul;
     FF_Error_t xError = FF_ERR_NONE;
 
     pxPartition = &( pxIOManager->xPartition );
@@ -751,7 +754,7 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
         }
         else
         {
-            ulFirstWord = ( uint32_t ) FF_getShort( pxBuffer->pucBuffer, 0x0000 );
+            ulEndOfChain = FF_getLong( pxBuffer->pucBuffer, 0x0000 ) & 0xFFFFFFF8ul;
             xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
         }
     }
@@ -764,7 +767,7 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
                 /* FAT12 */
                 pxPartition->ucType = FF_T_FAT12;
                 #if ( ffconfigFAT_CHECK != 0 )
-                    if( ( ulFirstWord & 0x3FF ) != 0x3F8 )
+                    if( ulEndOfChain == 0x0FF8 )
                     {
                         xError = FF_createERR( FF_ERR_IOMAN_NOT_FAT_FORMATTED, FF_DETERMINEFATTYPE );
                     }
@@ -783,20 +786,20 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
             pxPartition->ucType = FF_T_FAT16;
             #if ( ffconfigFAT_CHECK != 0 )
                 {
-                    if( ulFirstWord == 0xFFF8 )
+                    if( ulEndOfChain == 0xFFF8 )
                     {
                         xError = FF_ERR_NONE;
                     }
                     else
                     {
-                        if( ( ulFirstWord & 0x3FF ) != 0x3F8 )
+                        if( ulEndOfChain != 0x0FF8 )
                         {
                             FF_PRINTF( "Part at %lu is probably a FAT12\n", pxIOManager->xPartition.ulFATBeginLBA );
                         }
                         else
                         {
                             FF_PRINTF( "Partition at %lu has strange FAT data %08lX\n",
-                                       pxIOManager->xPartition.ulFATBeginLBA, ulFirstWord );
+                                       pxIOManager->xPartition.ulFATBeginLBA, ulEndOfChain );
                         }
 
                         xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_DETERMINEFATTYPE );
@@ -809,16 +812,9 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
             /* FAT 32! */
             pxPartition->ucType = FF_T_FAT32;
             #if ( ffconfigFAT_CHECK != 0 )
-                if( ( ( ulFirstWord & 0x0FFFFFF8 ) != 0x0FFFFFF8 ) &&
-                    ( ( ulFirstWord & 0x0FFFFFF8 ) != 0x0FFFFFF0 ) )
+                if( ulEndOfChain != 0x0FFFFFF8 )
                 {
-                    /* _HT_
-                     * I had an SD-card which worked well in Linux/W32
-                     * but FreeRTOS+FAT returned me this error
-                     * So for me I left out this check (just issue a warning for now)
-                     */
-                    FF_PRINTF( "prvDetermineFatType: firstWord %08lX\n", ulFirstWord );
-                    xError = FF_ERR_NONE; /* FF_ERR_IOMAN_NOT_FAT_FORMATTED; */
+                    xError = FF_createERR( FF_ERR_IOMAN_NOT_FAT_FORMATTED, FF_DETERMINEFATTYPE );
                 }
             #endif /* ffconfigFAT_CHECK */
             xError = FF_ERR_NONE;
