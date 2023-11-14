@@ -767,7 +767,7 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
                 /* FAT12 */
                 pxPartition->ucType = FF_T_FAT12;
                 #if ( ffconfigFAT_CHECK != 0 )
-                    if( ulEndOfChain == 0x0FF8 )
+                    if( ulEndOfChain != 0x0FF8 )
                     {
                         xError = FF_createERR( FF_ERR_IOMAN_NOT_FAT_FORMATTED, FF_DETERMINEFATTYPE );
                     }
@@ -792,7 +792,7 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
                     }
                     else
                     {
-                        if( ulEndOfChain != 0x0FF8 )
+                        if( ulEndOfChain == 0x0FF8 )
                         {
                             FF_PRINTF( "Part at %lu is probably a FAT12\n", pxIOManager->xPartition.ulFATBeginLBA );
                         }
