@@ -654,7 +654,7 @@ int32_t FF_BlockWrite( FF_IOManager_t * pxIOManager,
     if( ( slRetVal == 0ul ) && ( pxIOManager->xBlkDevice.fnpWriteBlocks != NULL ) )
     {
         do
-        {   /* Make sure we don't execute a NULL. */
+        { /* Make sure we don't execute a NULL. */
             if( ( xSemLocked == pdFALSE ) &&
                 ( ( pxIOManager->ucFlags & FF_IOMAN_BLOCK_DEVICE_IS_REENTRANT ) == pdFALSE ) )
             {
@@ -796,30 +796,30 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
             /* FAT 16 */
             pxPartition->ucType = FF_T_FAT16;
             #if ( ffconfigFAT_CHECK != 0 )
-            {
-                /* Keep bits 4..15 */
-                ulFirstCluster &= 0xFFF8U;
+                {
+                    /* Keep bits 4..15 */
+                    ulFirstCluster &= 0xFFF8U;
 
-                if( ulFirstCluster == 0xFFF8U )
-                {
-                    /* FAT16 entry OK. */
-                    xError = FF_ERR_NONE;
-                }
-                else
-                {
-                    if( ( ulFirstCluster & 0xFF8U ) == 0xFF8U )
+                    if( ulFirstCluster == 0xFFF8U )
                     {
-                        FF_PRINTF( "FAT_CHECK: FAT16 Part at %lu is probably a FAT12\n", pxIOManager->xPartition.ulFATBeginLBA );
+                        /* FAT16 entry OK. */
+                        xError = FF_ERR_NONE;
                     }
                     else
                     {
-                        FF_PRINTF( "FAT_CHECK: FAT16 Partition has unexpected FAT data %08lX\n",
-                                   ulFirstCluster );
-                    }
+                        if( ( ulFirstCluster & 0xFF8U ) == 0xFF8U )
+                        {
+                            FF_PRINTF( "FAT_CHECK: FAT16 Part at %lu is probably a FAT12\n", pxIOManager->xPartition.ulFATBeginLBA );
+                        }
+                        else
+                        {
+                            FF_PRINTF( "FAT_CHECK: FAT16 Partition has unexpected FAT data %08lX\n",
+                                       ulFirstCluster );
+                        }
 
-                    xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_DETERMINEFATTYPE );
+                        xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_DETERMINEFATTYPE );
+                    }
                 }
-            }
             #endif /* ffconfigFAT_CHECK */
         }
         else
@@ -1528,7 +1528,7 @@ FF_Error_t FF_Mount( FF_Disk_t * pxDisk,
         }
 
         if( pxPartition->ulSectorsPerFAT == 0 )
-        {   /* FAT32 */
+        { /* FAT32 */
             pxPartition->ulSectorsPerFAT = FF_getLong( pxBuffer->pucBuffer, FF_FAT_32_SECTORS_PER_FAT );
             pxPartition->ulRootDirCluster = FF_getLong( pxBuffer->pucBuffer, FF_FAT_ROOT_DIR_CLUSTER );
             memcpy( pxPartition->pcVolumeLabel, pxBuffer->pucBuffer + FF_FAT_32_VOL_LABEL, sizeof( pxPartition->pcVolumeLabel ) - 1 );
