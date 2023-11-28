@@ -213,7 +213,13 @@ target_link_libraries( freertos_plus_fat
 add_subdirectory(portable)
 add_subdirectory(test)
 
+# This library requires access to a heap
+# FreeRTOS/FreeRTOS-Kernel previously defaulted to heap_4.c
+if(NOT DEFINED FREERTOS_HEAP)
+    message(STATUS "FREERTOS_HEAP not set, setting FREERTOS_HEAP=4")
+    set(FREERTOS_HEAP 4)
+endif()
+
 if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
-  set( FREERTOS_HEAP "4" CACHE STRING "" FORCE)
   FetchContent_MakeAvailable(freertos_kernel)
 endif()
