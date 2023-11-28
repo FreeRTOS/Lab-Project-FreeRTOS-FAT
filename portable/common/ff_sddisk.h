@@ -77,7 +77,7 @@
     BaseType_t FF_SDDiskInserted( BaseType_t xDriveNr );
 
 /* _RB_ Temporary function - ideally the application would not need the IO
- * manageer structure, just a handle to a disk. */
+ * manager structure, just a handle to a disk. */
     FF_IOManager_t * sddisk_ioman( FF_Disk_t * pxDisk );
 
     #ifdef __cplusplus

@@ -228,9 +228,10 @@ int FF_FS_Find( const char * pcPath,
 
     for( xUseIndex = 1; xUseIndex < file_systems.xFileSystemCount; xUseIndex++, pxSubSystem++ )
     {
+         /* System "/ram" should not match with "/ram/etc". */
         if( ( uxPathLength >= ( size_t ) pxSubSystem->xPathlen ) &&
             ( memcmp( pxSubSystem->pcPath, pcPath, ( size_t ) pxSubSystem->xPathlen ) == 0 ) &&
-            ( ( pcPath[ pxSubSystem->xPathlen ] == '\0' ) || ( pcPath[ pxSubSystem->xPathlen ] == '/' ) ) ) /* System "/ram" should not match with "/ramc/etc". */
+            ( ( pcPath[ pxSubSystem->xPathlen ] == '\0' ) || ( pcPath[ pxSubSystem->xPathlen ] == '/' ) ) )
         {
             if( pcPath[ pxSubSystem->xPathlen ] == '\0' )
             {

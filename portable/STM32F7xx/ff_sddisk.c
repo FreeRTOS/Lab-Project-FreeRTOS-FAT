@@ -237,7 +237,7 @@ static __attribute__( ( section( ".first_data" ) ) ) uint8_t pucDMABuffer[ 512 ]
 /*-----------------------------------------------------------*/
 
 #ifdef STM32F7xx
-    static BaseType_t xIsCachable( uint32_t ulAddress )
+    static BaseType_t xIsCacheable( uint32_t ulAddress )
     {
         BaseType_t xReturn = pdFALSE;
 
@@ -254,7 +254,7 @@ static __attribute__( ( section( ".first_data" ) ) ) uint8_t pucDMABuffer[ 512 ]
         return xReturn;
     }
 #else /* ifdef STM32F7xx */
-    static BaseType_t xIsCachable( uint32_t ulAddress )
+    static BaseType_t xIsCacheable( uint32_t ulAddress )
     {
         return pdFALSE;
     }
@@ -296,7 +296,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
                 {
                     sd_result = HAL_SD_CheckReadOperation( &xSDHandle, sdMAX_TIME_TICKS );
 
-                    if( xIsCachable( ( uint32_t ) pucBuffer ) != pdFALSE )
+                    if( xIsCacheable( ( uint32_t ) pucBuffer ) != pdFALSE )
                     {
                         prvCacheInvalidate( ( uint32_t * ) pucBuffer, 512U * ulSectorCount );
                     }
@@ -323,7 +323,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
                             break;
                         }
 
-                        if( xIsCachable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
+                        if( xIsCacheable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
                         {
                             prvCacheInvalidate( ( uint32_t * ) pucDMABuffer, 512U );
                         }
@@ -388,7 +388,7 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
             if( ( ( ( uintptr_t ) pucBuffer ) & CACHE_LINE_BITS ) == 0U )
             {
                 /* The buffer is word-aligned, call DMA write directly. */
-                if( xIsCachable( ( uint32_t ) pucBuffer ) != pdFALSE )
+                if( xIsCacheable( ( uint32_t ) pucBuffer ) != pdFALSE )
                 {
                     prvCacheClean( ( uint32_t * ) pucBuffer, 512U * ulSectorCount );
                 }
@@ -413,7 +413,7 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
                     memcpy( pucDMABuffer, pucBuffer + 512U * ulSector, 512U );
                     ullWriteAddr = ( uint64_t ) 512U * ( ulSectorNumber + ulSector );
 
-                    if( xIsCachable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
+                    if( xIsCacheable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
                     {
                         prvCacheClean( ( uint32_t * ) pucDMABuffer, 512U );
                     }

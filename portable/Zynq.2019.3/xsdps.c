@@ -1217,7 +1217,7 @@ static s32 XSdPs_IdentifyCard( XSdPs * InstancePtr )
     }
 
     /* Host High Capacity support & High voltage window */
-    /* Midn you, for an SD-card this command should fail. */
+    /* Mind you, for an SD-card this command should fail. */
     Status = XSdPs_CmdTransfer( InstancePtr, CMD1,
                                 XSDPS_ACMD41_HCS | XSDPS_CMD1_HIGH_VOL, 0U );
 
