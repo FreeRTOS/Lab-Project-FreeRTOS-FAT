@@ -3075,10 +3075,10 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                                 break;
                             }
 
-                            pxFileChain = pxFileChain->pxNext;     /* Forgot this one */
+                            pxFileChain = pxFileChain->pxNext; /* Forgot this one */
                         }
                     }
-                }     /* Semaphore released, linked list was shortened! */
+                } /* Semaphore released, linked list was shortened! */
 
                 FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
                 #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
@@ -3086,7 +3086,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                     ffconfigFREE( pxFile->pucBuffer );
                 }
                 #endif /* ffconfigOPTIMISE_UNALIGNED_ACCESS */
-                ffconfigFREE( pxFile );     /* So at least we have freed the pointer. */
+                ffconfigFREE( pxFile ); /* So at least we have freed the pointer. */
                 xError = FF_ERR_NONE;
                 break;
             }

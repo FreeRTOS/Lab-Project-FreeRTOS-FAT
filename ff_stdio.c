@@ -1486,12 +1486,12 @@ int ff_findnext( FF_FindData_t * pxFindData )
                 xSeconds = FreeRTOS_time( NULL );
                 FreeRTOS_gmtime_r( &xSeconds, &xTimeStruct );
 
-                pxFindData->xDirectoryEntry.xCreateTime.Year = ( uint16_t ) ( xTimeStruct.tm_year + 1900 );     /* Year (e.g. 2009). */
-                pxFindData->xDirectoryEntry.xCreateTime.Month = ( uint16_t ) ( xTimeStruct.tm_mon + 1 );        /* Month (e.g. 1 = Jan, 12 = Dec). */
-                pxFindData->xDirectoryEntry.xCreateTime.Day = ( uint16_t ) xTimeStruct.tm_mday;                 /* Day (1 - 31). */
-                pxFindData->xDirectoryEntry.xCreateTime.Hour = ( uint16_t ) xTimeStruct.tm_hour;                /* Hour (0 - 23). */
-                pxFindData->xDirectoryEntry.xCreateTime.Minute = ( uint16_t ) xTimeStruct.tm_min;               /* Min (0 - 59). */
-                pxFindData->xDirectoryEntry.xCreateTime.Second = ( uint16_t ) xTimeStruct.tm_sec;               /* Second (0 - 59). */
+                pxFindData->xDirectoryEntry.xCreateTime.Year = ( uint16_t ) ( xTimeStruct.tm_year + 1900 ); /* Year (e.g. 2009). */
+                pxFindData->xDirectoryEntry.xCreateTime.Month = ( uint16_t ) ( xTimeStruct.tm_mon + 1 );    /* Month (e.g. 1 = Jan, 12 = Dec). */
+                pxFindData->xDirectoryEntry.xCreateTime.Day = ( uint16_t ) xTimeStruct.tm_mday;             /* Day (1 - 31). */
+                pxFindData->xDirectoryEntry.xCreateTime.Hour = ( uint16_t ) xTimeStruct.tm_hour;            /* Hour (0 - 23). */
+                pxFindData->xDirectoryEntry.xCreateTime.Minute = ( uint16_t ) xTimeStruct.tm_min;           /* Min (0 - 59). */
+                pxFindData->xDirectoryEntry.xCreateTime.Second = ( uint16_t ) xTimeStruct.tm_sec;           /* Second (0 - 59). */
                 /* Date and Time Modified. */
                 memcpy( &( pxFindData->xDirectoryEntry.xModifiedTime ),
                         &( pxFindData->xDirectoryEntry.xCreateTime ),

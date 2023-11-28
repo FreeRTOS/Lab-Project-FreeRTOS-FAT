@@ -482,7 +482,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                             /* You're getting the idea by now! */
                             memcpy( pcCurPtr, &src[ FF_FAT_LFN_NAME_3 ], 4 );
                             pcCurPtr += 2;
-                        }         /* ffconfigUNICODE_UTF16_SUPPORT */
+                        } /* ffconfigUNICODE_UTF16_SUPPORT */
                         #elif ( ffconfigUNICODE_UTF8_SUPPORT != 0 )
                         {
                             /* UTF-8 Routine here. */
@@ -539,9 +539,9 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                                     }
                                 }
                             }
-                        }         /* ffconfigUNICODE_UTF8_SUPPORT */
+                        } /* ffconfigUNICODE_UTF8_SUPPORT */
                         #else /* if ( ffconfigUNICODE_UTF16_SUPPORT != 0 ) */
-                        {         /* use ASCII notation. */
+                        { /* use ASCII notation. */
                             for( xIndex = 0; ( xIndex < 10 ) && ( pcCurPtr < pcLastPtr ); xIndex += 2 )
                             {
                                 *( pcCurPtr++ ) = ( char ) src[ FF_FAT_LFN_NAME_1 + xIndex ];
@@ -563,7 +563,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
                         {
                             *pcCurPtr = '\0'; /* Important when name len is multiple of 13. */
                         }
-                    }                         /* if( xLFNCount ) */
+                    } /* if( xLFNCount ) */
                 }
                 #endif /* ffconfigLFN_SUPPORT */
                 continue;
@@ -748,9 +748,9 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
 
         xFound = pdFALSE;
 
-        #if ( ffconfigPATH_CACHE != 0 )                       /* Is the requested pcPath in the PATH CACHE? */
+        #if ( ffconfigPATH_CACHE != 0 )                   /* Is the requested pcPath in the PATH CACHE? */
         {
-            FF_PendSemaphore( pxIOManager->pvSemaphore );     /* Thread safety on shared object! */
+            FF_PendSemaphore( pxIOManager->pvSemaphore ); /* Thread safety on shared object! */
             {
                 for( xIndex = 0; xIndex < ffconfigPATH_CACHE_DEPTH; xIndex++ )
                 {
@@ -804,7 +804,7 @@ static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
             {
                 FF_PendSemaphore( pxIOManager->pvSemaphore );
                 {
-                    if( pathLen < ffconfigMAX_FILENAME )     /* Ensure the PATH won't cause a buffer overrun. */
+                    if( pathLen < ffconfigMAX_FILENAME ) /* Ensure the PATH won't cause a buffer overrun. */
                     {
                         #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
                         {
@@ -1692,7 +1692,7 @@ FF_Error_t FF_PopulateLongDirent( FF_IOManager_t * pxIOManager,
     {
         #if ( ffconfigFINDAPI_ALLOW_WILDCARDS != 0 )
         {
-            pxDirEntry->pcWildCard[ 0 ] = '\0';     /* WildCard blank if its not a wildCard. */
+            pxDirEntry->pcWildCard[ 0 ] = '\0'; /* WildCard blank if its not a wildCard. */
 
             pcWildCard = &pcPath[ PathLen - 1 ];
 
@@ -2146,9 +2146,9 @@ FF_Error_t FF_PutEntry( FF_IOManager_t * pxIOManager,
                 FF_putLong( pucEntryBuffer, FF_FAT_DIRENT_FILESIZE, pxDirEntry->ulFileSize );
                 #if ( ffconfigTIME_SUPPORT != 0 )
                 {
-                    FF_GetSystemTime( &pxDirEntry->xAccessedTime );                                             /*/< Date of Last Access. */
+                    FF_GetSystemTime( &pxDirEntry->xAccessedTime );                                         /*/< Date of Last Access. */
                     FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_LASTACC_DATE, &pxDirEntry->xAccessedTime );
-                    FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_LASTACC_DATE, &pxDirEntry->xAccessedTime );     /* Last accessed date. */
+                    FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_LASTACC_DATE, &pxDirEntry->xAccessedTime ); /* Last accessed date. */
                     FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_CREATE_TIME, &pxDirEntry->xCreateTime );
                     FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_CREATE_DATE, &pxDirEntry->xCreateTime );
                     FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_LASTMOD_TIME, &pxDirEntry->xModifiedTime );
@@ -2313,14 +2313,14 @@ static BaseType_t FF_ValidShortChar( char cChar )
                     }
                     else
                     {
-                        pxFindParams->ulFlags &= ~FIND_FLAG_FITS_SHORT;     /* We had capital: does not fit. */
+                        pxFindParams->ulFlags &= ~FIND_FLAG_FITS_SHORT; /* We had capital: does not fit. */
                     }
                 }
                 else if( ( ch >= 'A' ) && ( ch <= 'Z' ) )
                 {
                     if( ( pxFindParams->ucCaseAttrib & testAttrib ) != 0 )
                     {
-                        pxFindParams->ulFlags &= ~FIND_FLAG_FITS_SHORT;     /* We had lower-case: does not fit. */
+                        pxFindParams->ulFlags &= ~FIND_FLAG_FITS_SHORT; /* We had lower-case: does not fit. */
                     }
 
                     testAttrib = 0;
@@ -2943,11 +2943,11 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
 
     #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
     {
-        FF_MakeNameCompliant( pxDirEntry->pcFileName );     /* Ensure we don't break the Dir tables. */
+        FF_MakeNameCompliant( pxDirEntry->pcFileName ); /* Ensure we don't break the Dir tables. */
     }
     #else
     {
-        FF_MakeNameCompliant( pxDirEntry->pcFileName );     /* Ensure we don't break the Dir tables. */
+        FF_MakeNameCompliant( pxDirEntry->pcFileName ); /* Ensure we don't break the Dir tables. */
     }
     #endif
     memset( pucEntryBuffer, 0, sizeof( pucEntryBuffer ) );
@@ -3020,9 +3020,9 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
         {
             #if ( ffconfigTIME_SUPPORT != 0 )
             {
-                FF_GetSystemTime( &pxDirEntry->xCreateTime );            /* Date and Time Created. */
-                pxDirEntry->xModifiedTime = pxDirEntry->xCreateTime;     /* Date and Time Modified. */
-                pxDirEntry->xAccessedTime = pxDirEntry->xCreateTime;     /* Date of Last Access. */
+                FF_GetSystemTime( &pxDirEntry->xCreateTime );        /* Date and Time Created. */
+                pxDirEntry->xModifiedTime = pxDirEntry->xCreateTime; /* Date and Time Modified. */
+                pxDirEntry->xAccessedTime = pxDirEntry->xCreateTime; /* Date of Last Access. */
                 FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_CREATE_TIME, &pxDirEntry->xCreateTime );
                 FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_CREATE_DATE, &pxDirEntry->xCreateTime );
                 FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_LASTMOD_TIME, &pxDirEntry->xModifiedTime );
@@ -3072,7 +3072,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
                 }
 
                 memcpy( pcShortName, pucEntryBuffer, 11 );
-                FF_ProcessShortName( pcShortName );     /* Format the shortname to 8.3. */
+                FF_ProcessShortName( pcShortName ); /* Format the shortname to 8.3. */
                 #if ( ffconfigHASH_FUNCTION == CRC16 )
                 {
                     FF_AddDirentHash( pxIOManager, ulDirCluster, ( uint32_t ) FF_GetCRC16( ( uint8_t * ) pcShortName, ( uint32_t ) strlen( pcShortName ) ) );

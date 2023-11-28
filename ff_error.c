@@ -170,7 +170,7 @@
 const struct _FFERRTAB
 {
     const char * const strErrorString;
-    const uint8_t ucErrorCode;     /* Currently there are less then 256 errors, so lets keep this table small. */
+    const uint8_t ucErrorCode; /* Currently there are less then 256 errors, so lets keep this table small. */
 }
 xFreeRTOSFATErrorTable[] =
 {
