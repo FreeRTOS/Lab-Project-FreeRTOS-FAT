@@ -33,7 +33,7 @@
     #define _FF_IOMAN_H_
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include <stdlib.h> /* Use of malloc() */
@@ -411,7 +411,7 @@
     void FF_IOMAN_InitBufferDescriptors( FF_IOManager_t * pxIOManager );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* ifndef _FF_IOMAN_H_ */

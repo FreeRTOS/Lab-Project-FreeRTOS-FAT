@@ -159,9 +159,9 @@ static portINLINE void FF_InitFATBuffers( FF_FATBuffers_t * pxFATBuffers,
     #endif
     pxFATBuffers->ucMode = ucMode; /* FF_MODE_READ/WRITE */
     #if ffconfigFAT_USES_STAT
-        {
-            fatStat.initCount++;
-        }
+    {
+        fatStat.initCount++;
+    }
     #endif
 }
 

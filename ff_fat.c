@@ -265,9 +265,9 @@ FF_Error_t FF_ReleaseFATBuffers( FF_IOManager_t * pxIOManager,
     }
 
     #if ffconfigFAT_USES_STAT
-        {
-            fatStat.clearCount++;
-        }
+    {
+        fatStat.clearCount++;
+    }
     #endif /* ffconfigFAT_USES_STAT */
 
     return xError;
@@ -305,9 +305,9 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
                  * write-permission is not required OR the buffer has write permission:
                  * it can be reused. */
                 #if ffconfigFAT_USES_STAT
-                    {
-                        fatStat.reuseCount[ ( ucMode & FF_MODE_WRITE ) ? 1 : 0 ]++;
-                    }
+                {
+                    fatStat.reuseCount[ ( ucMode & FF_MODE_WRITE ) ? 1 : 0 ]++;
+                }
                 #endif /* ffconfigFAT_USES_STAT */
             }
             else
@@ -315,18 +315,18 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
                 xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
                 pxBuffer = NULL;
                 #if ffconfigFAT_USES_STAT
-                    {
-                        fatStat.missCount[ ( ucMode & FF_MODE_WRITE ) ? 1 : 0 ]++;
-                    }
+                {
+                    fatStat.missCount[ ( ucMode & FF_MODE_WRITE ) ? 1 : 0 ]++;
+                }
                 #endif /* ffconfigFAT_USES_STAT */
             }
         }
         else
         {
             #if ffconfigFAT_USES_STAT
-                {
-                    fatStat.getCount[ ( ucMode & FF_MODE_WRITE ) ? 1 : 0 ]++;
-                }
+            {
+                fatStat.getCount[ ( ucMode & FF_MODE_WRITE ) ? 1 : 0 ]++;
+            }
             #endif /* ffconfigFAT_USES_STAT */
         }
     }
@@ -1097,31 +1097,31 @@ uint32_t FF_FindFreeCluster( FF_IOManager_t * pxIOManager,
     #endif
     {
         #if ( ffconfigFSINFO_TRUSTED != 0 )
+        {
+            /* If 'ffconfigFSINFO_TRUSTED', the contents of the field 'ulLastFreeCluster' is trusted.
+             * Only ready it in case of FAT32 and only during the very first time, i.e. when
+             * ulLastFreeCluster is still zero. */
+            if( ( pxIOManager->xPartition.ucType == FF_T_FAT32 ) && ( pxIOManager->xPartition.ulLastFreeCluster == 0ul ) )
             {
-                /* If 'ffconfigFSINFO_TRUSTED', the contents of the field 'ulLastFreeCluster' is trusted.
-                 * Only ready it in case of FAT32 and only during the very first time, i.e. when
-                 * ulLastFreeCluster is still zero. */
-                if( ( pxIOManager->xPartition.ucType == FF_T_FAT32 ) && ( pxIOManager->xPartition.ulLastFreeCluster == 0ul ) )
+                pxBuffer = FF_GetBuffer( pxIOManager, pxIOManager->xPartition.ulFSInfoLBA, FF_MODE_READ );
+
+                if( pxBuffer == NULL )
                 {
-                    pxBuffer = FF_GetBuffer( pxIOManager, pxIOManager->xPartition.ulFSInfoLBA, FF_MODE_READ );
-
-                    if( pxBuffer == NULL )
+                    xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_FINDFREECLUSTER );
+                }
+                else
+                {
+                    if( ( FF_getLong( pxBuffer->pucBuffer, 0 ) == 0x41615252 ) &&
+                        ( FF_getLong( pxBuffer->pucBuffer, 484 ) == 0x61417272 ) )
                     {
-                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_FINDFREECLUSTER );
+                        ulCluster = FF_getLong( pxBuffer->pucBuffer, 492 );
                     }
-                    else
-                    {
-                        if( ( FF_getLong( pxBuffer->pucBuffer, 0 ) == 0x41615252 ) &&
-                            ( FF_getLong( pxBuffer->pucBuffer, 484 ) == 0x61417272 ) )
-                        {
-                            ulCluster = FF_getLong( pxBuffer->pucBuffer, 492 );
-                        }
 
-                        xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
-                        pxBuffer = NULL;
-                    }
+                    xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
+                    pxBuffer = NULL;
                 }
             }
+        }
         #endif /* if ( ffconfigFSINFO_TRUSTED != 0 ) */
 
         if( FF_isERR( xError ) == pdFALSE )
@@ -1479,43 +1479,43 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
     {
         /* For FAT16 and FAT32 */
         #if ( ffconfigFSINFO_TRUSTED != 0 )
+        {
+            /* If 'ffconfigFSINFO_TRUSTED', the contents of the field 'ulFreeClusterCount' is trusted. */
+            if( pxIOManager->xPartition.ucType == FF_T_FAT32 )
             {
-                /* If 'ffconfigFSINFO_TRUSTED', the contents of the field 'ulFreeClusterCount' is trusted. */
-                if( pxIOManager->xPartition.ucType == FF_T_FAT32 )
+                pxBuffer = FF_GetBuffer( pxIOManager, pxIOManager->xPartition.ulFSInfoLBA, FF_MODE_READ );
+
+                if( pxBuffer == NULL )
                 {
-                    pxBuffer = FF_GetBuffer( pxIOManager, pxIOManager->xPartition.ulFSInfoLBA, FF_MODE_READ );
-
-                    if( pxBuffer == NULL )
+                    xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_COUNTFREECLUSTERS );
+                }
+                else
+                {
+                    if( ( FF_getLong( pxBuffer->pucBuffer, 0 ) == 0x41615252 ) &&
+                        ( FF_getLong( pxBuffer->pucBuffer, 484 ) == 0x61417272 ) )
                     {
-                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_COUNTFREECLUSTERS );
+                        ulFreeClusters = FF_getLong( pxBuffer->pucBuffer, 488 );
+
+                        if( ulFreeClusters != ~0ul )
+                        {
+                            xInfoKnown = pdTRUE;
+                        }
+                        else
+                        {
+                            ulFreeClusters = 0ul;
+                        }
                     }
-                    else
+
+                    xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
+                    pxBuffer = NULL;
+
+                    if( xInfoKnown != pdFALSE )
                     {
-                        if( ( FF_getLong( pxBuffer->pucBuffer, 0 ) == 0x41615252 ) &&
-                            ( FF_getLong( pxBuffer->pucBuffer, 484 ) == 0x61417272 ) )
-                        {
-                            ulFreeClusters = FF_getLong( pxBuffer->pucBuffer, 488 );
-
-                            if( ulFreeClusters != ~0ul )
-                            {
-                                xInfoKnown = pdTRUE;
-                            }
-                            else
-                            {
-                                ulFreeClusters = 0ul;
-                            }
-                        }
-
-                        xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
-                        pxBuffer = NULL;
-
-                        if( xInfoKnown != pdFALSE )
-                        {
-                            pxIOManager->xPartition.ulFreeClusterCount = ulFreeClusters;
-                        }
+                        pxIOManager->xPartition.ulFreeClusterCount = ulFreeClusters;
                     }
                 }
             }
+        }
         #endif /* if ( ffconfigFSINFO_TRUSTED != 0 ) */
 
         if( ( xInfoKnown == pdFALSE ) && ( pxIOManager->xPartition.usBlkSize != 0 ) )
@@ -1540,15 +1540,15 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
                 }
 
                 #if USE_SOFT_WDT
-                    {
-                        /* _HT_ : FF_CountFreeClusters was a little too busy, have it call the WDT and sleep */
-                        clearWDT();
+                {
+                    /* _HT_ : FF_CountFreeClusters was a little too busy, have it call the WDT and sleep */
+                    clearWDT();
 
-                        if( ( ( ulIndex + 1 ) % 32 ) == 0 )
-                        {
-                            FF_Sleep( 1 );
-                        }
+                    if( ( ( ulIndex + 1 ) % 32 ) == 0 )
+                    {
+                        FF_Sleep( 1 );
                     }
+                }
                 #endif
 
                 for( x = 0; x < ulEntriesPerSector; x++ )

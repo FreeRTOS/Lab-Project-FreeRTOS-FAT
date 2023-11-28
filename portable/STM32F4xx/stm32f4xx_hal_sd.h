@@ -40,7 +40,7 @@
     #define __STM32F4xx_HAL_SD_H
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -837,7 +837,7 @@
  */
 
     #ifdef __cplusplus
-        }
+}
     #endif
 
 #endif /* __STM32F4xx_HAL_SD_H */

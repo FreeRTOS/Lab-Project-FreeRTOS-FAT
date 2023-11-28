@@ -30,7 +30,7 @@
     #include <string.h>
 
     #ifdef  __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include "FreeRTOS.h"
@@ -56,7 +56,7 @@
     #include "ff_old_config_defines.h"
 
     #ifdef  __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* ifndef PLUS_FAT_H */

@@ -49,7 +49,7 @@
     #define FF_SYS_H
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     typedef struct FILE_SUB_SYSTEM
@@ -127,7 +127,7 @@
     int FF_FS_Count( void );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* FF_SYS_H */

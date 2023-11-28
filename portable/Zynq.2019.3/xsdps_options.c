@@ -1634,7 +1634,7 @@ RETURN_PATH: return Status;
                     XSdPs_WriteReg( XPS_SYS_CTRL_BASEADDR, SD_OTAPDLY, TapDelay );
                 }
             #endif /* if EL1_NONSECURE && defined( __aarch64__ ) */
-            #ifdef XPAR_PSU_SD_0_DEVICE_ID
+        #ifdef XPAR_PSU_SD_0_DEVICE_ID
     }
             #endif
         #endif /* versal */

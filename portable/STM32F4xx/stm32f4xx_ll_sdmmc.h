@@ -40,7 +40,7 @@
     #define __STM32F4xx_LL_SDMMC_H
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -949,7 +949,7 @@
  */
 
     #ifdef __cplusplus
-        }
+}
     #endif
 
 #endif /* __STM32F4xx_LL_SDMMC_H */

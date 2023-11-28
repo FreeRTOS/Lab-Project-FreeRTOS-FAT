@@ -142,26 +142,26 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         memset( pxFile, 0, sizeof( *pxFile ) );
 
         #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
-            {
-                pxFile->pucBuffer = ( uint8_t * ) ffconfigMALLOC( pxIOManager->usSectorSize );
+        {
+            pxFile->pucBuffer = ( uint8_t * ) ffconfigMALLOC( pxIOManager->usSectorSize );
 
-                if( pxFile->pucBuffer != NULL )
-                {
-                    memset( pxFile->pucBuffer, 0, pxIOManager->usSectorSize );
-                }
-                else
-                {
-                    *pxError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_OPEN );
-                    ffconfigFREE( pxFile );
-                    /* Make sure that NULL will be returned. */
-                    pxFile = NULL;
-                }
-            }
-        #else /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
+            if( pxFile->pucBuffer != NULL )
             {
-                /* Remove compiler warnings. */
-                ( void ) pxIOManager;
+                memset( pxFile->pucBuffer, 0, pxIOManager->usSectorSize );
             }
+            else
+            {
+                *pxError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_OPEN );
+                ffconfigFREE( pxFile );
+                /* Make sure that NULL will be returned. */
+                pxFile = NULL;
+            }
+        }
+        #else /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
+        {
+            /* Remove compiler warnings. */
+            ( void ) pxIOManager;
+        }
         #endif /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
     }
 
@@ -246,12 +246,12 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     #endif
 
     #if ( ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE == 1 )
+    {
+        if( ( ucMode & FF_MODE_CREATE ) != 0U )
         {
-            if( ( ucMode & FF_MODE_CREATE ) != 0U )
-            {
-                FF_PendSemaphore( pxIOManager->pvSemaphoreOpen );
-            }
+            FF_PendSemaphore( pxIOManager->pvSemaphoreOpen );
         }
+    }
     #endif
 
     memset( &xFindParams, '\0', sizeof( xFindParams ) );
@@ -465,9 +465,9 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         if( pxFile != NULL )
         {
             #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
-                {
-                    ffconfigFREE( pxFile->pucBuffer );
-                }
+            {
+                ffconfigFREE( pxFile->pucBuffer );
+            }
             #endif
             ffconfigFREE( pxFile );
         }
@@ -476,12 +476,12 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
 
     #if ( ffconfigPROTECT_FF_FOPEN_WITH_SEMAPHORE == 1 )
+    {
+        if( ( ucMode & FF_MODE_CREATE ) != 0U )
         {
-            if( ( ucMode & FF_MODE_CREATE ) != 0U )
-            {
-                FF_ReleaseSemaphore( pxIOManager->pvSemaphoreOpen );
-            }
+            FF_ReleaseSemaphore( pxIOManager->pvSemaphoreOpen );
         }
+    }
     #endif
 
     if( pxError != NULL )
@@ -636,11 +636,11 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 
                 FF_LockFAT( pxIOManager );
                 #if ( ffconfigHASH_CACHE != 0 )
-                    {
-                        /* A directory is removed so invalidate any hash table
-                         * referring to this directory. */
-                        FF_UnHashDir( pxIOManager, pxFile->ulObjectCluster );
-                    }
+                {
+                    /* A directory is removed so invalidate any hash table
+                     * referring to this directory. */
+                    FF_UnHashDir( pxIOManager, pxFile->ulObjectCluster );
+                }
                 #endif /* ffconfigHASH_CACHE */
                 {
                     /* Add parameter 0 to delete the entire chain!
@@ -665,11 +665,11 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
 
                 #if ( ffconfigHASH_CACHE != 0 )
-                    {
-                        /* Invalidate any hash table of the parent directory
-                         * as well. */
-                        FF_UnHashDir( pxIOManager, pxFile->ulDirCluster );
-                    }
+                {
+                    /* Invalidate any hash table of the parent directory
+                     * as well. */
+                    FF_UnHashDir( pxIOManager, pxFile->ulDirCluster );
+                }
                 #endif /* ffconfigHASH_CACHE */
 
                 /* Edit the Directory Entry, so it will show as deleted.
@@ -699,12 +699,12 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
 
                 #if ( ffconfigPATH_CACHE != 0 )
-                    {
-                        /* We're removing a directory which might contain
-                         * subdirectories.  Instead of iterating through all
-                         * subdirectories, just clear the path cache. */
-                        FF_RmPathCache( pxIOManager, pcPath );
-                    }
+                {
+                    /* We're removing a directory which might contain
+                     * subdirectories.  Instead of iterating through all
+                     * subdirectories, just clear the path cache. */
+                    FF_RmPathCache( pxIOManager, pcPath );
+                }
                 #endif
             } while( pdFALSE );
 
@@ -799,9 +799,9 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
 
                 #if ( ffconfigHASH_CACHE != 0 )
-                    {
-                        FF_UnHashDir( pxIOManager, pxFile->ulDirCluster );
-                    }
+                {
+                    FF_UnHashDir( pxIOManager, pxFile->ulDirCluster );
+                }
                 #endif /* ffconfigHASH_CACHE */
                 /* Remove LFN entries, if any. */
                 xError = FF_RmLFNs( pxIOManager, ( uint16_t ) pxFile->usDirEntry, &xFetchContext );
@@ -1047,15 +1047,15 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                 }
 
                 #if ( ffconfigPATH_CACHE != 0 )
+                {
+                    if( xIsDirectory != 0 )
                     {
-                        if( xIsDirectory != 0 )
-                        {
-                            /* We've renamed a directory which might contain
-                             * subdirectories.  To avoid having false entries, clear
-                             * the path cache. */
-                            FF_RmPathCache( pxIOManager, szSourceFile );
-                        }
+                        /* We've renamed a directory which might contain
+                         * subdirectories.  To avoid having false entries, clear
+                         * the path cache. */
+                        FF_RmPathCache( pxIOManager, szSourceFile );
                     }
+                }
                 #endif
             }
             else /* ulDirCluster == 0ul */
@@ -1454,16 +1454,16 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
          * speed of writing to disk. */
 
         #if ( ffconfigFILE_EXTEND_FLUSHES_BUFFERS != 0 )
+        {
+            FF_Error_t xTempError;
+
+            xTempError = FF_FlushCache( pxIOManager );
+
+            if( FF_isERR( xError ) == pdFALSE )
             {
-                FF_Error_t xTempError;
-
-                xTempError = FF_FlushCache( pxIOManager );
-
-                if( FF_isERR( xError ) == pdFALSE )
-                {
-                    xError = xTempError;
-                }
+                xError = xTempError;
             }
+        }
         #endif /* ffconfigFILE_EXTEND_FLUSHES_BUFFERS */
 
         if( pxFile->ulFilePointer == pxFile->ulFileSize )
@@ -1651,78 +1651,78 @@ static uint32_t FF_ReadPartial( FF_FILE * pxFile,
 
     /* Bytes to read are within a block and less than a block size. */
     #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
+    {
+        BaseType_t xLastRead;
+
+        /* Optimised method: each file handle holds one data block
+         * in cache: 'pxFile->pucBuffer'. */
+        /* See if the current block will be accessed after this read: */
+        if( ( ulRelBlockPos + ulCount ) >= ( uint32_t ) pxFile->pxIOManager->usSectorSize )
         {
-            BaseType_t xLastRead;
+            /* After this read, ulFilePointer will point to the next block/sector. */
+            xLastRead = pdTRUE;
+        }
+        else
+        {
+            /* It is not the last read within this block/sector. */
+            xLastRead = pdFALSE;
+        }
 
-            /* Optimised method: each file handle holds one data block
-             * in cache: 'pxFile->pucBuffer'. */
-            /* See if the current block will be accessed after this read: */
-            if( ( ulRelBlockPos + ulCount ) >= ( uint32_t ) pxFile->pxIOManager->usSectorSize )
-            {
-                /* After this read, ulFilePointer will point to the next block/sector. */
-                xLastRead = pdTRUE;
-            }
-            else
-            {
-                /* It is not the last read within this block/sector. */
-                xLastRead = pdFALSE;
-            }
+        if( ( pxFile->ucState & FF_BUFSTATE_VALID ) == 0 )
+        {
+            xError = FF_BlockRead( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
 
-            if( ( pxFile->ucState & FF_BUFSTATE_VALID ) == 0 )
+            if( FF_isERR( xError ) == pdFALSE )
             {
-                xError = FF_BlockRead( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
-
-                if( FF_isERR( xError ) == pdFALSE )
-                {
-                    pxFile->ucState = FF_BUFSTATE_VALID;
-                }
-            }
-
-            if( ( pxFile->ucState & FF_BUFSTATE_VALID ) != 0 )
-            {
-                memcpy( pucBuffer, pxFile->pucBuffer + ulRelBlockPos, ulCount );
-                pxFile->ulFilePointer += ulCount;
-                ulBytesRead = ulCount;
-
-                if( ( xLastRead == pdTRUE ) && ( ( pxFile->ucState & FF_BUFSTATE_WRITTEN ) != 0 ) )
-                {
-                    /* If the data was changed (file in 'update' mode), store the changes: */
-                    xError = FF_BlockWrite( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
-                }
-            }
-            else
-            {
-                ulBytesRead = 0ul;
-            }
-
-            if( xLastRead == pdTRUE )
-            {
-                /* As the next FF_Read() will go passed the current block, invalidate the buffer now. */
-                pxFile->ucState = FF_BUFSTATE_INVALID;
+                pxFile->ucState = FF_BUFSTATE_VALID;
             }
         }
+
+        if( ( pxFile->ucState & FF_BUFSTATE_VALID ) != 0 )
+        {
+            memcpy( pucBuffer, pxFile->pucBuffer + ulRelBlockPos, ulCount );
+            pxFile->ulFilePointer += ulCount;
+            ulBytesRead = ulCount;
+
+            if( ( xLastRead == pdTRUE ) && ( ( pxFile->ucState & FF_BUFSTATE_WRITTEN ) != 0 ) )
+            {
+                /* If the data was changed (file in 'update' mode), store the changes: */
+                xError = FF_BlockWrite( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
+            }
+        }
+        else
+        {
+            ulBytesRead = 0ul;
+        }
+
+        if( xLastRead == pdTRUE )
+        {
+            /* As the next FF_Read() will go passed the current block, invalidate the buffer now. */
+            pxFile->ucState = FF_BUFSTATE_INVALID;
+        }
+    }
     #else /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
+    {
+        FF_Buffer_t * pxBuffer;
+        /* Reading in the standard way, using FF_Buffer_t. */
+        pxBuffer = FF_GetBuffer( pxFile->pxIOManager, ulItemLBA, FF_MODE_READ );
+
+        if( pxBuffer == NULL )
         {
-            FF_Buffer_t * pxBuffer;
-            /* Reading in the standard way, using FF_Buffer_t. */
-            pxBuffer = FF_GetBuffer( pxFile->pxIOManager, ulItemLBA, FF_MODE_READ );
-
-            if( pxBuffer == NULL )
-            {
-                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_READ );
-                ulBytesRead = 0ul;
-            }
-            else
-            {
-                memcpy( pucBuffer, pxBuffer->pucBuffer + ulRelBlockPos, ulCount );
-
-                /* Releasing a buffer in FF_MODE_READ mode will not lead to an error,
-                 * because no disk access is needed. */
-                xError = FF_ReleaseBuffer( pxFile->pxIOManager, pxBuffer );
-                pxFile->ulFilePointer += ulCount;
-                ulBytesRead = ulCount;
-            }
+            xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_READ );
+            ulBytesRead = 0ul;
         }
+        else
+        {
+            memcpy( pucBuffer, pxBuffer->pucBuffer + ulRelBlockPos, ulCount );
+
+            /* Releasing a buffer in FF_MODE_READ mode will not lead to an error,
+             * because no disk access is needed. */
+            xError = FF_ReleaseBuffer( pxFile->pxIOManager, pxBuffer );
+            pxFile->ulFilePointer += ulCount;
+            ulBytesRead = ulCount;
+        }
+    }
     #endif /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
 
     *pxError = xError;
@@ -2118,81 +2118,81 @@ static uint32_t FF_WritePartial( FF_FILE * pxFile,
     uint32_t ulBytesWritten;
 
     #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
+    {
+        BaseType_t xLastRead;
+
+        if( ( ulRelBlockPos + ulCount ) >= ( uint32_t ) pxFile->pxIOManager->usSectorSize )
         {
-            BaseType_t xLastRead;
+            /* After this read, ulFilePointer will point to the next block/sector. */
+            xLastRead = pdTRUE;
+        }
+        else
+        {
+            /* It is not the last read within this block/sector. */
+            xLastRead = pdFALSE;
+        }
 
-            if( ( ulRelBlockPos + ulCount ) >= ( uint32_t ) pxFile->pxIOManager->usSectorSize )
-            {
-                /* After this read, ulFilePointer will point to the next block/sector. */
-                xLastRead = pdTRUE;
-            }
-            else
-            {
-                /* It is not the last read within this block/sector. */
-                xLastRead = pdFALSE;
-            }
+        if( ( ( pxFile->ucState & FF_BUFSTATE_VALID ) == 0 ) &&
+            ( ( ulRelBlockPos != 0 ) || ( pxFile->ulFilePointer < pxFile->ulFileSize ) ) )
+        {
+            xError = FF_BlockRead( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
+            /* pxFile->ucState will be set later on. */
+        }
+        else
+        {
+            xError = FF_ERR_NONE;
 
-            if( ( ( pxFile->ucState & FF_BUFSTATE_VALID ) == 0 ) &&
-                ( ( ulRelBlockPos != 0 ) || ( pxFile->ulFilePointer < pxFile->ulFileSize ) ) )
-            {
-                xError = FF_BlockRead( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
-                /* pxFile->ucState will be set later on. */
-            }
-            else
-            {
-                xError = FF_ERR_NONE;
+            /* the buffer is valid or a whole block/sector will be written, so it is
+             * not necessary to read the contents first. */
+        }
 
-                /* the buffer is valid or a whole block/sector will be written, so it is
-                 * not necessary to read the contents first. */
-            }
+        if( FF_isERR( xError ) == pdFALSE )
+        {
+            memcpy( pxFile->pucBuffer + ulRelBlockPos, pucBuffer, ulCount );
 
-            if( FF_isERR( xError ) == pdFALSE )
+            if( xLastRead == pdTRUE )
             {
-                memcpy( pxFile->pucBuffer + ulRelBlockPos, pucBuffer, ulCount );
-
-                if( xLastRead == pdTRUE )
-                {
-                    xError = FF_BlockWrite( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
-                    pxFile->ucState = FF_BUFSTATE_INVALID;
-                }
-                else
-                {
-                    pxFile->ucState |= FF_BUFSTATE_WRITTEN | FF_BUFSTATE_VALID;
-                }
-            }
-            else
-            {
+                xError = FF_BlockWrite( pxFile->pxIOManager, ulItemLBA, 1, pxFile->pucBuffer, pdFALSE );
                 pxFile->ucState = FF_BUFSTATE_INVALID;
             }
+            else
+            {
+                pxFile->ucState |= FF_BUFSTATE_WRITTEN | FF_BUFSTATE_VALID;
+            }
         }
-    #else /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
+        else
         {
-            FF_Buffer_t * pxBuffer;
-
-            if( ( ulRelBlockPos == 0 ) && ( pxFile->ulFilePointer >= pxFile->ulFileSize ) )
-            {
-                /* An entire sector will be written. */
-                pxBuffer = FF_GetBuffer( pxFile->pxIOManager, ulItemLBA, FF_MODE_WR_ONLY );
-            }
-            else
-            {
-                /* A partial write will be done, make sure to read the contents before
-                 * changing anything. */
-                pxBuffer = FF_GetBuffer( pxFile->pxIOManager, ulItemLBA, FF_MODE_WRITE );
-            }
-
-            if( pxBuffer == NULL )
-            {
-                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_WRITE );
-            }
-            else
-            {
-                /* Here we copy to the sector boundary. */
-                memcpy( ( pxBuffer->pucBuffer + ulRelBlockPos ), pucBuffer, ulCount );
-
-                xError = FF_ReleaseBuffer( pxFile->pxIOManager, pxBuffer );
-            }
+            pxFile->ucState = FF_BUFSTATE_INVALID;
         }
+    }
+    #else /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
+    {
+        FF_Buffer_t * pxBuffer;
+
+        if( ( ulRelBlockPos == 0 ) && ( pxFile->ulFilePointer >= pxFile->ulFileSize ) )
+        {
+            /* An entire sector will be written. */
+            pxBuffer = FF_GetBuffer( pxFile->pxIOManager, ulItemLBA, FF_MODE_WR_ONLY );
+        }
+        else
+        {
+            /* A partial write will be done, make sure to read the contents before
+             * changing anything. */
+            pxBuffer = FF_GetBuffer( pxFile->pxIOManager, ulItemLBA, FF_MODE_WRITE );
+        }
+
+        if( pxBuffer == NULL )
+        {
+            xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_WRITE );
+        }
+        else
+        {
+            /* Here we copy to the sector boundary. */
+            memcpy( ( pxBuffer->pucBuffer + ulRelBlockPos ), pucBuffer, ulCount );
+
+            xError = FF_ReleaseBuffer( pxFile->pxIOManager, pxBuffer );
+        }
+    }
     #endif /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
 
     if( FF_isERR( xError ) == pdFALSE )
@@ -2482,7 +2482,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
     FF_Error_t xResult;
 
     if( pxFile == NULL )
-    {   /* Ensure we don't have a Null file pointer on a Public interface. */
+    { /* Ensure we don't have a Null file pointer on a Public interface. */
         xResult = FF_createERR( FF_ERR_NULL_POINTER, FF_PUTC );
     }
     else if( ( pxFile->ucMode & FF_MODE_WRITE ) == 0 )
@@ -2567,19 +2567,19 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
         xError = FF_FlushCache( pxFile->pxIOManager );
 
         #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
+        {
+            if( FF_isERR( xError ) == pdFALSE )
             {
-                if( FF_isERR( xError ) == pdFALSE )
+                /* Here we must ensure that if the user tries to seek, and we had data in the file's
+                 * write buffer that this is written to disk. */
+                if( ( pxFile->ucState & FF_BUFSTATE_WRITTEN ) != 0 )
                 {
-                    /* Here we must ensure that if the user tries to seek, and we had data in the file's
-                     * write buffer that this is written to disk. */
-                    if( ( pxFile->ucState & FF_BUFSTATE_WRITTEN ) != 0 )
-                    {
-                        xError = FF_BlockWrite( pxFile->pxIOManager, FF_FileLBA( pxFile ), 1, pxFile->pucBuffer, pdFALSE );
-                    }
-
-                    pxFile->ucState = FF_BUFSTATE_INVALID;
+                    xError = FF_BlockWrite( pxFile->pxIOManager, FF_FileLBA( pxFile ), 1, pxFile->pucBuffer, pdFALSE );
                 }
+
+                pxFile->ucState = FF_BUFSTATE_INVALID;
             }
+        }
         #endif /* ffconfigOPTIMISE_UNALIGNED_ACCESS */
 
         if( FF_isERR( xError ) == pdFALSE )
@@ -3054,43 +3054,43 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
         xError = FF_CheckValid( pxFile );
 
         #if ( ffconfigREMOVABLE_MEDIA != 0 )
+        {
+            if( FF_GETERROR( xError ) == FF_ERR_FILE_MEDIA_REMOVED )
             {
-                if( FF_GETERROR( xError ) == FF_ERR_FILE_MEDIA_REMOVED )
+                FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
                 {
-                    FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
+                    pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
+
+                    if( pxFileChain == pxFile )
                     {
-                        pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
-
-                        if( pxFileChain == pxFile )
+                        pxFile->pxIOManager->FirstFile = pxFile->pxNext;
+                    }
+                    else
+                    {
+                        while( pxFileChain )
                         {
-                            pxFile->pxIOManager->FirstFile = pxFile->pxNext;
-                        }
-                        else
-                        {
-                            while( pxFileChain )
+                            if( pxFileChain->pxNext == pxFile )
                             {
-                                if( pxFileChain->pxNext == pxFile )
-                                {
-                                    pxFileChain->pxNext = pxFile->pxNext;
-                                    break;
-                                }
-
-                                pxFileChain = pxFileChain->pxNext; /* Forgot this one */
+                                pxFileChain->pxNext = pxFile->pxNext;
+                                break;
                             }
-                        }
-                    } /* Semaphore released, linked list was shortened! */
 
-                    FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
-                    #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
-                        {
-                            ffconfigFREE( pxFile->pucBuffer );
+                            pxFileChain = pxFileChain->pxNext;     /* Forgot this one */
                         }
-                    #endif /* ffconfigOPTIMISE_UNALIGNED_ACCESS */
-                    ffconfigFREE( pxFile ); /* So at least we have freed the pointer. */
-                    xError = FF_ERR_NONE;
-                    break;
+                    }
+                }     /* Semaphore released, linked list was shortened! */
+
+                FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
+                #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
+                {
+                    ffconfigFREE( pxFile->pucBuffer );
                 }
+                #endif /* ffconfigOPTIMISE_UNALIGNED_ACCESS */
+                ffconfigFREE( pxFile );     /* So at least we have freed the pointer. */
+                xError = FF_ERR_NONE;
+                break;
             }
+        }
         #endif /* ffconfigREMOVABLE_MEDIA */
 
         if( FF_isERR( xError ) )
@@ -3140,7 +3140,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
 
         /* Handle Linked list! */
         FF_PendSemaphore( pxFile->pxIOManager->pvSemaphore );
-        {   /* Semaphore is required, or linked list could become corrupted. */
+        { /* Semaphore is required, or linked list could become corrupted. */
             pxFileChain = ( FF_FILE * ) pxFile->pxIOManager->FirstFile;
 
             if( pxFileChain == pxFile )
@@ -3165,25 +3165,25 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
         FF_ReleaseSemaphore( pxFile->pxIOManager->pvSemaphore );
 
         #if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 )
+        {
+            if( pxFile->pucBuffer != NULL )
             {
-                if( pxFile->pucBuffer != NULL )
+                /* Ensure any unaligned points are pushed to the disk! */
+                if( pxFile->ucState & FF_BUFSTATE_WRITTEN )
                 {
-                    /* Ensure any unaligned points are pushed to the disk! */
-                    if( pxFile->ucState & FF_BUFSTATE_WRITTEN )
+                    FF_Error_t xTempError;
+
+                    xTempError = FF_BlockWrite( pxFile->pxIOManager, FF_FileLBA( pxFile ), 1, pxFile->pucBuffer, pdFALSE );
+
+                    if( FF_isERR( xError ) == pdFALSE )
                     {
-                        FF_Error_t xTempError;
-
-                        xTempError = FF_BlockWrite( pxFile->pxIOManager, FF_FileLBA( pxFile ), 1, pxFile->pucBuffer, pdFALSE );
-
-                        if( FF_isERR( xError ) == pdFALSE )
-                        {
-                            xError = xTempError;
-                        }
+                        xError = xTempError;
                     }
-
-                    ffconfigFREE( pxFile->pucBuffer );
                 }
+
+                ffconfigFREE( pxFile->pucBuffer );
             }
+        }
         #endif /* if ( ffconfigOPTIMISE_UNALIGNED_ACCESS != 0 ) */
 
         if( FF_isERR( xError ) == pdFALSE )

@@ -157,7 +157,7 @@
     #define SDPS_H_
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include "xil_printf.h"
@@ -323,7 +323,7 @@ u32 UNSTUFF_BITS( u32 * ulResponse,
                   int iFirst,
                   int iSize );
     #ifdef __cplusplus
-    }
+}
     #endif
 
 #endif /* SDPS_H_ */

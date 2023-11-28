@@ -6,7 +6,7 @@ FreeRTOS+FAT is already used in commercial products, and is the file system used
 
 The [standard C library style API](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html) includes a thread local errno value, and the lower level native API provides a rich set of detailed error codes.
 
-For more details, please visit [FreeRTOS+FAT](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/index.html) page. 
+For more details, please visit [FreeRTOS+FAT](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/index.html) page.
 
 ## To consume FreeRTOS+FAT
 
@@ -40,7 +40,7 @@ FetchContent_MakeAvailable(freertos_plus_fat)
 If you already have FreeRTOS in your project, you may skip the fetch content by setting `FREERTOS_PLUS_FAT_FETCH_FREERTOS` to `OFF`.
 
 ### Consuming stand-alone
-It is recommended to use this repository as a submodule. Please refer to [Git Tools — Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules). 
+It is recommended to use this repository as a submodule. Please refer to [Git Tools — Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
 ## Notes
-This project is undergoing optimizations or refactorization to improve memory usage, modularity, documentation, demo usability, or test coverage. 
+This project is undergoing optimizations or refactorization to improve memory usage, modularity, documentation, demo usability, or test coverage.

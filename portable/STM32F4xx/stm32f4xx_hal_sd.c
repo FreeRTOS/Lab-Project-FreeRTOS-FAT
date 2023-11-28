@@ -371,13 +371,13 @@
         tmpinit.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
         tmpinit.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
         #if ( BUS_4BITS != 0 )
-            {
-                tmpinit.BusWide = SDIO_BUS_WIDE_4B;
-            }
+        {
+            tmpinit.BusWide = SDIO_BUS_WIDE_4B;
+        }
         #else
-            {
-                tmpinit.BusWide = SDIO_BUS_WIDE_1B;
-            }
+        {
+            tmpinit.BusWide = SDIO_BUS_WIDE_1B;
+        }
         #endif
         tmpinit.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
         tmpinit.ClockDiv = SDIO_INIT_CLK_DIV;

@@ -160,22 +160,22 @@ FF_FILE * ff_fopen( const char * pcFile,
         stdioSET_ERRNO( prvFFErrorToErrno( xError ) );
 
         #if ( ffconfigUSE_NOTIFY != 0 )
+        {
+            if( ( pxStream != NULL ) && ( ( ucMode & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) != 0 ) )
             {
-                if( ( pxStream != NULL ) && ( ( ucMode & ( FF_MODE_WRITE | FF_MODE_APPEND ) ) != 0 ) )
-                {
-                    /*_RB_ Function	name needs updating. */
-                    callFileEvents( pcFile, eFileCreate );
-                }
+                /*_RB_ Function	name needs updating. */
+                callFileEvents( pcFile, eFileCreate );
             }
+        }
         #endif /* ffconfigUSE_NOTIFY */
 
         #if ( ffconfigDEV_SUPPORT != 0 )
+        {
+            if( pxStream != NULL )
             {
-                if( pxStream != NULL )
-                {
-                    FF_Device_Open( pcFile, pxStream );
-                }
+                FF_Device_Open( pcFile, pxStream );
             }
+        }
         #endif /* ffconfigDEV_SUPPORT */
     }
 
@@ -189,15 +189,15 @@ int ff_fclose( FF_FILE * pxStream )
     int iReturn, ff_errno;
 
     #if ( ffconfigDEV_SUPPORT != 0 )
+    {
+        /* Currently device support is in an experimental state.  It will allow
+         * to create virtual files. The I/O data to those files will be redirected
+         * to their connected "drivers". */
+        if( pxStream != NULL )
         {
-            /* Currently device support is in an experimental state.  It will allow
-             * to create virtual files. The I/O data to those files will be redirected
-             * to their connected "drivers". */
-            if( pxStream != NULL )
-            {
-                FF_Device_Close( pxStream );
-            }
+            FF_Device_Close( pxStream );
         }
+    }
     #endif
 
     xError = FF_Close( pxStream );
@@ -880,12 +880,12 @@ int ff_remove( const char * pcPath )
         ff_errno = prvFFErrorToErrno( xError );
 
         #if ffconfigUSE_NOTIFY
+        {
+            if( FF_isERR( xError ) == pdFALSE )
             {
-                if( FF_isERR( xError ) == pdFALSE )
-                {
-                    callFileEvents( pcPath, eFileRemove );
-                }
+                callFileEvents( pcPath, eFileRemove );
             }
+        }
         #endif
 
         if( ff_errno == 0 )
@@ -930,25 +930,25 @@ int ff_rename( const char * pcOldName,
     else
     {
         #if ( ffconfigHAS_CWD != 0 )
-            {
-                xSize = strlen( xHandlers[ 0 ].pcPath ) + 1;
-                pcOldCopy = ( char * ) ffconfigMALLOC( xSize );
+        {
+            xSize = strlen( xHandlers[ 0 ].pcPath ) + 1;
+            pcOldCopy = ( char * ) ffconfigMALLOC( xSize );
 
-                if( pcOldCopy == NULL )
-                {
-                    /* Could not allocate space to store a file name. */
-                    ff_errno = pdFREERTOS_ERRNO_ENOMEM;
-                    xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_MOVE );
-                }
-                else
-                {
-                    /* The function prvABSPath() returns a pointer to the task
-                     * storage space. Rename needs to call it twice and therefore the
-                     * path must be stored before it gets overwritten. */
-                    memcpy( pcOldCopy, xHandlers[ 0 ].pcPath, xSize );
-                    xHandlers[ 0 ].pcPath = pcOldCopy;
-                }
+            if( pcOldCopy == NULL )
+            {
+                /* Could not allocate space to store a file name. */
+                ff_errno = pdFREERTOS_ERRNO_ENOMEM;
+                xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_MOVE );
             }
+            else
+            {
+                /* The function prvABSPath() returns a pointer to the task
+                 * storage space. Rename needs to call it twice and therefore the
+                 * path must be stored before it gets overwritten. */
+                memcpy( pcOldCopy, xHandlers[ 0 ].pcPath, xSize );
+                xHandlers[ 0 ].pcPath = pcOldCopy;
+            }
+        }
         #endif /* ffconfigHAS_CWD != 0 */
 
         #if ( ffconfigHAS_CWD != 0 )
@@ -976,19 +976,19 @@ int ff_rename( const char * pcOldName,
                 ff_errno = prvFFErrorToErrno( xError );
 
                 #if ffconfigUSE_NOTIFY
+                {
+                    if( FF_isERR( xError ) == pdFALSE )
                     {
-                        if( FF_isERR( xError ) == pdFALSE )
-                        {
-                            callFileEvents( pcNewName, eFileChange );
-                        }
+                        callFileEvents( pcNewName, eFileChange );
                     }
+                }
                 #endif
             }
 
             #if ( ffconfigHAS_CWD != 0 )
-                {
-                    ffconfigFREE( pcOldCopy );
-                }
+            {
+                ffconfigFREE( pcOldCopy );
+            }
             #endif
         }
     }
@@ -1119,14 +1119,14 @@ int ff_stat( const char * pcName,
         }
 
         #if ( ffconfigDEV_SUPPORT != 0 )
-            {
-                BaseType_t bIsDeviceDir = xCheckDevicePath( pcFileName );
+        {
+            BaseType_t bIsDeviceDir = xCheckDevicePath( pcFileName );
 
-                if( bIsDeviceDir != pdFALSE )
-                {
-                    FF_Device_GetDirEnt( xHandler.pcPath, &( xDirEntry ) );
-                }
+            if( bIsDeviceDir != pdFALSE )
+            {
+                FF_Device_GetDirEnt( xHandler.pcPath, &( xDirEntry ) );
             }
+        }
         #endif
 
         /* Despite the warning output by MSVC - it is not possible to get here
@@ -1136,11 +1136,11 @@ int ff_stat( const char * pcName,
         pxStatBuffer->st_dev = ( uint16_t ) xHandler.xFSIndex;
 
         #if ( ffconfigTIME_SUPPORT == 1 )
-            {
-                pxStatBuffer->ff_atime = prvFileTime( &( xDirEntry.xAccessedTime ) );
-                pxStatBuffer->ff_mtime = prvFileTime( &( xDirEntry.xModifiedTime ) );
-                pxStatBuffer->ff_ctime = prvFileTime( &( xDirEntry.xCreateTime ) );
-            }
+        {
+            pxStatBuffer->ff_atime = prvFileTime( &( xDirEntry.xAccessedTime ) );
+            pxStatBuffer->ff_mtime = prvFileTime( &( xDirEntry.xModifiedTime ) );
+            pxStatBuffer->ff_ctime = prvFileTime( &( xDirEntry.xCreateTime ) );
+        }
         #endif
     }
 
@@ -1309,9 +1309,9 @@ int ff_findfirst( const char * pcPath,
     if( iReturn == 0 )
     {
         #if ( ffconfigDEV_SUPPORT != 0 )
-            {
-                pxFindData->bIsDeviceDir = xCheckDevicePath( pcDirectory );
-            }
+        {
+            pxFindData->bIsDeviceDir = xCheckDevicePath( pcDirectory );
+        }
         #endif
 
         if( iIsRootDir != pdFALSE )
@@ -1378,12 +1378,12 @@ int ff_findnext( FF_FindData_t * pxFindData )
             }
 
             #if ( ffconfigDEV_SUPPORT != 0 )
+            {
+                if( pxFindData->bIsDeviceDir != pdFALSE )
                 {
-                    if( pxFindData->bIsDeviceDir != pdFALSE )
-                    {
-                        FF_Device_GetDirEnt( pxFindData->xDirectoryHandler.pcPath, &( pxFindData->xDirectoryEntry ) );
-                    }
+                    FF_Device_GetDirEnt( pxFindData->xDirectoryHandler.pcPath, &( pxFindData->xDirectoryEntry ) );
                 }
+            }
             #endif
         }
 
@@ -1399,11 +1399,11 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     /* This is a directory "..". Clear the flag for DOT_2. */
                     pxFindData->xDirectoryHandler.u.bits.bAddDotEntries &= stdioDIR_ENTRY_DOT_1;
                     #if ( ffconfigTIME_SUPPORT != 0 )
-                        {
-                            /* The dot-entries do not have a proper time stamp, add
-                             * it here. */
-                            xSetTime = pdTRUE;
-                        }
+                    {
+                        /* The dot-entries do not have a proper time stamp, add
+                         * it here. */
+                        xSetTime = pdTRUE;
+                    }
                     #endif /* ffconfigTIME_SUPPORT */
                 }
                 else if( pxFindData->xDirectoryEntry.pcFileName[ 1 ] == '\0' )
@@ -1411,9 +1411,9 @@ int ff_findnext( FF_FindData_t * pxFindData )
                     /* This is a directory ".". Clear the flag for DOT_1. */
                     pxFindData->xDirectoryHandler.u.bits.bAddDotEntries &= stdioDIR_ENTRY_DOT_2;
                     #if ( ffconfigTIME_SUPPORT != 0 )
-                        {
-                            xSetTime = pdTRUE;
-                        }
+                    {
+                        xSetTime = pdTRUE;
+                    }
                     #endif /* ffconfigTIME_SUPPORT */
                 }
             }
@@ -1466,9 +1466,9 @@ int ff_findnext( FF_FindData_t * pxFindData )
                 pxFindData->xDirectoryEntry.ucAttrib = FF_FAT_ATTR_READONLY | FF_FAT_ATTR_DIR;
                 pxFindData->xDirectoryEntry.ulFileSize = stdioDOT_ENTRY_FILE_SIZE;
                 #if ( ffconfigTIME_SUPPORT != 0 )
-                    {
-                        xSetTime = pdTRUE;
-                    }
+                {
+                    xSetTime = pdTRUE;
+                }
                 #endif /* ffconfigTIME_SUPPORT */
 
                 xError = FF_ERR_NONE;
@@ -1477,31 +1477,31 @@ int ff_findnext( FF_FindData_t * pxFindData )
         }
 
         #if ( ffconfigTIME_SUPPORT != 0 )
+        {
+            if( xSetTime != pdFALSE )
             {
-                if( xSetTime != pdFALSE )
-                {
-                    FF_TimeStruct_t xTimeStruct;
-                    time_t xSeconds;
+                FF_TimeStruct_t xTimeStruct;
+                time_t xSeconds;
 
-                    xSeconds = FreeRTOS_time( NULL );
-                    FreeRTOS_gmtime_r( &xSeconds, &xTimeStruct );
+                xSeconds = FreeRTOS_time( NULL );
+                FreeRTOS_gmtime_r( &xSeconds, &xTimeStruct );
 
-                    pxFindData->xDirectoryEntry.xCreateTime.Year = ( uint16_t ) ( xTimeStruct.tm_year + 1900 ); /* Year (e.g. 2009). */
-                    pxFindData->xDirectoryEntry.xCreateTime.Month = ( uint16_t ) ( xTimeStruct.tm_mon + 1 );    /* Month (e.g. 1 = Jan, 12 = Dec). */
-                    pxFindData->xDirectoryEntry.xCreateTime.Day = ( uint16_t ) xTimeStruct.tm_mday;             /* Day (1 - 31). */
-                    pxFindData->xDirectoryEntry.xCreateTime.Hour = ( uint16_t ) xTimeStruct.tm_hour;            /* Hour (0 - 23). */
-                    pxFindData->xDirectoryEntry.xCreateTime.Minute = ( uint16_t ) xTimeStruct.tm_min;           /* Min (0 - 59). */
-                    pxFindData->xDirectoryEntry.xCreateTime.Second = ( uint16_t ) xTimeStruct.tm_sec;           /* Second (0 - 59). */
-                    /* Date and Time Modified. */
-                    memcpy( &( pxFindData->xDirectoryEntry.xModifiedTime ),
-                            &( pxFindData->xDirectoryEntry.xCreateTime ),
-                            sizeof( pxFindData->xDirectoryEntry.xModifiedTime ) );
-                    /* Date of Last Access. */
-                    memcpy( &( pxFindData->xDirectoryEntry.xAccessedTime ),
-                            &( pxFindData->xDirectoryEntry.xCreateTime ),
-                            sizeof( pxFindData->xDirectoryEntry.xAccessedTime ) );
-                }
+                pxFindData->xDirectoryEntry.xCreateTime.Year = ( uint16_t ) ( xTimeStruct.tm_year + 1900 );     /* Year (e.g. 2009). */
+                pxFindData->xDirectoryEntry.xCreateTime.Month = ( uint16_t ) ( xTimeStruct.tm_mon + 1 );        /* Month (e.g. 1 = Jan, 12 = Dec). */
+                pxFindData->xDirectoryEntry.xCreateTime.Day = ( uint16_t ) xTimeStruct.tm_mday;                 /* Day (1 - 31). */
+                pxFindData->xDirectoryEntry.xCreateTime.Hour = ( uint16_t ) xTimeStruct.tm_hour;                /* Hour (0 - 23). */
+                pxFindData->xDirectoryEntry.xCreateTime.Minute = ( uint16_t ) xTimeStruct.tm_min;               /* Min (0 - 59). */
+                pxFindData->xDirectoryEntry.xCreateTime.Second = ( uint16_t ) xTimeStruct.tm_sec;               /* Second (0 - 59). */
+                /* Date and Time Modified. */
+                memcpy( &( pxFindData->xDirectoryEntry.xModifiedTime ),
+                        &( pxFindData->xDirectoryEntry.xCreateTime ),
+                        sizeof( pxFindData->xDirectoryEntry.xModifiedTime ) );
+                /* Date of Last Access. */
+                memcpy( &( pxFindData->xDirectoryEntry.xAccessedTime ),
+                        &( pxFindData->xDirectoryEntry.xCreateTime ),
+                        sizeof( pxFindData->xDirectoryEntry.xAccessedTime ) );
             }
+        }
         #endif /* ffconfigTIME_SUPPORT */
 
         if( FF_GETERROR( xError ) == FF_ERR_DIR_END_OF_DIR )

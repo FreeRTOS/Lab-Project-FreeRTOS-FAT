@@ -29,7 +29,7 @@
     #define __FF_FLUSH_H__
 
     #ifdef  __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* HT addition: call FF_FlushCache and in addition call cache_write_flush (see secCache.cpp) */
@@ -43,7 +43,7 @@
     FF_Error_t FF_StopFlush( FF_IOManager_t * pxIOManager,
                              BaseType_t xFlag );
     #ifdef  __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 

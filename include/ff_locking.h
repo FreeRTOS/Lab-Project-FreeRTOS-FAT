@@ -33,7 +33,7 @@
     #define _FF_LOCKING_H_
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include <stdlib.h>
@@ -88,7 +88,7 @@
                          uint32_t aBits );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* _FF_LOCKING_H_ */

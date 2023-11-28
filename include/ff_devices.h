@@ -35,7 +35,7 @@
     #endif
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #define FF_DEV_NO_DEV       0
@@ -68,7 +68,7 @@
                              FF_DirEnt_t * pxDirEnt );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* FF_DEVICES_H */

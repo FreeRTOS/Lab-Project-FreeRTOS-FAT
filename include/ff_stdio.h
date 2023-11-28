@@ -50,7 +50,7 @@
     #endif
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* Error return from some functions. */
@@ -402,7 +402,7 @@
                          eFileAction_t aAction );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* FF_STDIO_H */

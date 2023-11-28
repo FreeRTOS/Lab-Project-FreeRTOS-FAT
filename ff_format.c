@@ -713,22 +713,22 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         /*****************************/
         lDirectoryBegin = lFatBeginLBA + ( int32_t ) ( 2 * xSet.ulSectorsPerFAT );
         #if ( ffconfigTIME_SUPPORT != 0 )
-            {
-                FF_SystemTime_t str_t;
-                uint16_t myShort;
+        {
+            FF_SystemTime_t str_t;
+            uint16_t myShort;
 
-                FF_GetSystemTime( &str_t );
+            FF_GetSystemTime( &str_t );
 
-                myShort = ( ( uint16_t ) ( str_t.Hour << 11U ) & 0xF800U ) |
-                          ( ( uint16_t ) ( str_t.Minute << 5U ) & 0x07E0U ) |
-                          ( ( uint16_t ) ( str_t.Second / 2U ) & 0x001FU );
-                FF_putShort( xSet.pucSectorBuffer, 22, ( uint32_t ) myShort );
+            myShort = ( ( uint16_t ) ( str_t.Hour << 11U ) & 0xF800U ) |
+                      ( ( uint16_t ) ( str_t.Minute << 5U ) & 0x07E0U ) |
+                      ( ( uint16_t ) ( str_t.Second / 2U ) & 0x001FU );
+            FF_putShort( xSet.pucSectorBuffer, 22, ( uint32_t ) myShort );
 
-                myShort = ( ( uint16_t ) ( ( str_t.Year - 1980 ) << 9U ) & 0xFE00U ) |
-                          ( ( uint16_t ) ( str_t.Month << 5U ) & 0x01E0U ) |
-                          ( ( uint16_t ) ( str_t.Day & 0x001FU ) );
-                FF_putShort( xSet.pucSectorBuffer, 24, ( uint32_t ) myShort );
-            }
+            myShort = ( ( uint16_t ) ( ( str_t.Year - 1980 ) << 9U ) & 0xFE00U ) |
+                      ( ( uint16_t ) ( str_t.Month << 5U ) & 0x01E0U ) |
+                      ( ( uint16_t ) ( str_t.Day & 0x001FU ) );
+            FF_putShort( xSet.pucSectorBuffer, 24, ( uint32_t ) myShort );
+        }
         #endif /* ffconfigTIME_SUPPORT */
 
         /* Initialise and clear the root directory. */

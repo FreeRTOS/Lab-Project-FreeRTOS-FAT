@@ -35,7 +35,7 @@
     #define _FF_FORMAT_H_
 
     #ifdef  __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 
@@ -81,7 +81,7 @@
 /* Private : */
 
     #ifdef  __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* ifndef _FF_FORMAT_H_ */

@@ -29,7 +29,7 @@
     #define __RAMDISK_H__
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include "ff_headers.h"
@@ -47,7 +47,7 @@
     BaseType_t FF_RAMDiskShowPartition( FF_Disk_t * pxDisk );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* __RAMDISK_H__ */

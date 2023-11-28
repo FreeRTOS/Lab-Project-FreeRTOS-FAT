@@ -409,16 +409,16 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
         pxSDCardInstance = &( pxCacheMem->xSDCardInstance );
 
         #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
+        {
+            for( iIndex = 0; iIndex < ARRAY_SIZE( xSDSemaphores ); iIndex++ )
             {
-                for( iIndex = 0; iIndex < ARRAY_SIZE( xSDSemaphores ); iIndex++ )
+                if( xSDSemaphores[ iIndex ] == NULL )
                 {
-                    if( xSDSemaphores[ iIndex ] == NULL )
-                    {
-                        xSDSemaphores[ iIndex ] = xSemaphoreCreateBinary();
-                        configASSERT( xSDSemaphores[ iIndex ] != NULL );
-                    }
+                    xSDSemaphores[ iIndex ] = xSemaphoreCreateBinary();
+                    configASSERT( xSDSemaphores[ iIndex ] != NULL );
                 }
             }
+        }
         #endif /* if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 ) */
 
         vSDMMC_Init( 0 );
@@ -754,9 +754,9 @@ static int vSDMMC_Init( int iDriveNumber )
         }
 
         #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
-            {
-                vInstallInterrupt();
-            }
+        {
+            vInstallInterrupt();
+        }
         #endif /* ffconfigSDIO_DRIVER_USES_INTERRUPT */
         iReturnCode = XSdPs_CardInitialize( pxSDCardInstance );
 

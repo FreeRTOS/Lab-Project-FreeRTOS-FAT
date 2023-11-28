@@ -188,7 +188,7 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber );
     static void prvCacheInvalidate( uint32_t * pulAddress,
                                     int32_t ulSize );
 #else
-    /* No cache: empty macro's. */
+/* No cache: empty macro's. */
     #define prvCacheClean( pulAddress, ulSize )         do {} while( 0 )
     #define prvCacheInvalidate( pulAddress, ulSize )    do {} while( 0 )
 #endif
@@ -281,58 +281,58 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
         ullReadAddr = ( uint64_t ) 512U * ( uint64_t ) ulSectorNumber;
 
         #if ( SDIO_USES_DMA == 0 )
-            {
-                sd_result = HAL_SD_ReadBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, ulSectorCount );
-            }
+        {
+            sd_result = HAL_SD_ReadBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, ulSectorCount );
+        }
         #else
+        {
+            /* Is the buffer aligned with a cache line? */
+            if( ( ( ( size_t ) pucBuffer ) & CACHE_LINE_BITS ) == 0U )
             {
-                /* Is the buffer aligned with a cache line? */
-                if( ( ( ( size_t ) pucBuffer ) & CACHE_LINE_BITS ) == 0U )
+                /* The buffer is word-aligned, call DMA read directly. */
+                sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, ulSectorCount );
+
+                if( sd_result == SD_OK )
                 {
-                    /* The buffer is word-aligned, call DMA read directly. */
-                    sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullReadAddr, ulSectorCount );
+                    sd_result = HAL_SD_CheckReadOperation( &xSDHandle, sdMAX_TIME_TICKS );
+
+                    if( xIsCachable( ( uint32_t ) pucBuffer ) != pdFALSE )
+                    {
+                        prvCacheInvalidate( ( uint32_t * ) pucBuffer, 512U * ulSectorCount );
+                    }
+                }
+            }
+            else
+            {
+                uint32_t ulSector;
+
+                /* The buffer is NOT word-aligned, copy first to an aligned buffer. */
+                sd_result = SD_OK;
+
+                for( ulSector = 0; ulSector < ulSectorCount; ulSector++ )
+                {
+                    ullReadAddr = ( uint64_t ) 512U * ( ( uint64_t ) ulSectorNumber + ( uint64_t ) ulSector );
+                    sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullReadAddr, 1U );
 
                     if( sd_result == SD_OK )
                     {
                         sd_result = HAL_SD_CheckReadOperation( &xSDHandle, sdMAX_TIME_TICKS );
 
-                        if( xIsCachable( ( uint32_t ) pucBuffer ) != pdFALSE )
+                        if( sd_result != SD_OK )
                         {
-                            prvCacheInvalidate( ( uint32_t * ) pucBuffer, 512U * ulSectorCount );
+                            break;
                         }
-                    }
-                }
-                else
-                {
-                    uint32_t ulSector;
 
-                    /* The buffer is NOT word-aligned, copy first to an aligned buffer. */
-                    sd_result = SD_OK;
-
-                    for( ulSector = 0; ulSector < ulSectorCount; ulSector++ )
-                    {
-                        ullReadAddr = ( uint64_t ) 512U * ( ( uint64_t ) ulSectorNumber + ( uint64_t ) ulSector );
-                        sd_result = HAL_SD_ReadBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullReadAddr, 1U );
-
-                        if( sd_result == SD_OK )
+                        if( xIsCachable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
                         {
-                            sd_result = HAL_SD_CheckReadOperation( &xSDHandle, sdMAX_TIME_TICKS );
-
-                            if( sd_result != SD_OK )
-                            {
-                                break;
-                            }
-
-                            if( xIsCachable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
-                            {
-                                prvCacheInvalidate( ( uint32_t * ) pucDMABuffer, 512U );
-                            }
-
-                            memcpy( pucBuffer + 512U * ulSector, pucDMABuffer, 512U );
+                            prvCacheInvalidate( ( uint32_t * ) pucDMABuffer, 512U );
                         }
+
+                        memcpy( pucBuffer + 512U * ulSector, pucDMABuffer, 512U );
                     }
                 }
             }
+        }
         #endif /* SDIO_USES_DMA */
 
         if( sd_result == SD_OK )
@@ -379,59 +379,59 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
         ullWriteAddr = ( uint64_t ) 512U * ( uint64_t ) ulSectorNumber;
 
         #if ( SDIO_USES_DMA == 0 )
-            {
-                sd_result = HAL_SD_WriteBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, ulSectorCount );
-            }
+        {
+            sd_result = HAL_SD_WriteBlocks( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, ulSectorCount );
+        }
         #else
+        {
+            /* Is the buffer aligned with a cache line? */
+            if( ( ( ( uintptr_t ) pucBuffer ) & CACHE_LINE_BITS ) == 0U )
             {
-                /* Is the buffer aligned with a cache line? */
-                if( ( ( ( uintptr_t ) pucBuffer ) & CACHE_LINE_BITS ) == 0U )
+                /* The buffer is word-aligned, call DMA write directly. */
+                if( xIsCachable( ( uint32_t ) pucBuffer ) != pdFALSE )
                 {
-                    /* The buffer is word-aligned, call DMA write directly. */
-                    if( xIsCachable( ( uint32_t ) pucBuffer ) != pdFALSE )
+                    prvCacheClean( ( uint32_t * ) pucBuffer, 512U * ulSectorCount );
+                }
+
+                sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, ulSectorCount );
+
+                if( sd_result == SD_OK )
+                {
+                    sd_result = HAL_SD_CheckWriteOperation( &xSDHandle, sdMAX_TIME_TICKS );
+                }
+            }
+            else
+            {
+                uint32_t ulSector;
+
+                /* The buffer is NOT word-aligned, read to an aligned buffer and then
+                 * copy the data to the user provided buffer. */
+                sd_result = SD_OK;
+
+                for( ulSector = 0; ulSector < ulSectorCount; ulSector++ )
+                {
+                    memcpy( pucDMABuffer, pucBuffer + 512U * ulSector, 512U );
+                    ullWriteAddr = ( uint64_t ) 512U * ( ulSectorNumber + ulSector );
+
+                    if( xIsCachable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
                     {
-                        prvCacheClean( ( uint32_t * ) pucBuffer, 512U * ulSectorCount );
+                        prvCacheClean( ( uint32_t * ) pucDMABuffer, 512U );
                     }
 
-                    sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, ulSectorCount );
+                    sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullWriteAddr, 1 );
 
                     if( sd_result == SD_OK )
                     {
                         sd_result = HAL_SD_CheckWriteOperation( &xSDHandle, sdMAX_TIME_TICKS );
-                    }
-                }
-                else
-                {
-                    uint32_t ulSector;
 
-                    /* The buffer is NOT word-aligned, read to an aligned buffer and then
-                     * copy the data to the user provided buffer. */
-                    sd_result = SD_OK;
-
-                    for( ulSector = 0; ulSector < ulSectorCount; ulSector++ )
-                    {
-                        memcpy( pucDMABuffer, pucBuffer + 512U * ulSector, 512U );
-                        ullWriteAddr = ( uint64_t ) 512U * ( ulSectorNumber + ulSector );
-
-                        if( xIsCachable( ( uint32_t ) pucDMABuffer ) != pdFALSE )
+                        if( sd_result != SD_OK )
                         {
-                            prvCacheClean( ( uint32_t * ) pucDMABuffer, 512U );
-                        }
-
-                        sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucDMABuffer, ullWriteAddr, 1 );
-
-                        if( sd_result == SD_OK )
-                        {
-                            sd_result = HAL_SD_CheckWriteOperation( &xSDHandle, sdMAX_TIME_TICKS );
-
-                            if( sd_result != SD_OK )
-                            {
-                                break;
-                            }
+                            break;
                         }
                     }
                 }
             }
+        }
         #endif /* SDIO_USES_DMA */
 
         if( sd_result == SD_OK )
@@ -514,13 +514,13 @@ static void vGPIO_SD_Init( SD_HandleTypeDef * xSDHandle )
 
         /* GPIOC configuration */
         #if ( BUS_4BITS != 0 )
-            {
-                GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
-            }
+        {
+            GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
+        }
         #else
-            {
-                GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_12;
-            }
+        {
+            GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_12;
+        }
         #endif
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
@@ -866,15 +866,15 @@ static void prvSDIO_SD_Init( void )
     xSDHandle.Init.ClockDiv = 0U;
 
     #if ( SDIO_USES_DMA != 0 )
-        {
-            xSDHandle.EventSetupFunction = prvEventSetupFunction;
-            xSDHandle.EventWaitFunction = prvEventWaitFunction;
-        }
+    {
+        xSDHandle.EventSetupFunction = prvEventSetupFunction;
+        xSDHandle.EventWaitFunction = prvEventWaitFunction;
+    }
     #else
-        {
-            xSDHandle.EventSetupFunction = NULL;
-            xSDHandle.EventWaitFunction = NULL;
-        }
+    {
+        xSDHandle.EventSetupFunction = NULL;
+        xSDHandle.EventWaitFunction = NULL;
+    }
     #endif
     __HAL_RCC_SDIO_CLK_ENABLE();
 }
@@ -959,9 +959,9 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
     vGPIO_SD_Init( &xSDHandle );
 
     #if ( SDIO_USES_DMA != 0 )
-        {
-            prvSDIO_DMA_Init();
-        }
+    {
+        prvSDIO_DMA_Init();
+    }
     #endif
 
     int SD_state = SD_OK;
@@ -979,20 +979,20 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
     /* Initialise the SDIO device and read the card parameters. */
     SD_state = HAL_SD_Init( &xSDHandle, &xSDCardInfo );
     #if ( BUS_4BITS != 0 )
+    {
+        if( SD_state == SD_OK )
         {
-            if( SD_state == SD_OK )
+            HAL_SD_ErrorTypedef rc;
+
+            xSDHandle.Init.BusWide = SDIO_BUS_WIDE_4B;
+            rc = HAL_SD_WideBusOperation_Config( &xSDHandle, SDIO_BUS_WIDE_4B );
+
+            if( rc != SD_OK )
             {
-                HAL_SD_ErrorTypedef rc;
-
-                xSDHandle.Init.BusWide = SDIO_BUS_WIDE_4B;
-                rc = HAL_SD_WideBusOperation_Config( &xSDHandle, SDIO_BUS_WIDE_4B );
-
-                if( rc != SD_OK )
-                {
-                    FF_PRINTF( "HAL_SD_WideBus: %d: %s\n", rc, prvSDCodePrintable( ( uint32_t ) rc ) );
-                }
+                FF_PRINTF( "HAL_SD_WideBus: %d: %s\n", rc, prvSDCodePrintable( ( uint32_t ) rc ) );
             }
         }
+    }
     #endif /* if ( BUS_4BITS != 0 ) */
     FF_PRINTF( "HAL_SD_Init: %d: %s type: %s Capacity: %u MB\n",
                SD_state, prvSDCodePrintable( ( uint32_t ) SD_state ),

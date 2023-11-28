@@ -31,7 +31,7 @@
     #include "ff_headers.h"
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* @brief Initialization settings for more granular control on init. */
@@ -81,7 +81,7 @@
     FF_IOManager_t * sddisk_ioman( FF_Disk_t * pxDisk );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* __SDDISK_H__ */

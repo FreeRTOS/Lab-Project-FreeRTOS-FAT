@@ -130,7 +130,7 @@
     #define SDPS_H_
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include "xstatus.h"
@@ -233,7 +233,7 @@
                         u32 Wait );
 
     #ifdef __cplusplus
-        }
+}
     #endif
 
 #endif /* SD_H_ */
