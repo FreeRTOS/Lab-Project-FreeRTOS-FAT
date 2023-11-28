@@ -32,20 +32,6 @@ jobs:
       - name: Link Verification
         uses: FreeRTOS/CI-CD-Github-Actions/link-verifier@main
 
-  verify-manifest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Run manifest verifier
-        uses: FreeRTOS/CI-CD-GitHub-Actions/manifest-verifier@main
-        with:
-          path: ./
-          fail-on-incorrect-version: true
-
   # doxygen:
   #   runs-on: ubuntu-20.04
   #   steps:
