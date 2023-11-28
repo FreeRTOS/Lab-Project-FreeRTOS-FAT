@@ -357,7 +357,7 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
 
     ( void ) memcpy( pxSet->pucSectorBuffer + OFS_BPB_jmpBoot_24, "\xEB\x00\x90" "FreeRTOS", 11 );                      /* Includes OFS_BPB_OEMName_64 */
 
-    FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_BytesPerSec_16, pxSet->pxIOManager->usSectorSize );                     /* 0x00B / Only 512, 1024, 2048 or 4096 */
+    FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_BytesPerSec_16, pxSet->pxIOManager->usSectorSize );                    /* 0x00B / Only 512, 1024, 2048 or 4096 */
     FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_ResvdSecCnt_16, ( uint32_t ) pxSet->ulFATReservedSectors );            /*  0x00E / 1 (FAT12/16) or 32 (FAT32) */
 
     FF_putChar( pxSet->pucSectorBuffer, OFS_BPB_NumFATs_8, 2 );                                                         /* 0x010 / 2 recommended */

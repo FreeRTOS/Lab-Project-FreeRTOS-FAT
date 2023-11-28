@@ -13,7 +13,7 @@ server examples that are documented on the
 [FreeRTOS+TCP](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/index.html)
 pages.
 
-The 
+The
 [standard C library style API](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html)
 includes a thread local errno value, and the lower level native API provides a
 rich set of detailed error codes.

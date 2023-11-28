@@ -96,7 +96,7 @@
 
 /* The first weekday in 'FF_TimeStruct_t' is Sunday. */
     #define WEEK_DAY_SUNDAY         0
-    #define WEEK_DAY_MONDAY        1
+    #define WEEK_DAY_MONDAY         1
     #define WEEK_DAY_TUESDAY        2
     #define WEEK_DAY_WEDNESDAY      3
     #define WEEK_DAY_THURSDAY       4
