@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -69,7 +69,7 @@
     HSMCI_IER_OVRE |                \
     HSMCI_IER_DTOE |                \
     HSMCI_IER_DCRCE |               \
-    HSMCI_IER_TXBUFE |              \
+    HSMCI_IER_TXBUFF |              \
     HSMCI_IER_RXBUFF |              \
     HSMCI_IER_XFRDONE
 
@@ -627,7 +627,7 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "TotalSectors   %8u\n", ( unsigned ) pxIOManager->xPartition.ulTotalSectors );
         FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
         FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
+        FF_PRINTF( "FreeSize       %8u MB ( %d percent free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
     }
 
     return xReturn;

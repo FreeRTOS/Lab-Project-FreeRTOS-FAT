@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -1591,7 +1591,7 @@ static uint32_t FF_FileLBA( FF_FILE * pxFile )
  *
  *  Side effects:
  *    - pxFile->ulCurrentCluster     : relative cluster number (0 <= Num < ulChainLength)
- *    - pxFile->ulAddrCurrentCluster : fysical cluster on the partition
+ *    - pxFile->ulAddrCurrentCluster : physical cluster on the partition
  **/
 static uint32_t FF_SetCluster( FF_FILE * pxFile,
                                FF_Error_t * pxError )
@@ -2547,7 +2547,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
  *	@param	lOffset	    An integer (+/-) to seek to, from the specified origin.
  *	@param	xOrigin		Where to seek from. (FF_SEEK_SET seek from start, FF_SEEK_CUR seek from current position, or FF_SEEK_END seek from end of file).
  *
- *	@retval 0 on Sucess,
+ *	@retval 0 on Success,
  *	@retval -2 if offset results in an invalid position in the file.
  *	@retval FF_ERR_NULL_POINTER if a FF_FILE pointer was not received.
  *	@retval -3 if an invalid origin was provided.
@@ -2610,7 +2610,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
             else
             {
                 xError = FF_createERR( FF_ERR_FILE_SEEK_INVALID_ORIGIN, FF_SEEK );
-                /* To supress a compiler warning. */
+                /* To suppress a compiler warning. */
                 ulPosition = ( uint32_t ) 0u;
             }
 
@@ -2692,7 +2692,7 @@ FF_Error_t FF_Seek( FF_FILE * pxFile,
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@retval 0 on sucess.
+ *	@retval 0 on success.
  *	@retval FF_ERR_NULL_POINTER       if a null pointer was provided.
  *	@retval FF_ERR_FILE_BAD_HANDLE    if handle is not recognized
  *	@retval FF_ERR_FILE_MEDIA_REMOVED please call FF_Close
@@ -2802,7 +2802,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
                 if( FF_isERR( xError ) == pdFALSE )
                 {
-                    xError = FF_FlushCache( pxFile->pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
+                    xError = FF_FlushCache( pxFile->pxIOManager ); /* Ensure all modifed blocks are flushed to disk! */
                 }
             }
         }
@@ -3016,7 +3016,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
 
         if( FF_isERR( xError ) == pdFALSE )
         {
-            xError = FF_FlushCache( pxIOManager ); /* Ensure all modfied blocks are flushed to disk! */
+            xError = FF_FlushCache( pxIOManager ); /* Ensure all modifed blocks are flushed to disk! */
         }
     }
     while( pdFALSE );
@@ -3030,7 +3030,7 @@ FF_Error_t FF_CheckValid( FF_FILE * pxFile )
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@retval 0 on sucess.
+ *	@retval 0 on success.
  *	@retval -1 if a null pointer was provided.
  *
  **/
@@ -3204,7 +3204,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@retval 0 on sucess.
+ *	@retval 0 on success.
  *	@retval negative if some error occurred
  *
  **/
@@ -3241,7 +3241,7 @@ FF_Error_t FF_SetEof( FF_FILE * pxFile )
  *
  *	@param	pxFile		FF_FILE object that was created by FF_Open().
  *
- *	@retval 0 on sucess.
+ *	@retval 0 on success.
  *	@retval negative if some error occurred
  *
  **/

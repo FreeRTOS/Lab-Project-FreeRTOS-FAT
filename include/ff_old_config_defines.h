@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -27,7 +27,7 @@
 /*
  * As of 15/3/2015 all +FAT configuration items changed their prefix,
  * e.g. FF_LITTLE_ENDIAN has become ffconfigLITTLE_ENDIAN
- * This tempoary header file checks for the presence old configuration items
+ * This temporary header file checks for the presence old configuration items
  * and issue a compiler error if any is defined.
  */
 

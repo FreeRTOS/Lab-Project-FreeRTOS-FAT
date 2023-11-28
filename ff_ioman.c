@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -190,7 +190,7 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
 
                 if( pxIOManager->pvSemaphoreOpen == NULL )
                 {
-                    /* Tell the user that there was not enough mmory. */
+                    /* Tell the user that there was not enough memory. */
                     xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_CREATEIOMAN );
                 }
                 else
@@ -235,7 +235,7 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
  *
  *	@param	pxIOManager	Pointer to an FF_IOManager_t object, as returned from FF_CreateIOManager.
  *
- *	@return	FF_ERR_NONE on sucess, or a documented error code on failure. (FF_ERR_NULL_POINTER)
+ *	@return	FF_ERR_NONE on success, or a documented error code on failure. (FF_ERR_NULL_POINTER)
  *
  **/
 FF_Error_t FF_DeleteIOManager( FF_IOManager_t * pxIOManager )

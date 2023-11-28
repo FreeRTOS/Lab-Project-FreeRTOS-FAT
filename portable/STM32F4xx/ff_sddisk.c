@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -266,7 +266,7 @@ static int32_t prvFFRead( uint8_t * pucBuffer,
 
         if( pxDisk->xStatus.bIsInitialised != pdFALSE )
         {
-            FF_PRINTF( "prvFFRead: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsinged ) pxDisk->ulNumberOfSectors );
+            FF_PRINTF( "prvFFRead: warning: %u + %u > %u\n", ( unsigned ) ulSectorNumber, ( unsigned ) ulSectorCount, ( unsigned ) pxDisk->ulNumberOfSectors );
         }
     }
 
@@ -300,7 +300,7 @@ static int32_t prvFFWrite( uint8_t * pucBuffer,
         {
             if( ( ( ( size_t ) pucBuffer ) & ( sizeof( size_t ) - 1 ) ) == 0 )
             {
-                /* The buffer is word-aligned, call DMA reawrite directly. */
+                /* The buffer is word-aligned, call DMA re-write directly. */
                 sd_result = HAL_SD_WriteBlocks_DMA( &xSDHandle, ( uint32_t * ) pucBuffer, ullWriteAddr, 512ul, ulSectorCount );
 
                 if( sd_result == SD_OK )
@@ -723,7 +723,7 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "TotalSectors   %8u\n", ( unsigned ) pxIOManager->xPartition.ulTotalSectors );
         FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
         FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
+        FF_PRINTF( "FreeSize       %8u MB ( %d percent free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
     }
 
     return xReturn;

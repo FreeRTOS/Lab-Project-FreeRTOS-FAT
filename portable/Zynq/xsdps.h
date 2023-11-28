@@ -48,7 +48,7 @@
  * those with response only (using only command line) or
  * response + data (using command and data lines).
  * Only one command can be sent at a time. During a data transfer however,
- * when dsta lines are in use, certain commands (which use only the command
+ * when data lines are in use, certain commands (which use only the command
  * line) can be sent, most often to obtain status.
  * This driver does not support multi card slots at present.
  *

@@ -22,7 +22,7 @@ endif()
 #   - when OFF - device support is disabled and not used.
 #   - When ON  - device support is enabled and the ff_devices.h API is used.
 # Optional:  FREERTOS_PLUS_FAT_PORT
-#   - When not defined - identifies native platform Linxu or MinGW and uses that port.
+#   - When not defined - identifies native platform Linux or MinGW and uses that port.
 #   - When defined as A_CUSTOM_PORT - the port library must be defined in advance.
 #   - When any of the other supported ports - the port library is defined by portable source files.
 option(FREERTOS_PLUS_FAT_DEV_SUPPORT "FreeRTOS Plus FAT Device selection support" OFF)
@@ -113,7 +113,7 @@ endif()
 #   - When ON  - FreeRTOS-kernel will be fetch using CMake FetchContent_Declare function.
 # Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO
 # Optional:  FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG
-option(FREERTOS_PLUS_FAT_FETCH_FREERTOS "FreeRTOS-Kernel automatic fecth support" ON)
+option(FREERTOS_PLUS_FAT_FETCH_FREERTOS "FreeRTOS-Kernel automatic fetch support" ON)
 set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_REPO "https://github.com/FreeRTOS/FreeRTOS-Kernel.git" CACHE STRING "")
 set(FREERTOS_PLUS_FAT_FETCH_FREERTOS_GIT_TAG "main" CACHE STRING "")
 

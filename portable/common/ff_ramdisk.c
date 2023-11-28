@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -422,7 +422,7 @@ BaseType_t FF_RAMDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "TotalSectors   %8u\n", ( unsigned ) pxIOManager->xPartition.ulTotalSectors );
         FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
         FF_PRINTF( "Size           %8u KB\n", ( unsigned ) ulTotalSizeKB );
-        FF_PRINTF( "FreeSize       %8u KB ( %d perc free )\n", ( unsigned ) ulFreeSizeKB, iPercentageFree );
+        FF_PRINTF( "FreeSize       %8u KB ( %d percent free )\n", ( unsigned ) ulFreeSizeKB, iPercentageFree );
     }
 
     return xReturn;

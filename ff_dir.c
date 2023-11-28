@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -49,7 +49,7 @@
     #include <ctype.h>
 #endif
 
-/* Calculate a simple LFN checmsum. */
+/* Calculate a simple LFN checksum. */
 static uint8_t FF_CreateChkSum( const uint8_t * pa_pShortName );
 
 static BaseType_t FF_ShortNameExists( FF_IOManager_t * pxIOManager,
@@ -1130,7 +1130,7 @@ FF_Error_t FF_CleanupEntryFetch( FF_IOManager_t * pxIOManager,
  *
  *  Side effects:
  *    - pxContext->ulCurrentClusterNum : relative cluster number ( 0 <= Num < ulChainLength )
- *    - pxContext->ulCurrentClusterLCN : fysical cluster on the partition
+ *    - pxContext->ulCurrentClusterLCN : physical cluster on the partition
  **/
 
 static FF_Error_t FF_Traverse( FF_IOManager_t * pxIOManager,
@@ -1895,7 +1895,7 @@ FF_Error_t FF_FindNext( FF_IOManager_t * pxIOManager,
                                 }
 
                                 /* 'usCurrentItem' has already incremented by FF_PopulateLongDirent(),
-                                 * this loop will incremente it again. */
+                                 * this loop will increment it again. */
                                 pxDirEntry->usCurrentItem -= 1;
 
                                 /* xFetchContext/usCurrentItem have changed.  Update
@@ -2720,7 +2720,7 @@ int32_t FF_FindShortName( FF_IOManager_t * pxIOManager,
         }
         #endif /* if ( ffconfigUNICODE_UTF8_SUPPORT != 0 ) */
 
-        /* Whole name is now in a valid UTF-16 format. Lets go make thos LFN's.
+        /* Whole name is now in a valid UTF-16 format. Lets go make those LFN's.
          * At this point, it should a be the length of the name. */
         if( FF_isERR( xError ) == pdFALSE )
         {
