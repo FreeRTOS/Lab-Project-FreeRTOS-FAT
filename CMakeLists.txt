@@ -214,5 +214,6 @@ add_subdirectory(portable)
 add_subdirectory(test)
 
 if(FREERTOS_PLUS_FAT_FETCH_FREERTOS)
+  set( FREERTOS_HEAP "4" CACHE STRING "" FORCE)
   FetchContent_MakeAvailable(freertos_kernel)
 endif()
