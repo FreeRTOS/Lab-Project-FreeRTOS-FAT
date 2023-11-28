@@ -9,41 +9,47 @@ on:
 
 jobs:
   # Currently no unit tests
-  # Currently no spell-check
-
   formatting:
     runs-on: ubuntu-20.04
-    container: ubuntu:18.04
     steps:
       - uses: actions/checkout@v3
-      - name: Install Uncrustify
-        run: apt-get update && apt-get install uncrustify
-      - name: Run Uncrustify
-        run: |
-          uncrustify --version
-          find . -iname "*.[hc]" -exec uncrustify --check -c tools/uncrustify.cfg {} +
-          if [ "$?" = "0" ]; then
-            exit 0
-          else
-            echo -e "\033[31;1;43mFormatting check (using Uncrustify) failed...\033[0m"
-            echo -e "\033[32;3mTo have the code uncrustified for you, please comment '/bot run uncrustify' (without the quotes) on the Pull Request.\033[0m"
-            exit 1
-          fi
-      - name: Check For Trailing Whitespace
-        run: |
-          set +e
-          grep --exclude="README.md" -rnI -e "[[:blank:]]$" .
-          if [ "$?" = "0" ]; then
-            echo "Files have trailing whitespace."
-            exit 1
-          else
-            exit 0
-          fi
+      - name: Check Formatting of Files
+        uses: FreeRTOS/CI-CD-Github-Actions/formatting@main
+
+  spell-check:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Clone This Repo
+          uses: actions/checkout@v3
+        - name: Run spellings check
+          uses: FreeRTOS/CI-CD-Github-Actions/spellings@main
+
+  link-verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone This Repo
+        uses: actions/checkout@v3
+      - name: Link Verification
+        uses: FreeRTOS/CI-CD-Github-Actions/link-verifier@main
+
+  verify-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Run manifest verifier
+        uses: FreeRTOS/CI-CD-GitHub-Actions/manifest-verifier@main
+        with:
+          path: ./
+          fail-on-incorrect-version: true
 
   # doxygen:
   #   runs-on: ubuntu-20.04
   #   steps:
-  #     - uses: actions/checkout@v2
+  #     - uses: actions/checkout@v3
   #     - name: Run doxygen build
   #       uses: FreeRTOS/CI-CD-Github-Actions/doxygen@main
   #       with:
@@ -52,7 +58,7 @@ jobs:
   build-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build checks (Default configuration)
         run: |
           cmake -S . -B build -DFREERTOS_PLUS_FAT_TEST_CONFIGURATION=DEFAULT_CONF
@@ -61,7 +67,7 @@ jobs:
   # complexity:
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v2
+  #     - uses: actions/checkout@v3
   #     - name: Setup
   #       run: sudo apt-get install complexity
   #     - name: Install Uncrustify
@@ -92,11 +98,11 @@ jobs:
   git-secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: Checkout awslabs/git-secrets
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: awslabs/git-secrets
           ref: master
