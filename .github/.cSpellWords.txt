@@ -208,9 +208,6 @@ TXUNDERR
 UNACKED
 UNRE
 UNSTUFF
-UNSUB
-UNSUBACK
-unsubscriptions
 utest
 VSEL
 Walmsley

@@ -797,29 +797,24 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
             pxPartition->ucType = FF_T_FAT16;
             #if ( ffconfigFAT_CHECK != 0 )
             {
-                if( ulFirstWord == 0xFFF8 )
+                /* Keep bits 4..15 */
+                ulFirstCluster &= 0xFFF8U;
 
-                    /* Keep bits 4..15 */
-                    ulFirstCluster &= 0xFFF8U;
-
-                    if( ulFirstCluster == 0xFFF8U )
+                if( ulFirstCluster == 0xFFF8U )
+                {
+                    /* FAT16 entry OK. */
+                    xError = FF_ERR_NONE;
+                }
+                else
+                {
+                    if( ( ulFirstCluster & 0xFF8U ) == 0xFF8U )
                     {
-                        /* FAT16 entry OK. */
-                        xError = FF_ERR_NONE;
+                        FF_PRINTF( "FAT_CHECK: FAT16 Part at %lu is probably a FAT12\n", pxIOManager->xPartition.ulFATBeginLBA );
                     }
                     else
                     {
-                        if( ( ulFirstCluster & 0xFF8U ) == 0xFF8U )
-                        {
-                            FF_PRINTF( "FAT_CHECK: FAT16 Part at %lu is probably a FAT12\n", pxIOManager->xPartition.ulFATBeginLBA );
-                        }
-                        else
-                        {
-                            FF_PRINTF( "FAT_CHECK: FAT16 Partition has unexpected FAT data %08lX\n",
-                                       ulFirstCluster );
-                        }
-
-                        xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_DETERMINEFATTYPE );
+                        FF_PRINTF( "FAT_CHECK: FAT16 Partition has unexpected FAT data %08lX\n",
+                                   ulFirstCluster );
                     }
 
                     xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_DETERMINEFATTYPE );
