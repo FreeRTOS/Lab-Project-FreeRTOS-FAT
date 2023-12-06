@@ -42,7 +42,7 @@
  * those with response only (using only command line) or
  * response + data (using command and data lines).
  * Only one command can be sent at a time. During a data transfer however,
- * when dsta lines are in use, certain commands (which use only the command
+ * when data lines are in use, certain commands (which use only the command
  * line) can be sent, most often to obtain status.
  * This driver does not support multi card slots at present.
  *
@@ -114,7 +114,7 @@
  * 2.5  sg		07/09/15 Added SD 3.0 features
  *       kvn     07/15/15 Modified the code according to MISRAC-2012.
  * 2.6   sk     10/12/15 Added support for SD card v1.0 CR# 840601.
- * 2.7   sk     11/24/15 Considered the slot type befoe checking CD/WP pins.
+ * 2.7   sk     11/24/15 Considered the slot type before checking CD/WP pins.
  *       sk     12/10/15 Added support for MMC cards.
  *              01/08/16 Added workaround for issue in auto tuning mode
  *                       of SDR50, SDR104 and HS200.
@@ -157,7 +157,7 @@
     #define SDPS_H_
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include "xil_printf.h"
@@ -323,7 +323,7 @@ u32 UNSTUFF_BITS( u32 * ulResponse,
                   int iFirst,
                   int iSize );
     #ifdef __cplusplus
-    }
+}
     #endif
 
 #endif /* SDPS_H_ */

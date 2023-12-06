@@ -469,16 +469,16 @@ FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
         }
 
         #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
+        {
+            for( iIndex = 0; iIndex < ARRAY_SIZE( xSDSemaphores ); iIndex++ )
             {
-                for( iIndex = 0; iIndex < ARRAY_SIZE( xSDSemaphores ); iIndex++ )
+                if( xSDSemaphores[ iIndex ] == NULL )
                 {
-                    if( xSDSemaphores[ iIndex ] == NULL )
-                    {
-                        xSDSemaphores[ iIndex ] = xSemaphoreCreateBinary();
-                        configASSERT( xSDSemaphores[ iIndex ] != NULL );
-                    }
+                    xSDSemaphores[ iIndex ] = xSemaphoreCreateBinary();
+                    configASSERT( xSDSemaphores[ iIndex ] != NULL );
                 }
             }
+        }
         #endif /* if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 ) */
 
         if( sd_disk_status != XST_SUCCESS )
@@ -777,7 +777,7 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "DataSectors    %8u\n", ( unsigned ) pxIOManager->xPartition.ulDataSectors );
         FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
         FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, ( int ) iPercentageFree );
+        FF_PRINTF( "FreeSize       %8u MB ( %d percent free )\n", ( unsigned ) ulFreeSizeMB, ( int ) iPercentageFree );
         FF_PRINTF( "BeginLBA       %8u\n", ( unsigned ) pxIOManager->xPartition.ulBeginLBA );
         FF_PRINTF( "FATBeginLBA    %8u\n", ( unsigned ) pxIOManager->xPartition.ulFATBeginLBA );
     }
@@ -846,9 +846,9 @@ static int vSDMMC_Init( int iDriveNumber )
         }
 
         #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
-            {
-                vInstallInterrupt();
-            }
+        {
+            vInstallInterrupt();
+        }
         #endif /* ffconfigSDIO_DRIVER_USES_INTERRUPT */
         iReturnCode = XSdPs_CardInitialize( pxSDCardInstance );
 

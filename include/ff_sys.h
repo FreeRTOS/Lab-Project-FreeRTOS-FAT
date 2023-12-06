@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -49,7 +49,7 @@
     #define FF_SYS_H
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     typedef struct FILE_SUB_SYSTEM
@@ -106,7 +106,7 @@
 
 /*
  * Internally used by ff_stdio:
- * The ff_dir_handler helps to iterate through a mounte directory
+ * The ff_dir_handler helps to iterate through a mounted directory
  *
  * FF_FS_Find() will find a ff_dir_handler for a given path
  */
@@ -127,7 +127,7 @@
     int FF_FS_Count( void );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* FF_SYS_H */

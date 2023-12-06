@@ -761,7 +761,7 @@ RETURN_PATH:
  * @return	None
  *
  * @note		This API will change clock frequency to the value less than
- *		or equal to the given value using the permissible dividors.
+ *		or equal to the given value using the permissible dividers.
  *
  ******************************************************************************/
 s32 XSdPs_Change_ClkFreq( XSdPs * InstancePtr,
@@ -1634,7 +1634,7 @@ RETURN_PATH: return Status;
                     XSdPs_WriteReg( XPS_SYS_CTRL_BASEADDR, SD_OTAPDLY, TapDelay );
                 }
             #endif /* if EL1_NONSECURE && defined( __aarch64__ ) */
-            #ifdef XPAR_PSU_SD_0_DEVICE_ID
+        #ifdef XPAR_PSU_SD_0_DEVICE_ID
     }
             #endif
         #endif /* versal */

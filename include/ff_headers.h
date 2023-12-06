@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -30,7 +30,7 @@
     #include <string.h>
 
     #ifdef  __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include "FreeRTOS.h"
@@ -56,7 +56,7 @@
     #include "ff_old_config_defines.h"
 
     #ifdef  __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* ifndef PLUS_FAT_H */

@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -159,9 +159,9 @@ static portINLINE void FF_InitFATBuffers( FF_FATBuffers_t * pxFATBuffers,
     #endif
     pxFATBuffers->ucMode = ucMode; /* FF_MODE_READ/WRITE */
     #if ffconfigFAT_USES_STAT
-        {
-            fatStat.initCount++;
-        }
+    {
+        fatStat.initCount++;
+    }
     #endif
 }
 

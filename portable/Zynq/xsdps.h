@@ -48,11 +48,11 @@
  * those with response only (using only command line) or
  * response + data (using command and data lines).
  * Only one command can be sent at a time. During a data transfer however,
- * when dsta lines are in use, certain commands (which use only the command
+ * when data lines are in use, certain commands (which use only the command
  * line) can be sent, most often to obtain status.
  * This driver does not support multi card slots at present.
  *
- * Intialization:
+ * Initialization:
  * This includes initialization on the host controller side to select
  * clock frequency, bus power and default transfer related parameters.
  * The default voltage is 3.3V.
@@ -80,7 +80,7 @@
  *
  * There is no example for using SD driver without file system at present.
  * However, the driver can be used without the file system. The glue layer
- * in filesytem can be used as reference for the same. The block count
+ * in file system can be used as reference for the same. The block count
  * passed to the read/write function in one call is limited by the ADMA2
  * descriptor table and hence care will have to be taken to call read/write
  * API's in a loop for large file sizes.
@@ -130,7 +130,7 @@
     #define SDPS_H_
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
     #include "xstatus.h"
@@ -233,7 +233,7 @@
                         u32 Wait );
 
     #ifdef __cplusplus
-        }
+}
     #endif
 
 #endif /* SD_H_ */

@@ -40,7 +40,7 @@
     #define __STM32F7xx_HAL_SD_H
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -148,7 +148,7 @@
         __IO uint8_t WriteBlockPaPartial; /*!< Partial blocks for write allowed      */
         __IO uint8_t Reserved3;           /*!< Reserved                              */
         __IO uint8_t ContentProtectAppli; /*!< Content protection application        */
-        __IO uint8_t FileFormatGrouop;    /*!< File format group                     */
+        __IO uint8_t FileFormatGroup;     /*!< File format group                     */
         __IO uint8_t CopyFlag;            /*!< Copy flag (OTP)                       */
         __IO uint8_t PermWrProtect;       /*!< Permanent write protection            */
         __IO uint8_t TempWrProtect;       /*!< Temporary write protection            */
@@ -818,7 +818,7 @@
  */
 
     #ifdef __cplusplus
-        }
+}
     #endif
 
 

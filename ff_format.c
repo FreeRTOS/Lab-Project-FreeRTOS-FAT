@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,11 +25,11 @@
  */
 
 /**
- *	@file		ff_format.c
- *	@ingroup	FORMAT
+ * @file ff_format.c
+ * @ingroup FORMAT
  *
- *	@defgroup	FAT Fat File-System
- *	@brief		Format a drive, given the number of sectors.
+ * @defgroup FAT Fat File-System
+ * @brief Format a drive, given the number of sectors.
  *
  **/
 
@@ -69,7 +69,7 @@
 #define OFS_BPB_jmpBoot_24             0x000 /* uchar jmpBoot[3] "0xEB 0x00 0x90" */
 #define OFS_BPB_OEMName_64             0x003 /* uchar BS_OEMName[8] "MSWIN4.1" */
 
-#define OFS_BPB_BytsPerSec_16          0x00B /* Only 512, 1024, 2048 or 4096 */
+#define OFS_BPB_BytesPerSec_16         0x00B /* Only 512, 1024, 2048 or 4096 */
 #define OFS_BPB_SecPerClus_8           0x00D /* Only 1, 2, 4, 8, 16, 32, 64, 128 */
 #define OFS_BPB_ResvdSecCnt_16         0x00E /* ulFATReservedSectors, e.g. 1 (FAT12/16) or 32 (FAT32) */
 
@@ -81,7 +81,7 @@
 #define OFS_BPB_FATSz16_16             0x016
 #define OFS_BPB_SecPerTrk_16           0x018 /* n.a. CF has no tracks */
 #define OFS_BPB_NumHeads_16            0x01A /* n.a. 1 ? */
-#define OFS_BPB_HiddSec_32             0x01C /* n.a.	0 for nonparitioned volume */
+#define OFS_BPB_HiddSec_32             0x01C /* n.a. 0 for non-partitioned volume */
 #define OFS_BPB_TotSec32_32            0x020 /* >= 0x10000 */
 
 #define OFS_BPB_16_DrvNum_8            0x024 /* n.a. */
@@ -357,7 +357,7 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
 
     ( void ) memcpy( pxSet->pucSectorBuffer + OFS_BPB_jmpBoot_24, "\xEB\x00\x90" "FreeRTOS", 11 );                      /* Includes OFS_BPB_OEMName_64 */
 
-    FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_BytsPerSec_16, pxSet->pxIOManager->usSectorSize );                     /* 0x00B / Only 512, 1024, 2048 or 4096 */
+    FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_BytesPerSec_16, pxSet->pxIOManager->usSectorSize );                    /* 0x00B / Only 512, 1024, 2048 or 4096 */
     FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_ResvdSecCnt_16, ( uint32_t ) pxSet->ulFATReservedSectors );            /*  0x00E / 1 (FAT12/16) or 32 (FAT32) */
 
     FF_putChar( pxSet->pucSectorBuffer, OFS_BPB_NumFATs_8, 2 );                                                         /* 0x010 / 2 recommended */
@@ -370,7 +370,7 @@ static FF_Error_t prvFormatWriteBPB( struct xFormatSet * pxSet,
 
     FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_SecPerTrk_16, 0x3F );                                   /* 0x18 n.a. CF has no tracks */
     FF_putShort( pxSet->pucSectorBuffer, OFS_BPB_NumHeads_16, 255 );                                     /* 0x01A / n.a. 1 ? */
-    FF_putLong( pxSet->pucSectorBuffer, OFS_BPB_HiddSec_32, ( uint32_t ) pxSet->ulHiddenSectors );       /* 0x01C / n.a.	0 for nonparitioned volume */
+    FF_putLong( pxSet->pucSectorBuffer, OFS_BPB_HiddSec_32, ( uint32_t ) pxSet->ulHiddenSectors );       /* 0x01C / n.a. 0 for non-partitioned volume */
 
     FF_putChar( pxSet->pucSectorBuffer, OFS_BPB_SecPerClus_8, ( uint32_t ) pxSet->ulSectorsPerCluster ); /*  0x00D / Only 1, 2, 4, 8, 16, 32, 64, 128 */
     FF_PRINTF( "FF_Format: SecCluster %u DatSec %u DataClus %u pxSet->ulClusterBeginLBA %lu\n",
@@ -687,12 +687,12 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
             ( void ) memset( xSet.pucSectorBuffer, 0, xSet.pxIOManager->usSectorSize );
 
             FF_putLong( xSet.pucSectorBuffer, OFS_FSI_32_LeadSig, 0x41615252 );                   /* to validate that this is in fact an FSInfo sector. */
-            /* OFS_FSI_32_Reserved1		0x004 / 480 times 0 */
+            /* OFS_FSI_32_Reserved1  0x004 / 480 times 0 */
             FF_putLong( xSet.pucSectorBuffer, OFS_FSI_32_StrucSig, 0x61417272 );                  /* Another signature that is more localized in the */
             /* sector to the location of the fields that are used. */
             FF_putLong( xSet.pucSectorBuffer, OFS_FSI_32_Free_Count, xSet.ulUsableDataClusters ); /* last known free cluster count on the volume, ~0 for unknown */
             FF_putLong( xSet.pucSectorBuffer, OFS_FSI_32_Nxt_Free, 2 );                           /* cluster number at which the driver should start looking for free clusters */
-            /* OFS_FSI_32_Reserved2		0x1F0 / zero's */
+            /* OFS_FSI_32_Reserved2  0x1F0 / zero's */
             FF_putLong( xSet.pucSectorBuffer, OFS_FSI_32_TrailSig, 0xAA550000 );                  /* Will correct for endianness */
 
             FF_BlockWrite( xSet.pxIOManager, xSet.ulHiddenSectors + xSet.ulFSInfo, 1, xSet.pucSectorBuffer, pdFALSE );
@@ -713,22 +713,22 @@ FF_Error_t FF_FormatDisk( FF_Disk_t * pxDisk,
         /*****************************/
         lDirectoryBegin = lFatBeginLBA + ( int32_t ) ( 2 * xSet.ulSectorsPerFAT );
         #if ( ffconfigTIME_SUPPORT != 0 )
-            {
-                FF_SystemTime_t str_t;
-                uint16_t myShort;
+        {
+            FF_SystemTime_t str_t;
+            uint16_t myShort;
 
-                FF_GetSystemTime( &str_t );
+            FF_GetSystemTime( &str_t );
 
-                myShort = ( ( uint16_t ) ( str_t.Hour << 11U ) & 0xF800U ) |
-                          ( ( uint16_t ) ( str_t.Minute << 5U ) & 0x07E0U ) |
-                          ( ( uint16_t ) ( str_t.Second / 2U ) & 0x001FU );
-                FF_putShort( xSet.pucSectorBuffer, 22, ( uint32_t ) myShort );
+            myShort = ( ( uint16_t ) ( str_t.Hour << 11U ) & 0xF800U ) |
+                      ( ( uint16_t ) ( str_t.Minute << 5U ) & 0x07E0U ) |
+                      ( ( uint16_t ) ( str_t.Second / 2U ) & 0x001FU );
+            FF_putShort( xSet.pucSectorBuffer, 22, ( uint32_t ) myShort );
 
-                myShort = ( ( uint16_t ) ( ( str_t.Year - 1980 ) << 9U ) & 0xFE00U ) |
-                          ( ( uint16_t ) ( str_t.Month << 5U ) & 0x01E0U ) |
-                          ( ( uint16_t ) ( str_t.Day & 0x001FU ) );
-                FF_putShort( xSet.pucSectorBuffer, 24, ( uint32_t ) myShort );
-            }
+            myShort = ( ( uint16_t ) ( ( str_t.Year - 1980 ) << 9U ) & 0xFE00U ) |
+                      ( ( uint16_t ) ( str_t.Month << 5U ) & 0x01E0U ) |
+                      ( ( uint16_t ) ( str_t.Day & 0x001FU ) );
+            FF_putShort( xSet.pucSectorBuffer, 24, ( uint32_t ) myShort );
+        }
         #endif /* ffconfigTIME_SUPPORT */
 
         /* Initialise and clear the root directory. */

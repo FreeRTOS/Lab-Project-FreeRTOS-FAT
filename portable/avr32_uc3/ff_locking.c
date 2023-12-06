@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -114,9 +114,9 @@ BaseType_t FF_TrySemaphore( void * pxSemaphore,
     BaseType_t rc;
 
     #if ( FF_DO_TRACE_SEMAPHORE != 0 )
-        {
-            eventLogAdd( "Pend_%s\n", pcName );
-        }
+    {
+        eventLogAdd( "Pend_%s\n", pcName );
+    }
     #endif /* FF_DO_TRACE_SEMAPHORE */
 
     if( !cMutexWasCreated )
@@ -143,9 +143,9 @@ BaseType_t FF_TrySemaphore( void * pxSemaphore,
 void FF_PendSemaphore( void * pxSemaphore )
 {
     #if ( FF_DO_TRACE_SEMAPHORE != 0 )
-        {
-            eventLogAdd( "Pend_%s\n", pcName );
-        }
+    {
+        eventLogAdd( "Pend_%s\n", pcName );
+    }
     #endif /* FF_DO_TRACE_SEMAPHORE */
 
     if( !cMutexWasCreated )
@@ -155,14 +155,14 @@ void FF_PendSemaphore( void * pxSemaphore )
 
     pthread_mutex_lock( &xFATMutex, 120000 );
     #if ( FF_DO_TRACE_SEMAPHORE != 0 )
+    {
+        if( mutex_owner[ 0 ] != 0 )
         {
-            if( mutex_owner[ 0 ] != 0 )
-            {
-                logPrintf( "Pend Enter: %s overruled by %s\n", mutex_owner, pcName );
-            }
-
-            snprintf( mutex_owner, sizeof mutex_owner, pcName );
+            logPrintf( "Pend Enter: %s overruled by %s\n", mutex_owner, pcName );
         }
+
+        snprintf( mutex_owner, sizeof mutex_owner, pcName );
+    }
     #endif /* FF_DO_TRACE_SEMAPHORE */
 }
 /*-----------------------------------------------------------*/
@@ -170,16 +170,16 @@ void FF_PendSemaphore( void * pxSemaphore )
 void FF_ReleaseSemaphore( void * pxSemaphore )
 {
     #if ( FF_DO_TRACE_SEMAPHORE != 0 )
+    {
+        if( strcmp( pcName, mutex_owner ) != 0 )
         {
-            if( strcmp( pcName, mutex_owner ) != 0 )
-            {
-                /* FF_GetBuffer2 != FF_GetBuffer */
-                logPrintf( "Pend Exit: %s owned by %s\n", pcName, mutex_owner );
-            }
-
-            eventLogAdd( "Exit_%s\n", pcName );
-            mutex_owner[ 0 ] = '\0';
+            /* FF_GetBuffer2 != FF_GetBuffer */
+            logPrintf( "Pend Exit: %s owned by %s\n", pcName, mutex_owner );
         }
+
+        eventLogAdd( "Exit_%s\n", pcName );
+        mutex_owner[ 0 ] = '\0';
+    }
     #endif /* FF_DO_TRACE_SEMAPHORE */
 
     if( cMutexWasCreated )

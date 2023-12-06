@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -29,7 +29,7 @@
     #define __FF_FLUSH_H__
 
     #ifdef  __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* HT addition: call FF_FlushCache and in addition call cache_write_flush (see secCache.cpp) */
@@ -43,7 +43,7 @@
     FF_Error_t FF_StopFlush( FF_IOManager_t * pxIOManager,
                              BaseType_t xFlag );
     #ifdef  __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 

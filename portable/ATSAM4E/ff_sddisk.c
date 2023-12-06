@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -69,7 +69,7 @@
     HSMCI_IER_OVRE |                \
     HSMCI_IER_DTOE |                \
     HSMCI_IER_DCRCE |               \
-    HSMCI_IER_TXBUFE |              \
+    HSMCI_IER_TXBUFF |              \
     HSMCI_IER_RXBUFF |              \
     HSMCI_IER_XFRDONE
 
@@ -328,18 +328,18 @@ FF_Disk_t * FF_SDDiskInit( const char * pcName )
     FF_Disk_t * pxDisk;
 
     #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
+    {
+        NVIC_SetPriority( HSMCI_IRQn, configHSMCI_INTERRUPT_PRIORITY );
+        NVIC_EnableIRQ( HSMCI_IRQn );
+        #if ( sdMSMCI_USE_SEMAPHORE != 0 )
         {
-            NVIC_SetPriority( HSMCI_IRQn, configHSMCI_INTERRUPT_PRIORITY );
-            NVIC_EnableIRQ( HSMCI_IRQn );
-            #if ( sdMSMCI_USE_SEMAPHORE != 0 )
-                {
-                    if( xSDSemaphore == NULL )
-                    {
-                        xSDSemaphore = xSemaphoreCreateBinary();
-                    }
-                }
-            #endif /* sdMSMCI_USE_SEMAPHORE */
+            if( xSDSemaphore == NULL )
+            {
+                xSDSemaphore = xSemaphoreCreateBinary();
+            }
         }
+        #endif /* sdMSMCI_USE_SEMAPHORE */
+    }
     #endif /* ffconfigSDIO_DRIVER_USES_INTERRUPT */
 
     xSDCardStatus = prvSDMMCInit( 0 );
@@ -627,7 +627,7 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "TotalSectors   %8u\n", ( unsigned ) pxIOManager->xPartition.ulTotalSectors );
         FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
         FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
+        FF_PRINTF( "FreeSize       %8u MB ( %d percent free )\n", ( unsigned ) ulFreeSizeMB, iPercentageFree );
     }
 
     return xReturn;
@@ -743,19 +743,19 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
         HSMCI->HSMCI_IDR = ulSR;
         ulSDInterruptStatus |= ulSR;
         #if ( sdMSMCI_USE_SEMAPHORE != 0 )
+        {
+            if( xSDSemaphore != NULL )
             {
-                if( xSDSemaphore != NULL )
-                {
-                    xSemaphoreGiveFromISR( xSDSemaphore, &xSwitchRequired );
-                }
+                xSemaphoreGiveFromISR( xSDSemaphore, &xSwitchRequired );
             }
+        }
         #else
+        {
+            if( xSDTaskHandle != NULL )
             {
-                if( xSDTaskHandle != NULL )
-                {
-                    vTaskNotifyGiveFromISR( xSDTaskHandle, ( BaseType_t * ) &xSwitchRequired );
-                }
+                vTaskNotifyGiveFromISR( xSDTaskHandle, ( BaseType_t * ) &xSwitchRequired );
             }
+        }
         #endif /* if ( sdMSMCI_USE_SEMAPHORE != 0 ) */
 
         if( xSwitchRequired != pdFALSE )
@@ -772,9 +772,9 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
         iWaitForWriting = iForWriting != 0;
 
         #if ( sdMSMCI_USE_SEMAPHORE == 0 )
-            {
-                xSDTaskHandle = xTaskGetCurrentTaskHandle();
-            }
+        {
+            xSDTaskHandle = xTaskGetCurrentTaskHandle();
+        }
         #endif
         ulSDInterruptStatus = 0;
         HSMCI->HSMCI_IER = sdHSMCI_INTERRUPT_FLAGS;
@@ -791,9 +791,9 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
     void vMCIEventReadyFunction()
     {
         #if ( sdMSMCI_USE_SEMAPHORE == 0 )
-            {
-                xSDTaskHandle = NULL;
-            }
+        {
+            xSDTaskHandle = NULL;
+        }
         #endif
         ulSDInterruptStatus = 0;
         HSMCI->HSMCI_IDR = sdHSMCI_INTERRUPT_FLAGS;
@@ -823,19 +823,19 @@ static BaseType_t prvSDMMCInit( BaseType_t xDriveNumber )
         {
             /* The timeout has not been reached yet, block on the semaphore. */
             #if ( sdMSMCI_USE_SEMAPHORE != 0 )
+            {
+                if( ( ulSDInterruptStatus & ulMask ) == 0ul )
                 {
-                    if( ( ulSDInterruptStatus & ulMask ) == 0ul )
-                    {
-                        xSemaphoreTake( xSDSemaphore, xDMARemainingTime );
-                    }
+                    xSemaphoreTake( xSDSemaphore, xDMARemainingTime );
                 }
+            }
             #else
+            {
+                if( ( ulSDInterruptStatus & ulMask ) == 0ul )
                 {
-                    if( ( ulSDInterruptStatus & ulMask ) == 0ul )
-                    {
-                        ulTaskNotifyTake( pdFALSE, xDMARemainingTime );
-                    }
+                    ulTaskNotifyTake( pdFALSE, xDMARemainingTime );
                 }
+            }
             #endif /* if ( sdMSMCI_USE_SEMAPHORE != 0 ) */
 
             if( xTaskCheckForTimeOut( &xDMATimeOut, &xDMARemainingTime ) != pdFALSE )

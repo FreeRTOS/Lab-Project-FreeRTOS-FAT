@@ -247,7 +247,7 @@ BaseType_t FF_SDDiskShowPartition( FF_Disk_t * pxDisk )
         FF_PRINTF( "DataSectors    %8u\n", ( unsigned ) pxIOManager->xPartition.ulDataSectors );
         FF_PRINTF( "SecsPerCluster %8u\n", ( unsigned ) pxIOManager->xPartition.ulSectorsPerCluster );
         FF_PRINTF( "Size           %8u MB\n", ( unsigned ) ulTotalSizeMB );
-        FF_PRINTF( "FreeSize       %8u MB ( %d perc free )\n", ( unsigned ) ulFreeSizeMB, ( int ) iPercentageFree );
+        FF_PRINTF( "FreeSize       %8u MB ( %d percent free )\n", ( unsigned ) ulFreeSizeMB, ( int ) iPercentageFree );
         FF_PRINTF( "BeginLBA       %8u\n", ( unsigned ) pxIOManager->xPartition.ulBeginLBA );
         FF_PRINTF( "FATBeginLBA    %8u\n", ( unsigned ) pxIOManager->xPartition.ulFATBeginLBA );
     }

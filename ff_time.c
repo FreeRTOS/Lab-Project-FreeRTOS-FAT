@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -96,7 +96,7 @@
 
 /* The first weekday in 'FF_TimeStruct_t' is Sunday. */
     #define WEEK_DAY_SUNDAY         0
-    #define WEEK_DAY_MONNDAY        1
+    #define WEEK_DAY_MONDAY         1
     #define WEEK_DAY_TUESDAY        2
     #define WEEK_DAY_WEDNESDAY      3
     #define WEEK_DAY_THURSDAY       4

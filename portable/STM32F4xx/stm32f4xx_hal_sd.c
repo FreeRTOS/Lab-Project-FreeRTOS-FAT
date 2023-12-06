@@ -371,13 +371,13 @@
         tmpinit.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
         tmpinit.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
         #if ( BUS_4BITS != 0 )
-            {
-                tmpinit.BusWide = SDIO_BUS_WIDE_4B;
-            }
+        {
+            tmpinit.BusWide = SDIO_BUS_WIDE_4B;
+        }
         #else
-            {
-                tmpinit.BusWide = SDIO_BUS_WIDE_1B;
-            }
+        {
+            tmpinit.BusWide = SDIO_BUS_WIDE_1B;
+        }
         #endif
         tmpinit.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
         tmpinit.ClockDiv = SDIO_INIT_CLK_DIV;
@@ -685,7 +685,7 @@
         SDIO_CmdInitTypeDef sdmmc_cmdinitstructure;
 /*SDIO_DataInitTypeDef sdmmc_datainitstructure; */
         HAL_SD_ErrorTypedef errorstate = SD_OK;
-        uint32_t totalnumberofbytes, bytesRemaining;
+        uint32_t totalNumberOfBytes, bytesRemaining;
         uint32_t tmpreg;
         uint32_t last_sta;
         uint32_t * tempbuff = ( uint32_t * ) pWriteBuffer;
@@ -750,8 +750,8 @@
         ulHasHWFlowControl = ( hsd->Instance->CLKCR & SDIO_HARDWARE_FLOW_CONTROL_ENABLE ) != 0;
 
         /* Set total number of bytes to write */
-        totalnumberofbytes = NumberOfBlocks * BlockSize;
-        bytesRemaining = 4 * ( ( totalnumberofbytes + 3 ) / 4 );
+        totalNumberOfBytes = NumberOfBlocks * BlockSize;
+        bytesRemaining = 4 * ( ( totalNumberOfBytes + 3 ) / 4 );
 
         /* Configure the SD DPSM (Data Path State Machine) */
 
@@ -847,7 +847,7 @@
 
         if( ( ( last_sta & SDIO_FLAG_TXUNDERR ) != 0 ) || ( bytesRemaining != 0 ) )
         {
-            FF_PRINTF( "TX underflow %lu < %lu\n", bytesRemaining, totalnumberofbytes );
+            FF_PRINTF( "TX underflow %lu < %lu\n", bytesRemaining, totalNumberOfBytes );
         }
 
         /* Send stop transmission command in case of multiblock write */
@@ -1771,7 +1771,7 @@
 
         /* Byte 14 */
         tmp = ( uint8_t ) ( ( hsd->CSD[ 3 ] & 0x0000FF00 ) >> 8 );
-        pCardInfo->SD_csd.FileFormatGrouop = ( tmp & 0x80 ) >> 7;
+        pCardInfo->SD_csd.FileFormatGroup = ( tmp & 0x80 ) >> 7;
         pCardInfo->SD_csd.CopyFlag = ( tmp & 0x40 ) >> 6;
         pCardInfo->SD_csd.PermWrProtect = ( tmp & 0x20 ) >> 5;
         pCardInfo->SD_csd.TempWrProtect = ( tmp & 0x10 ) >> 4;

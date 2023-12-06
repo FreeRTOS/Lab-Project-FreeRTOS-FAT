@@ -55,7 +55,7 @@
  * 2.5  sg	   07/09/15 Added SD 3.0 features
  *       kvn    07/15/15 Modified the code according to MISRAC-2012.
  * 2.6   sk     10/12/15 Added support for SD card v1.0 CR# 840601.
- * 2.7   sk     11/24/15 Considered the slot type befoe checking CD/WP pins.
+ * 2.7   sk     11/24/15 Considered the slot type before checking CD/WP pins.
  *       sk     12/10/15 Added support for MMC cards.
  *       sk     02/16/16 Corrected the Tuning logic.
  *       sk     03/01/16 Removed Bus Width check for eMMC. CR# 938311.
@@ -1217,7 +1217,7 @@ static s32 XSdPs_IdentifyCard( XSdPs * InstancePtr )
     }
 
     /* Host High Capacity support & High voltage window */
-    /* Midn you, for an SD-card this command should fail. */
+    /* Mind you, for an SD-card this command should fail. */
     Status = XSdPs_CmdTransfer( InstancePtr, CMD1,
                                 XSDPS_ACMD41_HCS | XSDPS_CMD1_HIGH_VOL, 0U );
 
@@ -1523,7 +1523,7 @@ s32 XSdPs_CmdTransfer( XSdPs * InstancePtr,
     #if ( ffconfigSDIO_DRIVER_USES_INTERRUPT != 0 )
 
         /* Clear the status bits and tell which status bits
-         * are ex[ected in the next transaction. */
+         * are expected in the next transaction. */
         XSdPs_ClearInterrupt( InstancePtr, ulMask );
     #endif
     XSdPs_WriteReg( InstancePtr->Config.BaseAddress, XSDPS_XFER_MODE_OFFSET,

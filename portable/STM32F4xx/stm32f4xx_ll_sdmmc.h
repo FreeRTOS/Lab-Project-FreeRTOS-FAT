@@ -40,7 +40,7 @@
     #define __STM32F4xx_LL_SDMMC_H
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -301,7 +301,7 @@
  * @}
  */
 
-/** @defgroup SDIO_Data_Length Data Lenght
+/** @defgroup SDIO_Data_Length Data Length
  * @{
  */
     #define IS_SDIO_DATA_LENGTH( LENGTH )    ( ( LENGTH ) <= 0x01FFFFFF )
@@ -949,7 +949,7 @@
  */
 
     #ifdef __cplusplus
-        }
+}
     #endif
 
 #endif /* __STM32F4xx_LL_SDMMC_H */

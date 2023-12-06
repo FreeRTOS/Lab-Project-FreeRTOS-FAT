@@ -1,6 +1,6 @@
 /*
  * FreeRTOS+FAT V2.3.3
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -31,7 +31,7 @@
     #include "ff_headers.h"
 
     #ifdef __cplusplus
-        extern "C" {
+    extern "C" {
     #endif
 
 /* @brief Initialization settings for more granular control on init. */
@@ -77,11 +77,11 @@
     BaseType_t FF_SDDiskInserted( BaseType_t xDriveNr );
 
 /* _RB_ Temporary function - ideally the application would not need the IO
- * manageer structure, just a handle to a disk. */
+ * manager structure, just a handle to a disk. */
     FF_IOManager_t * sddisk_ioman( FF_Disk_t * pxDisk );
 
     #ifdef __cplusplus
-        } /* extern "C" */
+}         /* extern "C" */
     #endif
 
 #endif /* __SDDISK_H__ */
