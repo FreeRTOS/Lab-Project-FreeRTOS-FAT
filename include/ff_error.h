@@ -118,6 +118,7 @@
 #define FF_MKDIR                     ( ( 12 << FF_FUNCTION_SHIFT ) | FF_MODULE_DIR )
 #define FF_TRAVERSE                  ( ( 13 << FF_FUNCTION_SHIFT ) | FF_MODULE_DIR )
 #define FF_FINDDIR                   ( ( 14 << FF_FUNCTION_SHIFT ) | FF_MODULE_DIR )
+#define FF_CREATEDIRENT              ( ( 15 << FF_FUNCTION_SHIFT ) | FF_MODULE_DIR )
 
 /*----- FF_FILE - The FreeRTOS+FAT file handling routines. */
 #define FF_GETMODEBITS               ( ( 1 << FF_FUNCTION_SHIFT ) | FF_MODULE_FILE )

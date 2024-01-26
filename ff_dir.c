@@ -135,9 +135,9 @@ static BaseType_t FF_ValidShortChar( char cChar );
 #endif /* if ( ffconfigLFN_SUPPORT != 0 ) */
 
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    static void FF_MakeNameCompliant( FF_T_WCHAR * pcName );
+    static FF_Error_t FF_MakeNameCompliant( FF_T_WCHAR * pcName );
 #else
-    static void FF_MakeNameCompliant( char * pcName );
+    static FF_Error_t FF_MakeNameCompliant( char * pcName );
 #endif
 
 #if ( FF_NOSTRCASECMP == 0 )
@@ -2875,7 +2875,13 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 } /* FF_ExtendDirectory() */
 /*-----------------------------------------------------------*/
 
-static const uint8_t forbiddenChrs[] =
+/* *INDENT-OFF* */
+#if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
+    static const FF_T_WCHAR forbiddenChrs[] =
+#else
+    static const uint8_t forbiddenChrs[] =
+#endif
+/* *INDENT-ON* */
 {
 /* Windows says: don't use these characters: '\/:*?"<>|'
  *  "     *     /	    :     <     >     ?    '\'    ?     | */
@@ -2884,15 +2890,16 @@ static const uint8_t forbiddenChrs[] =
 
 /* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    static void FF_MakeNameCompliant( FF_T_WCHAR * pcName )
+    static FF_Error_t FF_MakeNameCompliant( FF_T_WCHAR * pcName )
 #else
-    static void FF_MakeNameCompliant( char * pcName )
+    static FF_Error_t FF_MakeNameCompliant( char * pcName )
 #endif
 /* *INDENT-ON* */
 {
+    FF_Error_t xReturn = pdTRUE;
     BaseType_t index;
 
-    if( ( uint8_t ) pcName[ 0 ] == FF_FAT_DELETED ) /* Support Japanese KANJI symbol0xE5. */
+    if( ( uint8_t ) pcName[ 0 ] == FF_FAT_DELETED ) /* Support Japanese KANJI symbol 0xE5. */
     {
         pcName[ 0 ] = 0x05;
     }
@@ -2903,11 +2910,11 @@ static const uint8_t forbiddenChrs[] =
         {
             if( *pcName == forbiddenChrs[ index ] )
             {
-                *pcName = '_';
-                break;
+                xReturn = pdFALSE;
             }
         }
     }
+    return xReturn;
 } /* FF_MakeNameCompliant() */
 /*-----------------------------------------------------------*/
 
@@ -2941,160 +2948,165 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     /* Round-up the number of LFN's needed: */
     xLFNCount = ( BaseType_t ) ( ( NameLen + 12 ) / 13 );
 
-    #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
+    if ( FF_MakeNameCompliant( pxDirEntry->pcFileName ) == pdTRUE )
     {
-        FF_MakeNameCompliant( pxDirEntry->pcFileName ); /* Ensure we don't break the Dir tables. */
-    }
-    #else
-    {
-        FF_MakeNameCompliant( pxDirEntry->pcFileName ); /* Ensure we don't break the Dir tables. */
-    }
-    #endif
-    memset( pucEntryBuffer, 0, sizeof( pucEntryBuffer ) );
-
-    #if ( ffconfigLFN_SUPPORT != 0 )
-    {
-        /* Create and push the LFN's. */
-        /* Find enough places for the LFNs and the ShortName. */
-        xEntryCount = xLFNCount + 1;
-    }
-    #else
-    {
-        xEntryCount = 1;
-    }
-    #endif
-
-    /* Create the ShortName. */
-    FF_LockDirectory( pxIOManager );
-
-    do
-    {
-        /* Open a do {} while( pdFALSE ) loop to allow the use of break statements. */
-        /* As FF_FindShortName( ) can fail, it should be called before finding a free directory entry. */
-        if( ( pxFindParams->ulFlags & FIND_FLAG_SHORTNAME_SET ) == 0 )
-        {
-            FF_CreateShortName( pxFindParams, pxDirEntry->pcFileName );
-        }
-
-        lFitShort = FF_FindShortName( pxIOManager, pxFindParams );
-
-        memcpy( pucEntryBuffer, pxFindParams->pcEntryBuffer, sizeof( pucEntryBuffer ) );
-
-        if( FF_isERR( lFitShort ) )
-        {
-            xReturn = lFitShort;
-            break;
-        }
-
-        if( lFitShort != 0 )
-        {
-            /* There is no need to create a LFN entry because the file name
-             * fits into a normal 32-byte entry.. */
-            xLFNCount = 0;
-            xEntryCount = 1;
-        }
-
-        lFreeEntry = FF_FindFreeDirent( pxIOManager, pxFindParams, ( uint16_t ) xEntryCount );
-
-        if( FF_isERR( lFreeEntry ) )
-        {
-            xReturn = lFreeEntry;
-            break;
-        }
+        memset( pucEntryBuffer, 0, sizeof( pucEntryBuffer ) );
 
         #if ( ffconfigLFN_SUPPORT != 0 )
         {
-            if( xLFNCount > 0 )
-            {
-                ucCheckSum = FF_CreateChkSum( pucEntryBuffer );
-                xReturn = FF_CreateLFNs( pxIOManager, ulDirCluster, pxDirEntry->pcFileName, ucCheckSum, ( uint16_t ) lFreeEntry );
-            }
+            /* Create and push the LFN's. */
+            /* Find enough places for the LFNs and the ShortName. */
+            xEntryCount = xLFNCount + 1;
         }
         #else
         {
-            xLFNCount = 0;
+            xEntryCount = 1;
         }
-        #endif /* ffconfigLFN_SUPPORT */
+        #endif
+
+        /* Create the ShortName. */
+        FF_LockDirectory( pxIOManager );
+
+        do
+        {
+            /* Open a do {} while( pdFALSE ) loop to allow the use of break statements. */
+            /* As FF_FindShortName( ) can fail, it should be called before finding a free directory entry. */
+            if( ( pxFindParams->ulFlags & FIND_FLAG_SHORTNAME_SET ) == 0 )
+            {
+                FF_CreateShortName( pxFindParams, pxDirEntry->pcFileName );
+            }
+
+            lFitShort = FF_FindShortName( pxIOManager, pxFindParams );
+
+            memcpy( pucEntryBuffer, pxFindParams->pcEntryBuffer, sizeof( pucEntryBuffer ) );
+
+            if( FF_isERR( lFitShort ) )
+            {
+                xReturn = lFitShort;
+                break;
+            }
+
+            if( lFitShort != 0 )
+            {
+                /* There is no need to create a LFN entry because the file name
+                * fits into a normal 32-byte entry.. */
+                xLFNCount = 0;
+                xEntryCount = 1;
+            }
+
+            lFreeEntry = FF_FindFreeDirent( pxIOManager, pxFindParams, ( uint16_t ) xEntryCount );
+
+            if( FF_isERR( lFreeEntry ) )
+            {
+                xReturn = lFreeEntry;
+                break;
+            }
+
+            #if ( ffconfigLFN_SUPPORT != 0 )
+            {
+                if( xLFNCount > 0 )
+                {
+                    ucCheckSum = FF_CreateChkSum( pucEntryBuffer );
+                    xReturn = FF_CreateLFNs( pxIOManager, ulDirCluster, pxDirEntry->pcFileName, ucCheckSum, ( uint16_t ) lFreeEntry );
+                }
+            }
+            #else
+            {
+                xLFNCount = 0;
+            }
+            #endif /* ffconfigLFN_SUPPORT */
+
+            if( FF_isERR( xReturn ) == pdFALSE )
+            {
+                #if ( ffconfigTIME_SUPPORT != 0 )
+                {
+                    FF_GetSystemTime( &pxDirEntry->xCreateTime );        /* Date and Time Created. */
+                    pxDirEntry->xModifiedTime = pxDirEntry->xCreateTime; /* Date and Time Modified. */
+                    pxDirEntry->xAccessedTime = pxDirEntry->xCreateTime; /* Date of Last Access. */
+                    FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_CREATE_TIME, &pxDirEntry->xCreateTime );
+                    FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_CREATE_DATE, &pxDirEntry->xCreateTime );
+                    FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_LASTMOD_TIME, &pxDirEntry->xModifiedTime );
+                    FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_LASTMOD_DATE, &pxDirEntry->xModifiedTime );
+                }
+                #endif /*  ffconfigTIME_SUPPORT */
+
+                FF_putChar( pucEntryBuffer, FF_FAT_DIRENT_ATTRIB, pxDirEntry->ucAttrib );
+                #if ( ffconfigSHORTNAME_CASE != 0 )
+                    FF_putChar( pucEntryBuffer, FF_FAT_CASE_OFFS, ( uint32_t ) lFitShort & ( FF_FAT_CASE_ATTR_BASE | FF_FAT_CASE_ATTR_EXT ) );
+                #endif
+                FF_putShort( pucEntryBuffer, FF_FAT_DIRENT_CLUS_HIGH, ( uint16_t ) ( pxDirEntry->ulObjectCluster >> 16 ) );
+                FF_putShort( pucEntryBuffer, FF_FAT_DIRENT_CLUS_LOW, ( uint16_t ) ( pxDirEntry->ulObjectCluster ) );
+                FF_putLong( pucEntryBuffer, FF_FAT_DIRENT_FILESIZE, pxDirEntry->ulFileSize );
+
+                xReturn = FF_InitEntryFetch( pxIOManager, ulDirCluster, &xFetchContext );
+
+                if( FF_isERR( xReturn ) )
+                {
+                    break;
+                }
+
+                xReturn = FF_PushEntryWithContext( pxIOManager, ( uint16_t ) ( lFreeEntry + xLFNCount ), &xFetchContext, pucEntryBuffer );
+
+                {
+                    FF_Error_t xTempError;
+
+                    xTempError = FF_CleanupEntryFetch( pxIOManager, &xFetchContext );
+
+                    if( FF_isERR( xReturn ) == pdFALSE )
+                    {
+                        xReturn = xTempError;
+                    }
+                }
+
+                if( FF_isERR( xReturn ) )
+                {
+                    break;
+                }
+
+                #if ( ffconfigHASH_CACHE != 0 )
+                {
+                    if( FF_DirHashed( pxIOManager, ulDirCluster ) == pdFALSE )
+                    {
+                        /* Hash the directory. */
+                        FF_HashDir( pxIOManager, ulDirCluster );
+                    }
+
+                    memcpy( pcShortName, pucEntryBuffer, 11 );
+                    FF_ProcessShortName( pcShortName ); /* Format the shortname to 8.3. */
+                    #if ( ffconfigHASH_FUNCTION == CRC16 )
+                    {
+                        FF_AddDirentHash( pxIOManager, ulDirCluster, ( uint32_t ) FF_GetCRC16( ( uint8_t * ) pcShortName, ( uint32_t ) strlen( pcShortName ) ) );
+                    }
+                    #elif ( ffconfigHASH_FUNCTION == CRC8 )
+                    {
+                        FF_AddDirentHash( pxIOManager, ulDirCluster, ( uint32_t ) FF_GetCRC8( ( uint8_t * ) pcShortName, strlen( pcShortName ) ) );
+                    }
+                    #endif /* ffconfigHASH_FUNCTION */
+                }
+                #endif /* ffconfigHASH_CACHE*/
+            }
+        }
+        while( pdFALSE );
+
+        FF_UnlockDirectory( pxIOManager );
 
         if( FF_isERR( xReturn ) == pdFALSE )
         {
-            #if ( ffconfigTIME_SUPPORT != 0 )
+            if( pxDirEntry != NULL )
             {
-                FF_GetSystemTime( &pxDirEntry->xCreateTime );        /* Date and Time Created. */
-                pxDirEntry->xModifiedTime = pxDirEntry->xCreateTime; /* Date and Time Modified. */
-                pxDirEntry->xAccessedTime = pxDirEntry->xCreateTime; /* Date of Last Access. */
-                FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_CREATE_TIME, &pxDirEntry->xCreateTime );
-                FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_CREATE_DATE, &pxDirEntry->xCreateTime );
-                FF_PlaceTime( pucEntryBuffer, FF_FAT_DIRENT_LASTMOD_TIME, &pxDirEntry->xModifiedTime );
-                FF_PlaceDate( pucEntryBuffer, FF_FAT_DIRENT_LASTMOD_DATE, &pxDirEntry->xModifiedTime );
+                pxDirEntry->usCurrentItem = ( uint16_t ) ( lFreeEntry + xLFNCount );
             }
-            #endif /*  ffconfigTIME_SUPPORT */
-
-            FF_putChar( pucEntryBuffer, FF_FAT_DIRENT_ATTRIB, pxDirEntry->ucAttrib );
-            #if ( ffconfigSHORTNAME_CASE != 0 )
-                FF_putChar( pucEntryBuffer, FF_FAT_CASE_OFFS, ( uint32_t ) lFitShort & ( FF_FAT_CASE_ATTR_BASE | FF_FAT_CASE_ATTR_EXT ) );
-            #endif
-            FF_putShort( pucEntryBuffer, FF_FAT_DIRENT_CLUS_HIGH, ( uint16_t ) ( pxDirEntry->ulObjectCluster >> 16 ) );
-            FF_putShort( pucEntryBuffer, FF_FAT_DIRENT_CLUS_LOW, ( uint16_t ) ( pxDirEntry->ulObjectCluster ) );
-            FF_putLong( pucEntryBuffer, FF_FAT_DIRENT_FILESIZE, pxDirEntry->ulFileSize );
-
-            xReturn = FF_InitEntryFetch( pxIOManager, ulDirCluster, &xFetchContext );
-
-            if( FF_isERR( xReturn ) )
-            {
-                break;
-            }
-
-            xReturn = FF_PushEntryWithContext( pxIOManager, ( uint16_t ) ( lFreeEntry + xLFNCount ), &xFetchContext, pucEntryBuffer );
-
-            {
-                FF_Error_t xTempError;
-
-                xTempError = FF_CleanupEntryFetch( pxIOManager, &xFetchContext );
-
-                if( FF_isERR( xReturn ) == pdFALSE )
-                {
-                    xReturn = xTempError;
-                }
-            }
-
-            if( FF_isERR( xReturn ) )
-            {
-                break;
-            }
-
-            #if ( ffconfigHASH_CACHE != 0 )
-            {
-                if( FF_DirHashed( pxIOManager, ulDirCluster ) == pdFALSE )
-                {
-                    /* Hash the directory. */
-                    FF_HashDir( pxIOManager, ulDirCluster );
-                }
-
-                memcpy( pcShortName, pucEntryBuffer, 11 );
-                FF_ProcessShortName( pcShortName ); /* Format the shortname to 8.3. */
-                #if ( ffconfigHASH_FUNCTION == CRC16 )
-                {
-                    FF_AddDirentHash( pxIOManager, ulDirCluster, ( uint32_t ) FF_GetCRC16( ( uint8_t * ) pcShortName, ( uint32_t ) strlen( pcShortName ) ) );
-                }
-                #elif ( ffconfigHASH_FUNCTION == CRC8 )
-                {
-                    FF_AddDirentHash( pxIOManager, ulDirCluster, ( uint32_t ) FF_GetCRC8( ( uint8_t * ) pcShortName, strlen( pcShortName ) ) );
-                }
-                #endif /* ffconfigHASH_FUNCTION */
-            }
-            #endif /* ffconfigHASH_CACHE*/
         }
-    }
-    while( pdFALSE );
-
-    FF_UnlockDirectory( pxIOManager );
-
-    if( FF_isERR( xReturn ) == pdFALSE )
+    } /* if ( FF_MakeNameCompliant( pxDirEntry->pcFileName ) == pdTRUE ) */
+    else
     {
-        if( pxDirEntry != NULL )
+        if ( pxDirEntry->ucAttrib & FF_FAT_ATTR_DIR )
         {
-            pxDirEntry->usCurrentItem = ( uint16_t ) ( lFreeEntry + xLFNCount );
+            xReturn = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_CREATEDIRENT );
+        }
+        else
+        {
+            xReturn = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_CREATEDIRENT );
         }
     }
 
