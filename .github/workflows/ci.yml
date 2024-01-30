@@ -45,9 +45,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: |
+          sudo apt install build-essential cmake ninja-build
       - name: Build checks (Default configuration)
         run: |
-          cmake -S . -B build -DFREERTOS_PLUS_FAT_TEST_CONFIGURATION=DEFAULT_CONF
+          cmake -E env CFLAGS="-DffconfigFAT12_SUPPORT=1" \
+          cmake -S . -B build -DFREERTOS_PLUS_FAT_TEST_CONFIGURATION=DEFAULT_CONF -GNinja
           cmake --build build --target freertos_plus_fat_build_test
 
   # complexity:
