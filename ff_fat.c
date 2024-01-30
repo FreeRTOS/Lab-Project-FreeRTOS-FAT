@@ -372,7 +372,7 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
 
         if( FF_isERR( xError ) )
         {
-            xError = FF_CreateError( FF_GETERROR( xError ), FF_GETFATENTRY );
+            xError = FF_createERR( FF_GETERROR( xError ), FF_GETFATENTRY );
         }
         else
         {
