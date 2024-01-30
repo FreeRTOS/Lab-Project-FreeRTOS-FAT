@@ -78,12 +78,12 @@ int main( void )
 
     void vApplicationGetIdleTaskMemory( StaticTask_t ** ppxIdleTaskTCBBuffer,
                                         StackType_t ** ppxIdleTaskStackBuffer,
-                                        uint32_t * pulIdleTaskStackSize )
+                                        configSTACK_DEPTH_TYPE * puxIdleTaskStackSize )
     {
         /* Provide a stub for this function. */
         ( void ) ppxIdleTaskTCBBuffer;
         ( void ) ppxIdleTaskStackBuffer;
-        ( void ) pulIdleTaskStackSize;
+        ( void ) puxIdleTaskStackSize;
     }
 #endif /* if ( configSUPPORT_STATIC_ALLOCATION == 1 ) */
 
