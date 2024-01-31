@@ -2881,12 +2881,12 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 #else
     static const uint8_t forbiddenChrs[] =
 #endif
-/* *INDENT-ON* */
 {
 /* Windows says: don't use these characters: '\/:*?"<>|'
  *  "     *     /	    :     <     >     ?    '\'    ?     | */
     0x22, 0x2A, 0x2F, 0x3A, 0x3C, 0x3E, 0x3F, 0x5C, 0x7F, 0x7C
 };
+/* *INDENT-ON* */
 
 /* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
