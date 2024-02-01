@@ -2914,6 +2914,7 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
             }
         }
     }
+
     return xReturn;
 } /* FF_MakeNameCompliant() */
 /*-----------------------------------------------------------*/
@@ -2948,7 +2949,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     /* Round-up the number of LFN's needed: */
     xLFNCount = ( BaseType_t ) ( ( NameLen + 12 ) / 13 );
 
-    if ( FF_MakeNameCompliant( pxDirEntry->pcFileName ) == pdTRUE )
+    if( FF_MakeNameCompliant( pxDirEntry->pcFileName ) )
     {
         memset( pucEntryBuffer, 0, sizeof( pucEntryBuffer ) );
 
@@ -2989,7 +2990,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
             if( lFitShort != 0 )
             {
                 /* There is no need to create a LFN entry because the file name
-                * fits into a normal 32-byte entry.. */
+                 * fits into a normal 32-byte entry.. */
                 xLFNCount = 0;
                 xEntryCount = 1;
             }
@@ -3097,10 +3098,10 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
                 pxDirEntry->usCurrentItem = ( uint16_t ) ( lFreeEntry + xLFNCount );
             }
         }
-    } /* if ( FF_MakeNameCompliant( pxDirEntry->pcFileName ) == pdTRUE ) */
+    } /* if( FF_MakeNameCompliant( pxDirEntry->pcFileName ) ) */
     else
     {
-        if ( pxDirEntry->ucAttrib & FF_FAT_ATTR_DIR )
+        if( pxDirEntry->ucAttrib & FF_FAT_ATTR_DIR )
         {
             xReturn = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_CREATEDIRENT );
         }
