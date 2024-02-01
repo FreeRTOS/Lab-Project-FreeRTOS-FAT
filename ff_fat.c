@@ -372,7 +372,7 @@ FF_Buffer_t * prvGetFromFATBuffers( FF_IOManager_t * pxIOManager,
 
         if( FF_isERR( xError ) )
         {
-            xError = FF_CreateError( FF_GETERROR( xError ), FF_GETFATENTRY );
+            xError = FF_createERR( FF_GETERROR( xError ), FF_GETFATENTRY );
         }
         else
         {
@@ -712,7 +712,7 @@ uint32_t FF_FindEndOfChain( FF_IOManager_t * pxIOManager,
     {
         /* Traverse FAT for (2^32-1) items/clusters,
          * or until end-of-chain is encountered. */
-        ulFatEntry = FF_TraverseFAT( pxIOManager, ulStart, ~0UL, &xError );
+        ulFatEntry = FF_TraverseFAT( pxIOManager, ulStart, ( uint32_t ) ~0UL, &xError );
     }
     else
     {
