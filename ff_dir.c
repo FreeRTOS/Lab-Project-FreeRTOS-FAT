@@ -2949,7 +2949,18 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     /* Round-up the number of LFN's needed: */
     xLFNCount = ( BaseType_t ) ( ( NameLen + 12 ) / 13 );
 
-    if( FF_MakeNameCompliant( pxDirEntry->pcFileName ) )
+    if( FF_MakeNameCompliant( pxDirEntry->pcFileName ) == pdFALSE )
+    {
+        if( pxDirEntry->ucAttrib & FF_FAT_ATTR_DIR )
+        {
+            xReturn = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_CREATEDIRENT );
+        }
+        else
+        {
+            xReturn = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_CREATEDIRENT );
+        }
+    }
+    else
     {
         memset( pucEntryBuffer, 0, sizeof( pucEntryBuffer ) );
 
@@ -3097,17 +3108,6 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
             {
                 pxDirEntry->usCurrentItem = ( uint16_t ) ( lFreeEntry + xLFNCount );
             }
-        }
-    } /* if( FF_MakeNameCompliant( pxDirEntry->pcFileName ) ) */
-    else
-    {
-        if( pxDirEntry->ucAttrib & FF_FAT_ATTR_DIR )
-        {
-            xReturn = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_CREATEDIRENT );
-        }
-        else
-        {
-            xReturn = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_CREATEDIRENT );
         }
     }
 
