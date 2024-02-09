@@ -2951,7 +2951,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
 
     if( FF_MakeNameCompliant( pxDirEntry->pcFileName ) == pdFALSE )
     {
-        if( pxDirEntry->ucAttrib & FF_FAT_ATTR_DIR )
+        if( ( pxDirEntry->ucAttrib & FF_FAT_ATTR_DIR ) != 0U )
         {
             xReturn = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_CREATEDIRENT );
         }
