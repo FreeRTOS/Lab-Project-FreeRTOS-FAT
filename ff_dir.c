@@ -2877,9 +2877,9 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 
 /* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    static const FF_T_WCHAR forbiddenChrs[] =
+    static const FF_T_WCHAR forbiddenChars[] =
 #else
-    static const uint8_t forbiddenChrs[] =
+    static const uint8_t forbiddenChars[] =
 #endif
 {
 /* Windows says: don't use these characters: '\/:*?"<>|'
@@ -2906,9 +2906,9 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 
     for( ; *pcName; pcName++ )
     {
-        for( index = 0; index < ( BaseType_t ) sizeof( forbiddenChrs ); index++ )
+        for( index = 0; index < ( BaseType_t ) sizeof( forbiddenChars ); index++ )
         {
-            if( *pcName == forbiddenChrs[ index ] )
+            if( *pcName == forbiddenChars[ index ] )
             {
                 xReturn = pdFALSE;
             }
