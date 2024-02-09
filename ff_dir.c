@@ -135,9 +135,9 @@ static BaseType_t FF_ValidShortChar( char cChar );
 #endif /* if ( ffconfigLFN_SUPPORT != 0 ) */
 
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    static FF_Error_t FF_MakeNameCompliant( FF_T_WCHAR * pcName );
+    static BaseType_t FF_MakeNameCompliant( FF_T_WCHAR * pcName );
 #else
-    static FF_Error_t FF_MakeNameCompliant( char * pcName );
+    static BaseType_t FF_MakeNameCompliant( char * pcName );
 #endif
 
 #if ( FF_NOSTRCASECMP == 0 )
@@ -2890,9 +2890,9 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 
 /* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    static FF_Error_t FF_MakeNameCompliant( FF_T_WCHAR * pcName )
+    static BaseType_t FF_MakeNameCompliant( FF_T_WCHAR * pcName )
 #else
-    static FF_Error_t FF_MakeNameCompliant( char * pcName )
+    static BaseType_t FF_MakeNameCompliant( char * pcName )
 #endif
 /* *INDENT-ON* */
 {
