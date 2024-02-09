@@ -2896,7 +2896,7 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 #endif
 /* *INDENT-ON* */
 {
-    FF_Error_t xReturn = pdTRUE;
+    BaseType_t xReturn = pdTRUE;
     BaseType_t index;
 
     if( ( uint8_t ) pcName[ 0 ] == FF_FAT_DELETED ) /* Support Japanese KANJI symbol 0xE5. */
