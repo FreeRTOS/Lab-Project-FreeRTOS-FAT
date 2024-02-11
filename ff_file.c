@@ -905,6 +905,11 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
     }
 
+    else if( FF_MakeNameCompliant( szDestinationFile ) == pdFALSE )
+    {
+        xError = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_MOVE );
+    }
+
     #if ( ffconfigREMOVABLE_MEDIA != 0 )
         else if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0 )
         {
