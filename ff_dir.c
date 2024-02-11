@@ -3227,11 +3227,6 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
             xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MKDIR );
             break;
         }
-        if( FF_MakeNameCompliant( pcPath ) == pdFALSE )
-        {
-            xError = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_MKDIR );
-            break;
-        }
 
         #if ( ffconfigREMOVABLE_MEDIA != 0 )
             if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0 )
@@ -3272,6 +3267,12 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
         if( pcDirName[ 0 ] == '\0' )
         {
             xError = FF_createERR( FF_ERR_DIR_OBJECT_EXISTS, FF_MKDIR );
+            break;
+        }
+
+        if (FF_MakeNameCompliant(pcDirName) == pdFALSE)
+        {
+            xError = FF_createERR(FF_ERR_DIR_INVALID_PATH, FF_MKDIR);
             break;
         }
 
