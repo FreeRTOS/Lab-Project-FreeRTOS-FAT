@@ -2884,9 +2884,9 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 
 /* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    BaseType_t FF_MakeNameCompliant( FF_T_WCHAR * pcName )
+    BaseType_t FF_IsNameCompliant( FF_T_WCHAR * pcName )
 #else
-    BaseType_t FF_MakeNameCompliant( char * pcName )
+    BaseType_t FF_IsNameCompliant( char * pcName )
 #endif
 /* *INDENT-ON* */
 {
@@ -2910,7 +2910,7 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
     }
 
     return xReturn;
-} /* FF_MakeNameCompliant() */
+} /* FF_IsNameCompliant() */
 /*-----------------------------------------------------------*/
 
 FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
@@ -3120,7 +3120,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     STRNCPY( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME - 1 );
     xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
-    if( FF_MakeNameCompliant( xMyFile.pcFileName ) == pdFALSE )
+    if( FF_IsNameCompliant( xMyFile.pcFileName ) == pdFALSE )
     {
         xError = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_CREATEFILE );
     }
@@ -3270,7 +3270,7 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
             break;
         }
 
-        if (FF_MakeNameCompliant(pcDirName) == pdFALSE)
+        if (FF_IsNameCompliant(pcDirName) == pdFALSE)
         {
             xError = FF_createERR(FF_ERR_DIR_INVALID_PATH, FF_MKDIR);
             break;

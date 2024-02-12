@@ -905,7 +905,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
     }
 
-    else if( FF_MakeNameCompliant( szDestinationFile ) == pdFALSE )
+    else if( FF_IsNameCompliant( szDestinationFile ) == pdFALSE )
     {
         xError = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_MOVE );
     }
