@@ -868,6 +868,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
  *	@retval FF_ERR_FILE_DESTINATION_EXISTS if the destination file exists.
  *	@retval FF_ERR_FILE_COULD_NOT_CREATE_DIRENT if dirent creation failed (fatal error!).
  *	@retval FF_ERR_FILE_DIR_NOT_FOUND if destination directory was not found.
+ *	@retval FF_ERR_FILE_INVALID_PATH if destination path is invalid.
  *	@retval FF_ERR_FILE_SOURCE_NOT_FOUND if the source file was not found.
  *
  **/
@@ -890,7 +891,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_FILE * pSrcFile, * pxDestFile;
     FF_DirEnt_t xMyFile;
     uint8_t ucEntryBuffer[ 32 ];
-    UBaseType_t xIndex;
+    size_t uxIndex = 0U;
     uint32_t ulDirCluster = 0ul;
     FF_FetchContext_t xFetchContext;
 
@@ -905,18 +906,47 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         xError = FF_createERR( FF_ERR_NULL_POINTER, FF_MOVE );
     }
 
-    else if( FF_IsNameCompliant( szDestinationFile ) == pdFALSE )
-    {
-        xError = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_MOVE );
-    }
-
     #if ( ffconfigREMOVABLE_MEDIA != 0 )
-        else if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0 )
+        else if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0U )
         {
             xError = FF_createERR( FF_ERR_IOMAN_DRIVER_NOMEDIUM, FF_MOVE );
         }
     #endif /* ffconfigREMOVABLE_MEDIA */
-    else
+
+    if( FF_isERR( xError ) == pdFALSE )
+    {
+        uxIndex = ( size_t ) STRLEN( szDestinationFile );
+
+        /* Find the base name. */
+        while( uxIndex != 0U )
+        {
+            if( ( szDestinationFile[ uxIndex ] == '\\' ) || ( szDestinationFile[ uxIndex ] == '/' ) )
+            {
+                break;
+            }
+
+            uxIndex--;
+        }
+
+        if( uxIndex == 0U )
+        {
+            /* Give the directory part a minimum
+             * length of 1, to get '/' at least. */
+            uxIndex = 1U;
+        }
+
+        /* Copy the base name of the destination file. */
+        STRNCPY( xMyFile.pcFileName, ( szDestinationFile + uxIndex + 1 ), ffconfigMAX_FILENAME - 1 );
+        xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
+
+        /* Now check if the target base name is compliant. */
+        if( FF_IsNameCompliant( xMyFile.pcFileName ) == pdFALSE )
+        {
+            xError = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_MOVE );
+        }
+    }
+
+    if( FF_isERR( xError ) == pdFALSE )
     {
         /* Check destination file doesn't exist! */
         pxDestFile = FF_Open( pxIOManager, szDestinationFile, FF_MODE_READ, &xError );
@@ -974,30 +1004,9 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
                     xMyFile.ulObjectCluster = pSrcFile->ulObjectCluster;
                     xMyFile.usCurrentItem = 0;
 
-                    xIndex = ( UBaseType_t ) STRLEN( szDestinationFile );
-
-                    while( xIndex != 0 )
-                    {
-                        if( ( szDestinationFile[ xIndex ] == '\\' ) || ( szDestinationFile[ xIndex ] == '/' ) )
-                        {
-                            break;
-                        }
-
-                        xIndex--;
-                    }
-
-                    /* Copy the base name of the destination file. */
-                    STRNCPY( xMyFile.pcFileName, ( szDestinationFile + xIndex + 1 ), ffconfigMAX_FILENAME - 1 );
-                    xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
-
-                    if( xIndex == 0 )
-                    {
-                        xIndex = 1;
-                    }
-
                     /* Find the (cluster of the) directory in which the target file will be located.
                      * It must exist before calling FF_Move(). */
-                    ulDirCluster = FF_FindDir( pxIOManager, szDestinationFile, ( uint16_t ) xIndex, &xError );
+                    ulDirCluster = FF_FindDir( pxIOManager, szDestinationFile, ( uint16_t ) uxIndex, &xError );
                 }
             }
         }
