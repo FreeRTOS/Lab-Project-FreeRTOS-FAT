@@ -2900,7 +2900,7 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 
     for( ; *pcName; pcName++ )
     {
-        for( index = 0; index < ( BaseType_t ) ( sizeof( forbiddenChars ) / sizeof ( forbiddenChars[ 0 ] ) ); index++ )
+        for( index = 0; index < ( BaseType_t ) ( sizeof( forbiddenChars ) / sizeof( forbiddenChars[ 0 ] ) ); index++ )
         {
             if( *pcName == forbiddenChars[ index ] )
             {
@@ -3270,9 +3270,9 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
             break;
         }
 
-        if (FF_IsNameCompliant(pcDirName) == pdFALSE)
+        if( FF_IsNameCompliant( pcDirName ) == pdFALSE )
         {
-            xError = FF_createERR(FF_ERR_DIR_INVALID_PATH, FF_MKDIR);
+            xError = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_MKDIR );
             break;
         }
 
