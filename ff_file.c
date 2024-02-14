@@ -887,7 +887,7 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
 #endif
 /* *INDENT-ON* */
 {
-    FF_Error_t xError;
+    FF_Error_t xError = FF_ERR_NONE;
     FF_FILE * pSrcFile, * pxDestFile;
     FF_DirEnt_t xMyFile;
     uint8_t ucEntryBuffer[ 32 ];
