@@ -928,13 +928,6 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
             uxIndex--;
         }
 
-        if( uxIndex == 0U )
-        {
-            /* Give the directory part a minimum
-             * length of 1, to get '/' at least. */
-            uxIndex = 1U;
-        }
-
         /* Copy the base name of the destination file. */
         STRNCPY( xMyFile.pcFileName, ( szDestinationFile + uxIndex + 1 ), ffconfigMAX_FILENAME - 1 );
         xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
@@ -943,6 +936,13 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
         if( FF_IsNameCompliant( xMyFile.pcFileName ) == pdFALSE )
         {
             xError = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_MOVE );
+        }
+
+        if( uxIndex == 0U )
+        {
+            /* Give the directory part a minimum
+             * length of 1, to get '/' at least. */
+            uxIndex = 1U;
         }
     }
 
