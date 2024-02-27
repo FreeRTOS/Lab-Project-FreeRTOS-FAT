@@ -172,6 +172,16 @@ int8_t FF_PushEntry( FF_IOManager_t * pxIOManager,
                      uint8_t * buffer,
                      void * pParam );
 
+/*
+ * FF_IsNameCompliant is a function that checks if a given path name
+ * contains any legal characters only.
+ */
+#if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
+    BaseType_t FF_IsNameCompliant( FF_T_WCHAR * pcName );
+#else
+    BaseType_t FF_IsNameCompliant( char * pcName );
+#endif
+
 static portINLINE BaseType_t FF_isEndOfDir( const uint8_t * pucEntryBuffer )
 {
     return pucEntryBuffer[ 0 ] == ( uint8_t ) 0;

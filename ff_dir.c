@@ -134,12 +134,6 @@ static BaseType_t FF_ValidShortChar( char cChar );
     #endif /* if ( ffconfigUNICODE_UTF16_SUPPORT != 0 ) */
 #endif /* if ( ffconfigLFN_SUPPORT != 0 ) */
 
-#if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    static void FF_MakeNameCompliant( FF_T_WCHAR * pcName );
-#else
-    static void FF_MakeNameCompliant( char * pcName );
-#endif
-
 #if ( FF_NOSTRCASECMP == 0 )
     static portINLINE unsigned char prvToLower( unsigned char c )
     {
@@ -2875,40 +2869,48 @@ FF_Error_t FF_ExtendDirectory( FF_IOManager_t * pxIOManager,
 } /* FF_ExtendDirectory() */
 /*-----------------------------------------------------------*/
 
-static const uint8_t forbiddenChrs[] =
+/* *INDENT-OFF* */
+#if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
+    static const FF_T_WCHAR forbiddenChars[] =
+#else
+    static const uint8_t forbiddenChars[] =
+#endif
 {
 /* Windows says: don't use these characters: '\/:*?"<>|'
  *  "     *     /	    :     <     >     ?    '\'    ?     | */
     0x22, 0x2A, 0x2F, 0x3A, 0x3C, 0x3E, 0x3F, 0x5C, 0x7F, 0x7C
 };
+/* *INDENT-ON* */
 
 /* *INDENT-OFF* */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    static void FF_MakeNameCompliant( FF_T_WCHAR * pcName )
+    BaseType_t FF_IsNameCompliant( FF_T_WCHAR * pcName )
 #else
-    static void FF_MakeNameCompliant( char * pcName )
+    BaseType_t FF_IsNameCompliant( char * pcName )
 #endif
 /* *INDENT-ON* */
 {
+    BaseType_t xReturn = pdTRUE;
     BaseType_t index;
 
-    if( ( uint8_t ) pcName[ 0 ] == FF_FAT_DELETED ) /* Support Japanese KANJI symbol0xE5. */
+    if( ( uint8_t ) pcName[ 0 ] == FF_FAT_DELETED ) /* Do not create a "deleted" entry 0xE5. */
     {
-        pcName[ 0 ] = 0x05;
+        xReturn = pdFALSE;
     }
 
     for( ; *pcName; pcName++ )
     {
-        for( index = 0; index < ( BaseType_t ) sizeof( forbiddenChrs ); index++ )
+        for( index = 0; index < ( BaseType_t ) ( sizeof( forbiddenChars ) / sizeof( forbiddenChars[ 0 ] ) ); index++ )
         {
-            if( *pcName == forbiddenChrs[ index ] )
+            if( *pcName == forbiddenChars[ index ] )
             {
-                *pcName = '_';
-                break;
+                xReturn = pdFALSE;
             }
         }
     }
-} /* FF_MakeNameCompliant() */
+
+    return xReturn;
+} /* FF_IsNameCompliant() */
 /*-----------------------------------------------------------*/
 
 FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
@@ -2941,15 +2943,6 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     /* Round-up the number of LFN's needed: */
     xLFNCount = ( BaseType_t ) ( ( NameLen + 12 ) / 13 );
 
-    #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    {
-        FF_MakeNameCompliant( pxDirEntry->pcFileName ); /* Ensure we don't break the Dir tables. */
-    }
-    #else
-    {
-        FF_MakeNameCompliant( pxDirEntry->pcFileName ); /* Ensure we don't break the Dir tables. */
-    }
-    #endif
     memset( pucEntryBuffer, 0, sizeof( pucEntryBuffer ) );
 
     #if ( ffconfigLFN_SUPPORT != 0 )
@@ -3127,7 +3120,15 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
     STRNCPY( xMyFile.pcFileName, pcFileName, ffconfigMAX_FILENAME - 1 );
     xMyFile.pcFileName[ ffconfigMAX_FILENAME - 1 ] = 0;
 
-    xMyFile.ulObjectCluster = FF_CreateClusterChain( pxIOManager, &xError );
+    if( FF_IsNameCompliant( xMyFile.pcFileName ) == pdFALSE )
+    {
+        xError = FF_createERR( FF_ERR_FILE_INVALID_PATH, FF_CREATEFILE );
+    }
+
+    if( FF_isERR( xError ) == pdFALSE )
+    {
+        xMyFile.ulObjectCluster = FF_CreateClusterChain( pxIOManager, &xError );
+    }
 
     if( FF_isERR( xError ) == pdFALSE )
     {
@@ -3266,6 +3267,12 @@ FF_Error_t FF_CreateDirent( FF_IOManager_t * pxIOManager,
         if( pcDirName[ 0 ] == '\0' )
         {
             xError = FF_createERR( FF_ERR_DIR_OBJECT_EXISTS, FF_MKDIR );
+            break;
+        }
+
+        if( FF_IsNameCompliant( pcDirName ) == pdFALSE )
+        {
+            xError = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_MKDIR );
             break;
         }
 
