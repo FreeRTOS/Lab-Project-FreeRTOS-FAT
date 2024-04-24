@@ -712,7 +712,7 @@ uint32_t FF_FindEndOfChain( FF_IOManager_t * pxIOManager,
     {
         /* Traverse FAT for (2^32-1) items/clusters,
          * or until end-of-chain is encountered. */
-        ulFatEntry = FF_TraverseFAT( pxIOManager, ulStart, ( uint32_t ) ~0UL, &xError );
+        ulFatEntry = FF_TraverseFAT( pxIOManager, ulStart, ~( ( uint32_t ) 0U ), &xError );
     }
     else
     {
@@ -1496,7 +1496,7 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
                     {
                         ulFreeClusters = FF_getLong( pxBuffer->pucBuffer, 488 );
 
-                        if( ulFreeClusters != ~0ul )
+                        if( ulFreeClusters != ~( ( uint32_t ) 0U ) )
                         {
                             xInfoKnown = pdTRUE;
                         }
