@@ -177,9 +177,9 @@ int8_t FF_PushEntry( FF_IOManager_t * pxIOManager,
  * contains any legal characters only.
  */
 #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
-    BaseType_t FF_IsNameCompliant( FF_T_WCHAR * pcName );
+    BaseType_t FF_IsNameCompliant( const FF_T_WCHAR * pcName );
 #else
-    BaseType_t FF_IsNameCompliant( char * pcName );
+    BaseType_t FF_IsNameCompliant( const char * pcName );
 #endif
 
 static portINLINE BaseType_t FF_isEndOfDir( const uint8_t * pucEntryBuffer )
