@@ -213,7 +213,7 @@
                  bModified : 1, /* If the sector was modified since read. */
                  bValid : 1;    /* Initially FALSE. */
         uint16_t usNumHandles;  /* Number of objects using this buffer. */
-        uint16_t usPersistance; /* For the persistance algorithm. */
+        uint16_t usPersistence; /* For the persistence algorithm. */
     } FF_Buffer_t;
 
     typedef struct
