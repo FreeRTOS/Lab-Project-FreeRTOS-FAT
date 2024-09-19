@@ -116,7 +116,7 @@
 /*-----------------------------------------------------------
  * Get and set the task's file system errno
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
 
 /*
