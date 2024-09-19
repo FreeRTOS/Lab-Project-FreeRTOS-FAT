@@ -125,7 +125,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Download ZIP artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
       - name: Upload Release Asset
