@@ -14,7 +14,7 @@ server examples that are documented on the
 pages.
 
 The
-[standard C library style API](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html)
+[standard C library style API](https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API)
 includes a thread local errno value, and the lower level native API provides a
 rich set of detailed error codes.
 

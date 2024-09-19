@@ -14,9 +14,8 @@
  * under the terms of the GNU General Public License V2.  Links to the relevant
  * licenses follow:
  *
- * The FreeRTOS+FAT License Information Page: http://www.FreeRTOS.org/fat_license
- * The FreeRTOS Open Source License: http://www.FreeRTOS.org/license
- * The GNU General Public License Version 2: http://www.FreeRTOS.org/gpl-2.0.txt
+ * The FreeRTOS+FAT License Information Page: https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/FreeRTOS_Plus_FAT_License
+ * The FreeRTOS Open Source License: https://www.freertos.org/Documentation/03-Libraries/01-Library-overview/04-Licensing
  *
  * FreeRTOS+FAT is distributed in the hope that it will be useful.  You cannot
  * use FreeRTOS+FAT unless you agree that you use the software 'as is'.

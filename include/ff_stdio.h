@@ -116,7 +116,7 @@
 /*-----------------------------------------------------------
  * Get and set the task's file system errno
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
 
 /*
@@ -191,7 +191,7 @@
 /*-----------------------------------------------------------
  * Open and close a file
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     FF_FILE * ff_fopen( const char * pcFile,
                         const char * pcMode );
@@ -201,7 +201,7 @@
 /*-----------------------------------------------------------
  * Seek and tell
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_fseek( FF_FILE * pxStream,
                   long lOffset,
@@ -214,7 +214,7 @@
 /*-----------------------------------------------------------
  * Read and write
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     size_t ff_fread( void * pvBuffer,
                      size_t xSize,
@@ -253,7 +253,7 @@
  * The actual length of the file will be made equal to the current writing
  * position
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_seteof( FF_FILE * pxStream );
 
@@ -262,7 +262,7 @@
  * or write zero's up until the required length, and return a handle to the open
  * file.  If NULL is returned, ff_errno contains an error code.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     FF_FILE * ff_truncate( const char * pcFileName,
                            long lTruncateSize );
@@ -270,7 +270,7 @@
 /*-----------------------------------------------------------
  * Flush to disk
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_fflush( FF_FILE * pxStream );
 
@@ -278,7 +278,7 @@
 /*-----------------------------------------------------------
  * Create directory, remove and rename files
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     #if ( ffconfigMKDIR_RECURSIVE == 0 )
         int ff_mkdir( const char * pcPath );
@@ -293,21 +293,21 @@
 /*-----------------------------------------------------------
  * Create path specified by the pcPath parameter.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_mkpath( const char * pcPath );
 
 /*-----------------------------------------------------------
  * Remove the directory specified by the pcDirectory parameter.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_rmdir( const char * pcDirectory );
 
 /*-----------------------------------------------------------
  * Delete a directory and, recursively, all of its contents.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     #if ( ffconfigUSE_DELTREE != 0 )
 
@@ -325,14 +325,14 @@
 /*-----------------------------------------------------------
  * Remove/delete a file.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_remove( const char * pcPath );
 
 /*-----------------------------------------------------------
  * Move a file, also cross-directory but not across a file system.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_rename( const char * pcOldName,
                    const char * pcNewName,
@@ -342,7 +342,7 @@
 /*-----------------------------------------------------------
  * Get the status of a file.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     int ff_stat( const char * pcFileName,
                  FF_Stat_t * pxStatBuffer );
@@ -353,14 +353,14 @@
 /*-----------------------------------------------------------
  * Get the length of a file in bytes.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     size_t ff_filelength( FF_FILE * pxFile );
 
 /*-----------------------------------------------------------
  * Working directory and iterating through directories.
  * The most up to date API documentation is currently provided on the following URL:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/Standard_File_System_API.html
+ * https://www.freertos.org/Documentation/03-Libraries/05-FreeRTOS-labs/04-FreeRTOS-plus-FAT/05-Standard_Native_File_System_API
  *-----------------------------------------------------------*/
     #if ffconfigHAS_CWD
         int ff_chdir( const char * pcDirectoryName );
