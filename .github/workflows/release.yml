@@ -46,7 +46,7 @@ jobs:
         env:
           VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          git tag "$VERSION_NUMBER" -a -m "FreeRTOS-Plus-TCP Library $VERSION_NUMBER"
+          git tag "$VERSION_NUMBER" -a -m "FreeRTOS-Plus-FAT Library $VERSION_NUMBER"
           git push origin --tags
       - name: Verify tag on remote
         env:
@@ -68,34 +68,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.version_number }}
-          path: FreeRTOS-Plus-TCP
+          path: FreeRTOS-Plus-FAT
           submodules: recursive
       - name: Checkout disabled submodules
         run: |
-          cd FreeRTOS-Plus-TCP
+          cd FreeRTOS-Plus-FAT
           git submodule update --init --checkout --recursive
       - name: Create ZIP
         env:
           VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          zip -r FreeRTOS-Plus-TCP-"$VERSION_NUMBER".zip FreeRTOS-Plus-TCP -x "*.git*"
+          zip -r FreeRTOS-Plus-FAT-"$VERSION_NUMBER".zip FreeRTOS-Plus-FAT -x "*.git*"
           ls ./
       - name: Validate created ZIP
         env:
           VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
           mkdir zip-check
-          mv FreeRTOS-Plus-TCP-"$VERSION_NUMBER".zip zip-check
+          mv FreeRTOS-Plus-FAT-"$VERSION_NUMBER".zip zip-check
           cd zip-check
-          unzip FreeRTOS-Plus-TCP-"$VERSION_NUMBER".zip -d FreeRTOS-Plus-TCP-"$VERSION_NUMBER"
-          ls FreeRTOS-Plus-TCP-"$VERSION_NUMBER"
-          diff -r -x "*.git*" FreeRTOS-Plus-TCP-"$VERSION_NUMBER"/FreeRTOS-Plus-TCP/ ../FreeRTOS-Plus-TCP/
+          unzip FreeRTOS-Plus-FAT-"$VERSION_NUMBER".zip -d FreeRTOS-Plus-FAT-"$VERSION_NUMBER"
+          ls FreeRTOS-Plus-FAT-"$VERSION_NUMBER"
+          diff -r -x "*.git*" FreeRTOS-Plus-FAT-"$VERSION_NUMBER"/FreeRTOS-Plus-FAT/ ../FreeRTOS-Plus-FAT/
           cd ../
       - name: Build
         env:
           VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          cd zip-check/FreeRTOS-Plus-TCP-"$VERSION_NUMBER"/FreeRTOS-Plus-TCP
+          cd zip-check/FreeRTOS-Plus-FAT-"$VERSION_NUMBER"/FreeRTOS-Plus-FAT
           sudo apt-get install -y lcov
           sudo apt-get install unifdef
           cmake -S test/unit-test -B test/unit-test/build/
@@ -104,7 +104,7 @@ jobs:
         env:
           VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          cd zip-check/FreeRTOS-Plus-TCP-"$VERSION_NUMBER"/FreeRTOS-Plus-TCP
+          cd zip-check/FreeRTOS-Plus-FAT-"$VERSION_NUMBER"/FreeRTOS-Plus-FAT
           pushd test/unit-test/build/
           ctest -E system --output-on-failure
           popd
@@ -114,8 +114,8 @@ jobs:
       - name: Create artifact of ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: FreeRTOS-Plus-TCP-${{ github.event.inputs.version_number }}.zip
-          path: zip-check/FreeRTOS-Plus-TCP-${{ github.event.inputs.version_number }}.zip
+          name: FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
+          path: zip-check/FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
   deploy-doxygen:
     needs: tag-commit
     name: Deploy doxygen documentation
@@ -141,13 +141,13 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.version_number }}
           release_name: ${{ github.event.inputs.version_number }}
-          body: Release ${{ github.event.inputs.version_number }} of the FreeRTOS-Plus-TCP Library.
+          body: Release ${{ github.event.inputs.version_number }} of the FreeRTOS-Plus-FAT Library.
           draft: false
           prerelease: false
       - name: Download ZIP artifact
         uses: actions/download-artifact@v4
         with:
-          name: FreeRTOS-Plus-TCP-${{ github.event.inputs.version_number }}.zip
+          name: FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -155,8 +155,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./FreeRTOS-Plus-TCP-${{ github.event.inputs.version_number }}.zip
-          asset_name: FreeRTOS-Plus-TCP-${{ github.event.inputs.version_number }}.zip
+          asset_path: ./FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
+          asset_name: FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
           asset_content_type: application/zip
   cleanup:
     needs:
