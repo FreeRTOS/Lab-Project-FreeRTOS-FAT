@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       commit_id:
-        description: "Commit ID to tag and create a release for"
+        description: 'Commit ID to tag and create a release for'
         required: true
       version_number:
-        description: "Release Version Number (Eg, v1.0.0)"
+        description: 'Release Version Number (Eg, v1.0.0)'
         required: true
 
 jobs:
@@ -16,35 +16,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.commit_id }}
       - name: Configure git identity
+        env:
+          ACTOR: ${{ github.actor }}
         run: |
-          git config --global user.name ${{ github.actor }}
-          git config --global user.email ${{ github.actor }}@users.noreply.github.com
+          git config --global user.name "$ACTOR"
+          git config --global user.email "$ACTOR"@users.noreply.github.com
       - name: create a new branch that references commit id
-        run: git checkout -b ${{ github.event.inputs.version_number }} ${{ github.event.inputs.commit_id }}
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
+          COMMIT_ID: ${{ github.event.inputs.commit_id }}
+        run: git checkout -b "$VERSION_NUMBER" "$COMMIT_ID"
       - name: Generate SBOM
         uses: FreeRTOS/CI-CD-Github-Actions/sbom-generator@main
         with:
           repo_path: ./
           source_path: ./source
       - name: commit SBOM file
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
           git add .
           git commit -m 'Update SBOM'
-          git push -u origin ${{ github.event.inputs.version_number }}
+          git push -u origin "$VERSION_NUMBER"
       - name: Tag Commit and Push to remote
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          git tag ${{ github.event.inputs.version_number }} -a -m "FreeRTOS-Plus-FAT Library ${{ github.event.inputs.version_number }}"
+          git tag "$VERSION_NUMBER" -a -m "FreeRTOS-Plus-FAT Library $VERSION_NUMBER"
           git push origin --tags
       - name: Verify tag on remote
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
+          COMMIT_ID: ${{ github.event.inputs.commit_id }}
         run: |
-          git tag -d ${{ github.event.inputs.version_number }}
+          git tag -d "$VERSION_NUMBER"
           git remote update
-          git checkout tags/${{ github.event.inputs.version_number }}
-          git diff ${{ github.event.inputs.commit_id }} tags/${{ github.event.inputs.version_number }}
+          git checkout tags/"$VERSION_NUMBER"
+          git diff "$COMMIT_ID" tags/"$VERSION_NUMBER"
   create-zip:
     needs: tag-commit
     name: Create ZIP and verify package for release asset.
@@ -53,9 +65,9 @@ jobs:
       - name: Install ZIP tools
         run: sudo apt-get install zip unzip
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.commit_id }}
+          ref: ${{ github.event.inputs.version_number }}
           path: FreeRTOS-Plus-FAT
           submodules: recursive
       - name: Checkout disabled submodules
@@ -63,28 +75,36 @@ jobs:
           cd FreeRTOS-Plus-FAT
           git submodule update --init --checkout --recursive
       - name: Create ZIP
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          zip -r FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip FreeRTOS-Plus-FAT -x "*.git*"
+          zip -r FreeRTOS-Plus-FAT-"$VERSION_NUMBER".zip FreeRTOS-Plus-FAT -x "*.git*"
           ls ./
       - name: Validate created ZIP
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
           mkdir zip-check
-          mv FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip zip-check
+          mv FreeRTOS-Plus-FAT-"$VERSION_NUMBER".zip zip-check
           cd zip-check
-          unzip FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip -d FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}
-          ls FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}
-          diff -r -x "*.git*" FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}/FreeRTOS-Plus-FAT/ ../FreeRTOS-Plus-FAT/
+          unzip FreeRTOS-Plus-FAT-"$VERSION_NUMBER".zip -d FreeRTOS-Plus-FAT-"$VERSION_NUMBER"
+          ls FreeRTOS-Plus-FAT-"$VERSION_NUMBER"
+          diff -r -x "*.git*" FreeRTOS-Plus-FAT-"$VERSION_NUMBER"/FreeRTOS-Plus-FAT/ ../FreeRTOS-Plus-FAT/
           cd ../
       - name: Build
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          cd zip-check/FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}/FreeRTOS-Plus-FAT
+          cd zip-check/FreeRTOS-Plus-FAT-"$VERSION_NUMBER"/FreeRTOS-Plus-FAT
           sudo apt-get install -y lcov
           sudo apt-get install unifdef
           cmake -S test/unit-test -B test/unit-test/build/
           make -C test/unit-test/build/ all
       - name: Test
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
         run: |
-          cd zip-check/FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}/FreeRTOS-Plus-FAT
+          cd zip-check/FreeRTOS-Plus-FAT-"$VERSION_NUMBER"/FreeRTOS-Plus-FAT
           pushd test/unit-test/build/
           ctest -E system --output-on-failure
           popd
@@ -92,7 +112,7 @@ jobs:
           lcov --list --rc lcov_branch_coverage=1 test/unit-test/build/coverage.info
           cd ..
       - name: Create artifact of ZIP
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
           path: zip-check/FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
@@ -125,7 +145,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Download ZIP artifact
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
       - name: Upload Release Asset
@@ -138,3 +158,17 @@ jobs:
           asset_path: ./FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
           asset_name: FreeRTOS-Plus-FAT-${{ github.event.inputs.version_number }}.zip
           asset_content_type: application/zip
+  cleanup:
+    needs:
+      - create-release
+    name: Cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Delete branch created for Tag by SBOM generator
+        env:
+          VERSION_NUMBER: ${{ github.event.inputs.version_number }}
+        run: |
+          # Delete the branch created for Tag by SBOM generator
+          git push -u origin --delete refs/heads/"$VERSION_NUMBER"
