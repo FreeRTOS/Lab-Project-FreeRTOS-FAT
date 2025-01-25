@@ -32,8 +32,8 @@ Add the following into your project's main or a subdirectory's `CMakeLists.txt`:
 include(FetchContent)
 
 FetchContent_Declare( freertos_plus_fat
-  GIT_REPOSITORY https://github.com/FreeRTOS/Lab-Project-FreeRTOS-FAT.git
-  GIT_TAG        master #Note: Best practice to use specific git-hash or tagged version
+  GIT_REPOSITORY "https://github.com/FreeRTOS/Lab-Project-FreeRTOS-FAT.git"
+  GIT_TAG        main #Note: Best practice to use specific git-hash or tagged version
   GIT_SUBMODULES "" # Don't grab any submodules since not latest
 )
 
