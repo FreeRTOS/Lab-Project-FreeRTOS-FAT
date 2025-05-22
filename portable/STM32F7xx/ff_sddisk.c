@@ -95,7 +95,6 @@
 #endif
 
 #ifndef ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER
-
     /* Set to 0 to remove SD detection interrupt handlers definition. */
     #define ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER    1
 #endif
@@ -1270,23 +1269,23 @@ static const char * prvSDCodePrintable( uint32_t ulCode )
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER != 0 )
-void HAL_GPIO_EXTI_Callback( uint16_t GPIO_Pin )
-{
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-    if( GPIO_Pin == configSD_DETECT_PIN )
+    void HAL_GPIO_EXTI_Callback( uint16_t GPIO_Pin )
     {
-        vApplicationCardDetectChangeHookFromISR( &xHigherPriorityTaskWoken );
-        portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+        if( GPIO_Pin == configSD_DETECT_PIN )
+        {
+            vApplicationCardDetectChangeHookFromISR( &xHigherPriorityTaskWoken );
+            portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+        }
     }
-}
 #endif /* ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER != 0*/
 /*-----------------------------------------------------------*/
 
 #if ( ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER != 0 )
-void EXTI15_10_IRQHandler( void )
-{
-    HAL_GPIO_EXTI_IRQHandler( configSD_DETECT_PIN ); /* GPIO PIN H.13 */
-}
+    void EXTI15_10_IRQHandler( void )
+    {
+        HAL_GPIO_EXTI_IRQHandler( configSD_DETECT_PIN ); /* GPIO PIN H.13 */
+    }
 #endif /* ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER != 0*/
 /*-----------------------------------------------------------*/
