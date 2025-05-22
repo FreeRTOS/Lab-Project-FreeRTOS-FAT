@@ -521,10 +521,4 @@
     #define FF_CreateIOManger    FF_CreateIOManager
 #endif /* ffconfigENABLE_BACKWARD_COMPATIBILITY */
 
-#ifndef ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER
-
-/* Set to 0 to remove SD detection interrupt handlers definition */
-    #define ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER    1
-#endif
-
 #endif /* ifndef FF_DEFAULTCONFIG_H */

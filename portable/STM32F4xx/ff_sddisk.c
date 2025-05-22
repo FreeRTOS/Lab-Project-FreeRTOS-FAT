@@ -82,6 +82,12 @@
     #define sdARRAY_SIZE( x )    ( int ) ( sizeof( x ) / sizeof( x )[ 0 ] )
 #endif
 
+#ifndef ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER
+    /* Set to 0 to remove SD detection interrupt handlers definition. */
+    #define ffconfigSDIO_DRIVER_DEFINES_SD_DETECTION_INTERRUPT_HANDLER    1
+#endif
+
+
 /*-----------------------------------------------------------*/
 
 /*
