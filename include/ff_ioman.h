@@ -32,6 +32,12 @@
 #ifndef _FF_IOMAN_H_
     #define _FF_IOMAN_H_
 
+#if defined( __GNUC__ )
+    #define FF_PACKED __attribute__( ( packed ) )
+#else
+    #define FF_PACKED
+#endif
+
     #ifdef __cplusplus
     extern "C" {
     #endif
@@ -379,7 +385,7 @@
             ucActive : 8,       /* FF_FAT_PTBL_ACTIVE */
             ucPartitionID : 8,  /* FF_FAT_PTBL_ID */
             bIsExtended : 1;
-    } FF_Part_t;
+    } FF_Part_t FF_PACKED;
 
     typedef struct _SPartFound
     {
