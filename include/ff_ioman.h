@@ -375,10 +375,10 @@
     {
         uint32_t ulStartLBA;    /* FF_FAT_PTBL_LBA */
         uint32_t ulSectorCount; /* FF_FAT_PTBL_SECT_COUNT */
-        uint32_t
-            ucActive : 8,       /* FF_FAT_PTBL_ACTIVE */
-            ucPartitionID : 8,  /* FF_FAT_PTBL_ID */
-            bIsExtended : 1;
+        uint8_t ucActive;       /* FF_FAT_PTBL_ACTIVE */
+        uint8_t ucPartitionID;  /* FF_FAT_PTBL_ID */
+        uint8_t bIsExtended;
+        uint8_t bIsUnused;      /*Byte added to make the length a multiple of 32 byte.*/
     } FF_Part_t;
 
     typedef struct _SPartFound
