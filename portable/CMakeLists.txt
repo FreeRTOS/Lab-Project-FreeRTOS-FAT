@@ -54,7 +54,7 @@ target_sources( freertos_plus_fat_port
         STM32F4xx/stm32f4xx_hal_sd.h
         STM32F4xx/stm32f4xx_ll_sdmmc.c
         STM32F4xx/stm32f4xx_ll_sdmmc.h>
-    $<$<STREQUAL:${FREERTOS_PLUS_FAT_PORT},STM3F7XX>:
+    $<$<STREQUAL:${FREERTOS_PLUS_FAT_PORT},STM32F7XX>:
         STM32F7xx/ff_sddisk.c
         STM32F7xx/stm32f7xx_hal_sd.c
         STM32F7xx/stm32f7xx_hal_sd.h>
