@@ -136,14 +136,14 @@
         /* Cast from a numeric value to a pointer. */
         void * pvValue = ( void * ) ( xErrno );
 
-        vTaskSetThreadLocalStoragePointer( NULL, ffconfigCWD_THREAD_LOCAL_INDEX, pvValue );
+        vTaskSetThreadLocalStoragePointer( NULL, stdioERRNO_THREAD_LOCAL_OFFSET, pvValue );
     }
 
     static portINLINE int stdioGET_ERRNO( void )
     {
         void * pvResult;
 
-        pvResult = pvTaskGetThreadLocalStoragePointer( ( TaskHandle_t ) NULL, ffconfigCWD_THREAD_LOCAL_INDEX );
+        pvResult = pvTaskGetThreadLocalStoragePointer( ( TaskHandle_t ) NULL, stdioERRNO_THREAD_LOCAL_OFFSET );
         /* Cast from a pointer to a number of the same size. */
         intptr_t xErrno = ( intptr_t ) pvResult;
         /* Cast it to an integer. */
