@@ -348,3 +348,248 @@ void test_PartitionSearch_self_referential_chain_terminates( void )
 
     ( void ) FF_DeleteIOManager( pxIOManager );
 }
+
+/*-----------------------------------------------------------*/
+/* GPT header validation in FF_GetEfiPartitionEntry().        */
+/*                                                            */
+/* FF_GetEfiPartitionEntry() is static; it is reached through */
+/* the public FF_Mount() API when the MBR advertises a GPT    */
+/* protective partition (type 0xEE). The 'HeaderSize' field   */
+/* (offset 0x0C) is disk-controlled and is used as the byte   */
+/* count for FF_GetCRC32() over the one-sector header buffer, */
+/* so it must be bounded to [92, usSectorSize] before use.    */
+/*                                                            */
+/* FF_GetCRC32() is a mock: in the rejection tests it is left */
+/* without any expectation, so CMock fails the test if the    */
+/* out-of-bounds CRC call is ever reached.                    */
+/*-----------------------------------------------------------*/
+
+/* GPT byte offsets within the header sector (mirror of the private
+ * definitions in ff_ioman.c). */
+#define GPT_OFF_HEAD_LENGTH            ( 0x0CU )
+#define GPT_OFF_HEAD_CRC               ( 0x10U )
+#define GPT_OFF_HEAD_PART_ENTRY_LBA    ( 0x48U )
+#define GPT_OFF_HEAD_ENTRY_SIZE        ( 0x54U )
+
+#define GPT_PROTECTIVE_PART_ID         ( 0xEEU )
+#define GPT_HEADER_SECTOR              ( 1U )
+
+/* UEFI-mandated minimum GPT header size, mirrors FF_GPT_HEAD_MIN_LENGTH in
+ * ff_ioman.c. */
+#define GPT_HEAD_MIN_LENGTH            ( 92U )
+
+static FF_Disk_t xTestDisk;
+
+/*
+ * Lay out an MBR (sector 0) that advertises a single GPT protective partition
+ * pointing at a GPT header sector, and write a GPT header there with a caller
+ * supplied 'HeaderSize' and header CRC.
+ */
+static void prvBuildGptDisk( uint32_t ulHeaderLength,
+                             uint32_t ulHeaderCrc )
+{
+    uint8_t * pucMbr;
+    uint8_t * pucHeader;
+
+    memset( ucVirtualDisk, 0, sizeof( ucVirtualDisk ) );
+
+    /* MBR: one non-extended protective partition (type 0xEE). */
+    pucMbr = prvSector( 0 );
+    prvSetPartEntry( pucMbr, 0, 0x00, GPT_PROTECTIVE_PART_ID,
+                     GPT_HEADER_SECTOR, TEST_DISK_SECTORS - GPT_HEADER_SECTOR );
+    prvSetSignature( pucMbr );
+
+    /* GPT header sector. */
+    pucHeader = prvSector( GPT_HEADER_SECTOR );
+    memcpy( pucHeader, "EFI PART", 8 );
+    prvPutLong( pucHeader, GPT_OFF_HEAD_LENGTH, ulHeaderLength );
+    prvPutLong( pucHeader, GPT_OFF_HEAD_CRC, ulHeaderCrc );
+    /* Only consulted if the header passes validation. */
+    prvPutLong( pucHeader, GPT_OFF_HEAD_ENTRY_SIZE, 128U );
+    prvPutLong( pucHeader, GPT_OFF_HEAD_PART_ENTRY_LBA, GPT_HEADER_SECTOR + 1U );
+}
+
+static FF_IOManager_t * prvCreateMountableDisk( void )
+{
+    FF_IOManager_t * pxIOManager = prvCreateTestIOManager();
+
+    memset( &xTestDisk, 0, sizeof( xTestDisk ) );
+    xTestDisk.pxIOManager = pxIOManager;
+
+    return pxIOManager;
+}
+
+/*
+ * A 'HeaderSize' far larger than the sector buffer (0xFFFFFFFF, the value the
+ * PoC sets) must be rejected as an invalid format, and the out-of-bounds
+ * FF_GetCRC32() over the header buffer must never be reached.
+ */
+void test_Mount_gpt_header_length_oversized_is_rejected( void )
+{
+    FF_IOManager_t * pxIOManager;
+    FF_Error_t xError;
+
+    prvBuildGptDisk( 0xFFFFFFFFU, 0x12345678U );
+
+    pxIOManager = prvCreateMountableDisk();
+    TEST_ASSERT_NOT_NULL( pxIOManager );
+
+    xError = FF_Mount( &xTestDisk, 0 );
+
+    TEST_ASSERT_TRUE( FF_isERR( xError ) );
+    TEST_ASSERT_EQUAL_HEX32( FF_ERR_IOMAN_INVALID_FORMAT, FF_GETERROR( xError ) );
+
+    ( void ) FF_DeleteIOManager( pxIOManager );
+}
+
+/*
+ * Boundary: 'HeaderSize' one byte past the sector size must be rejected and
+ * must not reach the CRC.
+ */
+void test_Mount_gpt_header_length_one_past_sector_is_rejected( void )
+{
+    FF_IOManager_t * pxIOManager;
+    FF_Error_t xError;
+
+    prvBuildGptDisk( TEST_SECTOR_SIZE + 1U, 0x12345678U );
+
+    pxIOManager = prvCreateMountableDisk();
+    TEST_ASSERT_NOT_NULL( pxIOManager );
+
+    xError = FF_Mount( &xTestDisk, 0 );
+
+    TEST_ASSERT_TRUE( FF_isERR( xError ) );
+    TEST_ASSERT_EQUAL_HEX32( FF_ERR_IOMAN_INVALID_FORMAT, FF_GETERROR( xError ) );
+
+    ( void ) FF_DeleteIOManager( pxIOManager );
+}
+
+/*
+ * Boundary: 'HeaderSize' below the UEFI minimum (92 bytes) must be rejected and
+ * must not reach the CRC.
+ */
+void test_Mount_gpt_header_length_below_minimum_is_rejected( void )
+{
+    FF_IOManager_t * pxIOManager;
+    FF_Error_t xError;
+
+    prvBuildGptDisk( 91U, 0x12345678U );
+
+    pxIOManager = prvCreateMountableDisk();
+    TEST_ASSERT_NOT_NULL( pxIOManager );
+
+    xError = FF_Mount( &xTestDisk, 0 );
+
+    TEST_ASSERT_TRUE( FF_isERR( xError ) );
+    TEST_ASSERT_EQUAL_HEX32( FF_ERR_IOMAN_INVALID_FORMAT, FF_GETERROR( xError ) );
+
+    ( void ) FF_DeleteIOManager( pxIOManager );
+}
+
+/*
+ * A 'HeaderSize' at the UEFI minimum (92 bytes) is in range, so the bounds
+ * check passes and the CRC is computed. With a mismatching (mocked) CRC the
+ * header is reported corrupt - proving the valid-length branch proceeds to the
+ * CRC instead of being rejected.
+ */
+void test_Mount_gpt_header_length_at_minimum_reaches_crc( void )
+{
+    FF_IOManager_t * pxIOManager;
+    FF_Error_t xError;
+
+    prvBuildGptDisk( GPT_HEAD_MIN_LENGTH, 0x12345678U );
+
+    /* In-range length: the CRC routine is reached exactly once. The mocked
+     * result differs from the stored header CRC, so the header is "corrupt". */
+    FF_GetCRC32_ExpectAnyArgsAndReturn( 0xDEADBEEFU );
+
+    pxIOManager = prvCreateMountableDisk();
+    TEST_ASSERT_NOT_NULL( pxIOManager );
+
+    xError = FF_Mount( &xTestDisk, 0 );
+
+    TEST_ASSERT_TRUE( FF_isERR( xError ) );
+    TEST_ASSERT_EQUAL_HEX32( FF_ERR_IOMAN_GPT_HEADER_CORRUPT, FF_GETERROR( xError ) );
+
+    ( void ) FF_DeleteIOManager( pxIOManager );
+}
+
+/*
+ * Boundary: 'HeaderSize' exactly equal to the sector size is the largest
+ * in-range value, so it must also reach the CRC rather than be rejected.
+ */
+void test_Mount_gpt_header_length_at_sector_size_reaches_crc( void )
+{
+    FF_IOManager_t * pxIOManager;
+    FF_Error_t xError;
+
+    prvBuildGptDisk( TEST_SECTOR_SIZE, 0x12345678U );
+
+    FF_GetCRC32_ExpectAnyArgsAndReturn( 0xDEADBEEFU );
+
+    pxIOManager = prvCreateMountableDisk();
+    TEST_ASSERT_NOT_NULL( pxIOManager );
+
+    xError = FF_Mount( &xTestDisk, 0 );
+
+    TEST_ASSERT_TRUE( FF_isERR( xError ) );
+    TEST_ASSERT_EQUAL_HEX32( FF_ERR_IOMAN_GPT_HEADER_CORRUPT, FF_GETERROR( xError ) );
+
+    ( void ) FF_DeleteIOManager( pxIOManager );
+}
+
+/*-----------------------------------------------------------*/
+/* Sector-size validation in FF_CreateIOManager().            */
+/*-----------------------------------------------------------*/
+
+/*
+ * A sector size that does not fit in the uint16_t 'usSectorSize' field (e.g.
+ * 65536, which is a multiple of 512 and so passes the old check) would
+ * truncate to 0. It must instead fail cleanly with FF_ERR_IOMAN_BAD_BLKSIZE
+ * and return NULL.
+ */
+void test_CreateIOManager_rejects_sector_size_above_uint16( void )
+{
+    FF_CreationParameters_t xParameters;
+    FF_Error_t xError = FF_ERR_NONE;
+    FF_IOManager_t * pxIOManager;
+
+    memset( &xParameters, 0, sizeof( xParameters ) );
+    xParameters.ulSectorSize = 0x10000;      /* 65536 -> 0 when truncated. */
+    xParameters.ulMemorySize = 2U * 0x10000; /* Two sectors of cache.      */
+    xParameters.fnReadBlocks = prvReadBlocks;
+    xParameters.fnWriteBlocks = prvWriteBlocks;
+    xParameters.xBlockDeviceIsReentrant = pdTRUE;
+
+    pxIOManager = FF_CreateIOManager( &xParameters, &xError );
+
+    TEST_ASSERT_NULL( pxIOManager );
+    TEST_ASSERT_TRUE( FF_isERR( xError ) );
+    TEST_ASSERT_EQUAL_HEX32( FF_ERR_IOMAN_BAD_BLKSIZE, FF_GETERROR( xError ) );
+}
+
+/*
+ * Sector sizes larger than 512 but within the uint16_t range (e.g. 4096) remain
+ * valid: the upper-bound check must not reject legitimate large sectors.
+ */
+void test_CreateIOManager_accepts_4096_byte_sector( void )
+{
+    FF_CreationParameters_t xParameters;
+    FF_Error_t xError = FF_ERR_NONE;
+    FF_IOManager_t * pxIOManager;
+
+    memset( &xParameters, 0, sizeof( xParameters ) );
+    xParameters.ulSectorSize = 4096;
+    xParameters.ulMemorySize = 8U * 4096U;
+    xParameters.fnReadBlocks = prvReadBlocks;
+    xParameters.fnWriteBlocks = prvWriteBlocks;
+    xParameters.xBlockDeviceIsReentrant = pdTRUE;
+
+    pxIOManager = FF_CreateIOManager( &xParameters, &xError );
+
+    TEST_ASSERT_NOT_NULL( pxIOManager );
+    TEST_ASSERT_FALSE( FF_isERR( xError ) );
+    TEST_ASSERT_EQUAL_UINT16( 4096U, pxIOManager->usSectorSize );
+
+    ( void ) FF_DeleteIOManager( pxIOManager );
+}
