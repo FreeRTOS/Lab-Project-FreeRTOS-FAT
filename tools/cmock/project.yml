@@ -1,0 +1,31 @@
+# CMock configuration for the FreeRTOS+FAT unit tests.
+# Based on the configuration used across the FreeRTOS core libraries.
+:cmock:
+  :mock_prefix: mock_
+  :when_no_prototypes: :warn
+  :enforce_strict_ordering: TRUE
+  :plugins:
+    - :ignore
+    - :ignore_arg
+    - :expect_any_args
+    - :array
+    - :callback
+    - :return_thru_ptr
+  :callback_include_count: true
+  :callback_after_arg_check: false
+  :treat_as:
+    uint8:    HEX8
+    uint16:   HEX16
+    uint32:   UINT32
+    int8:     INT8
+    bool:     UINT8
+  # The FreeRTOS+FAT headers are not self-contained: they expect to be reached
+  # through "ff_headers.h", which pulls in the kernel types, the library config
+  # and the FF_* type definitions. Force that umbrella header in ahead of the
+  # mocked header so each generated mock compiles.
+  :includes_h_pre_orig_header:
+    - "ff_headers.h"
+  :includes:
+    - <stdbool.h>
+    - <stdint.h>
+  :treat_externs: :include

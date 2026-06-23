@@ -59,6 +59,40 @@ If you already have FreeRTOS in your project, you may skip the fetch content by 
 It is recommended to use this repository as a submodule. Please refer to
 [Git Tools — Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
+## Running the unit tests
+
+Host-based unit tests live in [`test/unit-test`](test/unit-test) and are built
+with [Unity](https://github.com/ThrowTheSwitch/Unity) and
+[CMock](https://github.com/ThrowTheSwitch/CMock).
+
+Prerequisites: CMake, a C compiler, `make`, Ruby (used by CMock and the Unity
+test-runner generator), and `lcov` for coverage.
+
+The tests rely on the CMock submodule. Initialise submodules first (the build
+will also attempt to clone it automatically if missing):
+
+```sh
+git submodule update --init --recursive
+```
+
+Configure, build, and run the tests:
+
+```sh
+cmake -S test/unit-test -B test/unit-test/build/
+make -C test/unit-test/build/ all
+ctest --test-dir test/unit-test/build/ -E system --output-on-failure
+```
+
+Optionally generate a coverage report (writes `coverage.info`):
+
+```sh
+make -C test/unit-test/build/ coverage
+lcov --list --rc branch_coverage=1 test/unit-test/build/coverage.info
+```
+
+See [`test/unit-test/README.md`](test/unit-test/README.md) for details on the
+test layout and how to add new tests.
+
 ## Notes
 
 This project is undergoing optimizations or refactoring to improve memory usage,
