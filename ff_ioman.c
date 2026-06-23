@@ -944,6 +944,14 @@ static FF_Error_t FF_ParseExtended( FF_IOManager_t * pxIOManager,
 
     while( xTryCount-- )
     {
+        /* Stop following the extended-partition (EBR) chain once the
+         * caller's partition array is full, otherwise the loop below
+         * could write past pPartsFound->pxPartitions[ ffconfigMAX_PARTITIONS ]. */
+        if( pPartsFound->iCount >= ffconfigMAX_PARTITIONS )
+        {
+            break;
+        }
+
         if( ( pxBuffer == NULL ) || ( pxBuffer->ulSector != ulThisSector ) )
         {
             /* Moving to a different sector. Release the
@@ -1027,6 +1035,14 @@ static FF_Error_t FF_ParseExtended( FF_IOManager_t * pxIOManager,
                 continue;
             }
 
+            /* Make sure there is room to store the partition before
+             * writing it. The increment below must never index past the
+             * end of pPartsFound->pxPartitions[ ffconfigMAX_PARTITIONS ]. */
+            if( pPartsFound->iCount >= ffconfigMAX_PARTITIONS )
+            {
+                break;
+            }
+
             {
                 /* Store this partition for the caller */
                 FF_Part_t * p = &pPartsFound->pxPartitions[ pPartsFound->iCount++ ];
@@ -1037,11 +1053,6 @@ static FF_Error_t FF_ParseExtended( FF_IOManager_t * pxIOManager,
                 /* and make LBA absolute to sector-0. */
                 p->ulStartLBA += ulThisSector;
                 p->bIsExtended = pdTRUE;
-            }
-
-            if( pPartsFound->iCount >= ffconfigMAX_PARTITIONS )
-            {
-                break;
             }
 
             xTryCount = 100;
