@@ -512,6 +512,8 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     FF_DirEnt_t xDirEntry;
     FF_Error_t xError = FF_ERR_NONE;
     BaseType_t xReturn;
+    uint32_t ulDirCluster;
+    uint16_t usPathLength;
 
     if( pxIOManager == NULL )
     {
@@ -519,7 +521,46 @@ static FF_FILE * prvAllocFileHandle( FF_IOManager_t * pxIOManager,
     }
     else
     {
-        xError = FF_FindFirst( pxIOManager, &xDirEntry, pcPath );
+        memset( &xDirEntry, 0, sizeof( xDirEntry ) );
+
+        #if ( ffconfigUNICODE_UTF16_SUPPORT != 0 )
+            usPathLength = ( uint16_t ) wcslen( pcPath );
+        #else
+            usPathLength = ( uint16_t ) strlen( pcPath );
+        #endif
+
+        #if ( ffconfigREMOVABLE_MEDIA != 0 )
+            if( ( pxIOManager->ucFlags & FF_IOMAN_DEVICE_IS_EXTRACTED ) != 0 )
+            {
+                xError = FF_createERR( FF_ERR_IOMAN_DRIVER_NOMEDIUM, FF_ISDIREMPTY );
+            }
+            else
+        #endif /* ffconfigREMOVABLE_MEDIA */
+        {
+            /* FF_isDirEmpty() must enumerate the directory contents.  Calling
+             * FF_FindFirst() would let wildcard mode reinterpret a path without
+             * a trailing separator as the directory entry itself. */
+            ulDirCluster = FF_FindDir( pxIOManager, pcPath, usPathLength, &xError );
+
+            if( FF_isERR( xError ) == pdFALSE )
+            {
+                if( ulDirCluster == 0UL )
+                {
+                    xError = FF_createERR( FF_ERR_DIR_INVALID_PATH, FF_ISDIREMPTY );
+                }
+                else
+                {
+                    xDirEntry.ulDirCluster = ulDirCluster;
+                    xError = FF_InitEntryFetch( pxIOManager, ulDirCluster, &( xDirEntry.xFetchContext ) );
+
+                    if( FF_isERR( xError ) == pdFALSE )
+                    {
+                        xDirEntry.usCurrentItem = 0;
+                        xError = FF_FindNext( pxIOManager, &xDirEntry );
+                    }
+                }
+            }
+        }
 
         /* Assume the directory is empty until a file is
          * encountered with a name other than ".." or "." */
