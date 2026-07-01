@@ -82,6 +82,7 @@ typedef struct _FF_FILE
 #define FF_VALID_FLAG_INVALID     0x00000001U
 #define FF_VALID_FLAG_DELETED     0x00000002U
 #define FF_VALID_FLAG_EXTENDED    0x00000004U
+#define FF_VALID_FLAG_MODIFIED    0x00000008U
 
 /*---------- PROTOTYPES */
 /* PUBLIC (Interfaces): */
