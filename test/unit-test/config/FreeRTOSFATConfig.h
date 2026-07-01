@@ -39,6 +39,9 @@
  * with the generated mocks. */
 #define ffconfig64_NUM_SUPPORT    ( 1 )
 
+#define ffconfigTIME_SUPPORT                         ( 1 )
+#define ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE    ( 1 )
+
 /* All other ffconfig values fall back to FreeRTOSFATConfigDefaults.h. */
 
 #endif /* FREERTOS_FAT_CONFIG_H */

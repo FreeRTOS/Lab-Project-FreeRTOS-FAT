@@ -108,6 +108,69 @@ create_test( ${utest_name}
              "${utest_link_list}"
              "${utest_dep_list}"
              "${test_include_directories}" )
+set( coverage_dep_list ${utest_name} )
+
+set( project_name "ff_file" )
+
+# =====================  Mocks  ================================================
+# Keep the ff_file unit focused on FF_Close().  The module is built with
+# function sections so the linker can discard unrelated file APIs and their
+# dependencies.
+set( mock_list "" )
+list( APPEND mock_list
+      ${MODULE_ROOT_DIR}/include/ff_locking.h
+      ${MODULE_ROOT_DIR}/include/ff_dir.h
+      ${MODULE_ROOT_DIR}/include/ff_fat.h
+      ${MODULE_ROOT_DIR}/include/ff_ioman.h
+      ${MODULE_ROOT_DIR}/include/ff_time.h )
+
+set( mock_include_list ${FAT_TEST_INCLUDE_DIRS} )
+set( mock_define_list "" )
+
+# ==================  Module under test  =======================================
+set( real_source_files "" )
+list( APPEND real_source_files
+      ${MODULE_ROOT_DIR}/ff_file.c )
+
+set( real_include_directories ${FAT_TEST_INCLUDE_DIRS} )
+
+# =====================  Test code  ============================================
+set( test_include_directories ${FAT_TEST_INCLUDE_DIRS} )
+
+# ==============================================================================
+set( mock_name "${project_name}_mock" )
+set( real_name "${project_name}_real" )
+
+create_mock_list( ${mock_name}
+                  "${mock_list}"
+                  "${MODULE_ROOT_DIR}/tools/cmock/project.yml"
+                  "${mock_include_list}"
+                  "${mock_define_list}" )
+
+create_real_library( ${real_name}
+                     "${real_source_files}"
+                     "${real_include_directories}"
+                     "${mock_name}" )
+target_compile_options( ${real_name} PRIVATE -ffunction-sections -fdata-sections )
+
+set( utest_dep_list "" )
+list( APPEND utest_dep_list ${real_name} )
+
+set( utest_link_list "" )
+list( APPEND utest_link_list
+      lib${real_name}.a
+      -l${mock_name}
+      -Wl,--gc-sections )
+
+set( utest_name "${project_name}_utest" )
+set( utest_source "${UNIT_TEST_DIR}/ff_file_utest.c" )
+
+create_test( ${utest_name}
+             ${utest_source}
+             "${utest_link_list}"
+             "${utest_dep_list}"
+             "${test_include_directories}" )
+list( APPEND coverage_dep_list ${utest_name} )
 
 # ------------------------------------------------------------------------------
 # `coverage` target: run the tests and collect lcov data into coverage.info.
@@ -115,6 +178,6 @@ create_test( ${utest_name}
 add_custom_target( coverage
     COMMAND ${CMAKE_COMMAND} -DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
             -P ${MODULE_ROOT_DIR}/tools/cmock/coverage.cmake
-    DEPENDS ${utest_name}
+    DEPENDS ${coverage_dep_list}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running unit tests and collecting coverage" )

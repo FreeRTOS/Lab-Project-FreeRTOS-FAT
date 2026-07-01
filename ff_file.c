@@ -2477,6 +2477,11 @@ int32_t FF_Write( FF_FILE * pxFile,
     }
     else
     {
+        if( nBytesWritten > 0U )
+        {
+            pxFile->ulValidFlags |= FF_VALID_FLAG_MODIFIED;
+        }
+
         lResult = ( int32_t ) ( nBytesWritten / ulElementSize );
     }
 
@@ -2550,6 +2555,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
 
             if( FF_isERR( xResult ) == pdFALSE )
             {
+                pxFile->ulValidFlags |= FF_VALID_FLAG_MODIFIED;
                 xResult = ( FF_Error_t ) ucValue;
             }
         } while( pdFALSE );
@@ -3143,16 +3149,37 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                 xError = FF_GetEntry( pxFile->pxIOManager, pxFile->usDirEntry, pxFile->ulDirCluster, &xOriginalEntry );
 
                 /* Now update the directory entry */
-                if( ( FF_isERR( xError ) == pdFALSE ) &&
-                    ( ( pxFile->ulFileSize != xOriginalEntry.ulFileSize ) || ( pxFile->ulFileSize == 0UL ) ) )
+                if( FF_isERR( xError ) == pdFALSE )
                 {
-                    if( pxFile->ulFileSize == 0UL )
+                    BaseType_t xUpdateDirectoryEntry = pdFALSE;
+
+                    if( ( pxFile->ulFileSize != xOriginalEntry.ulFileSize ) || ( pxFile->ulFileSize == 0UL ) )
                     {
-                        xOriginalEntry.ulObjectCluster = 0;
+                        if( pxFile->ulFileSize == 0UL )
+                        {
+                            xOriginalEntry.ulObjectCluster = 0;
+                        }
+
+                        xOriginalEntry.ulFileSize = pxFile->ulFileSize;
+                        xUpdateDirectoryEntry = pdTRUE;
                     }
 
-                    xOriginalEntry.ulFileSize = pxFile->ulFileSize;
-                    xError = FF_PutEntry( pxFile->pxIOManager, pxFile->usDirEntry, pxFile->ulDirCluster, &xOriginalEntry, NULL );
+                    #if ( ffconfigTIME_SUPPORT != 0 ) && ( ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE != 0 )
+                    {
+                        if( ( pxFile->ulValidFlags & FF_VALID_FLAG_MODIFIED ) != 0U )
+                        {
+                            /* Reuse this directory-entry write so timestamp
+                             * maintenance does not add another disk update. */
+                            ( void ) FF_GetSystemTime( &xOriginalEntry.xModifiedTime );
+                            xUpdateDirectoryEntry = pdTRUE;
+                        }
+                    }
+                    #endif /* ffconfigTIME_SUPPORT && ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE */
+
+                    if( xUpdateDirectoryEntry != pdFALSE )
+                    {
+                        xError = FF_PutEntry( pxFile->pxIOManager, pxFile->usDirEntry, pxFile->ulDirCluster, &xOriginalEntry, NULL );
+                    }
                 }
             }
         }
@@ -3230,6 +3257,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
 FF_Error_t FF_SetEof( FF_FILE * pxFile )
 {
     FF_Error_t xError;
+    uint32_t ulOriginalFileSize = pxFile->ulFileSize;
 
     /* Check if the file was not deleted and if it was opened with write permissions: */
     if( ( ( pxFile->ulValidFlags & FF_VALID_FLAG_DELETED ) == 0 ) &&
@@ -3244,6 +3272,11 @@ FF_Error_t FF_SetEof( FF_FILE * pxFile )
         else
         {
             xError = FF_ERR_NONE;
+        }
+
+        if( ( FF_isERR( xError ) == pdFALSE ) && ( pxFile->ulFileSize != ulOriginalFileSize ) )
+        {
+            pxFile->ulValidFlags |= FF_VALID_FLAG_MODIFIED;
         }
     }
     else
