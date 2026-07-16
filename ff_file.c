@@ -1512,12 +1512,15 @@ static FF_Error_t FF_ExtendFile( FF_FILE * pxFile,
 
 static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
                                     uint32_t ulCount,
-                                    uint8_t * buffer )
+                                    uint8_t * buffer,
+                                    uint32_t * pulClustersWritten )
 {
     uint32_t ulSectors;
     uint32_t ulSequentialClusters = 0;
     uint32_t ulItemLBA;
     FF_Error_t xError = FF_ERR_NONE;
+
+    *pulClustersWritten = 0U;
 
     while( ulCount != 0 )
     {
@@ -1547,6 +1550,7 @@ static FF_Error_t FF_WriteClusters( FF_FILE * pxFile,
             break;
         }
 
+        *pulClustersWritten += ulSequentialClusters + 1U;
         ulCount -= ulSequentialClusters + 1;
 
         FF_LockFAT( pxFile->pxIOManager );
@@ -2376,6 +2380,7 @@ int32_t FF_Write( FF_FILE * pxFile,
             if( ulBytesLeft >= ulBytesPerCluster )
             {
                 uint32_t ulClusters;
+                uint32_t ulClustersWritten;
 
                 FF_SetCluster( pxFile, &xError );
 
@@ -2386,7 +2391,8 @@ int32_t FF_Write( FF_FILE * pxFile,
 
                 ulClusters = ( ulBytesLeft / ulBytesPerCluster );
 
-                xError = FF_WriteClusters( pxFile, ulClusters, pucBuffer );
+                xError = FF_WriteClusters( pxFile, ulClusters, pucBuffer, &ulClustersWritten );
+                nBytesWritten += ulBytesPerCluster * ulClustersWritten;
 
                 if( FF_isERR( xError ) )
                 {
@@ -2396,7 +2402,6 @@ int32_t FF_Write( FF_FILE * pxFile,
                 nBytesToWrite = ulBytesPerCluster * ulClusters;
                 ulBytesLeft -= nBytesToWrite;
                 pucBuffer += nBytesToWrite;
-                nBytesWritten += nBytesToWrite;
                 pxFile->ulFilePointer += nBytesToWrite;
 
                 if( pxFile->ulFilePointer > pxFile->ulFileSize )
@@ -2465,10 +2470,14 @@ int32_t FF_Write( FF_FILE * pxFile,
                 break;
             }
 
-            FF_WritePartial( pxFile, ulItemLBA, 0, ulBytesLeft, pucBuffer, &xError );
-            nBytesWritten += ulBytesLeft;
+            nBytesWritten += FF_WritePartial( pxFile, ulItemLBA, 0, ulBytesLeft, pucBuffer, &xError );
         }
         while( pdFALSE );
+    }
+
+    if( nBytesWritten > 0U )
+    {
+        pxFile->ulValidFlags |= FF_VALID_FLAG_MODIFIED;
     }
 
     if( FF_isERR( xError ) )
@@ -2550,6 +2559,7 @@ int32_t FF_PutC( FF_FILE * pxFile,
 
             if( FF_isERR( xResult ) == pdFALSE )
             {
+                pxFile->ulValidFlags |= FF_VALID_FLAG_MODIFIED;
                 xResult = ( FF_Error_t ) ucValue;
             }
         } while( pdFALSE );
@@ -3143,16 +3153,37 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
                 xError = FF_GetEntry( pxFile->pxIOManager, pxFile->usDirEntry, pxFile->ulDirCluster, &xOriginalEntry );
 
                 /* Now update the directory entry */
-                if( ( FF_isERR( xError ) == pdFALSE ) &&
-                    ( ( pxFile->ulFileSize != xOriginalEntry.ulFileSize ) || ( pxFile->ulFileSize == 0UL ) ) )
+                if( FF_isERR( xError ) == pdFALSE )
                 {
-                    if( pxFile->ulFileSize == 0UL )
+                    BaseType_t xUpdateDirectoryEntry = pdFALSE;
+
+                    if( ( pxFile->ulFileSize != xOriginalEntry.ulFileSize ) || ( pxFile->ulFileSize == 0UL ) )
                     {
-                        xOriginalEntry.ulObjectCluster = 0;
+                        if( pxFile->ulFileSize == 0UL )
+                        {
+                            xOriginalEntry.ulObjectCluster = 0;
+                        }
+
+                        xOriginalEntry.ulFileSize = pxFile->ulFileSize;
+                        xUpdateDirectoryEntry = pdTRUE;
                     }
 
-                    xOriginalEntry.ulFileSize = pxFile->ulFileSize;
-                    xError = FF_PutEntry( pxFile->pxIOManager, pxFile->usDirEntry, pxFile->ulDirCluster, &xOriginalEntry, NULL );
+                    #if ( ffconfigTIME_SUPPORT != 0 ) && ( ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE != 0 )
+                    {
+                        if( ( pxFile->ulValidFlags & FF_VALID_FLAG_MODIFIED ) != 0U )
+                        {
+                            /* Reuse this directory-entry write so timestamp
+                             * maintenance does not add another disk update. */
+                            ( void ) FF_GetSystemTime( &xOriginalEntry.xModifiedTime );
+                            xUpdateDirectoryEntry = pdTRUE;
+                        }
+                    }
+                    #endif /* ffconfigTIME_SUPPORT && ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE */
+
+                    if( xUpdateDirectoryEntry != pdFALSE )
+                    {
+                        xError = FF_PutEntry( pxFile->pxIOManager, pxFile->usDirEntry, pxFile->ulDirCluster, &xOriginalEntry, NULL );
+                    }
                 }
             }
         }
@@ -3230,6 +3261,7 @@ FF_Error_t FF_Close( FF_FILE * pxFile )
 FF_Error_t FF_SetEof( FF_FILE * pxFile )
 {
     FF_Error_t xError;
+    uint32_t ulOriginalFileSize = pxFile->ulFileSize;
 
     /* Check if the file was not deleted and if it was opened with write permissions: */
     if( ( ( pxFile->ulValidFlags & FF_VALID_FLAG_DELETED ) == 0 ) &&
@@ -3244,6 +3276,11 @@ FF_Error_t FF_SetEof( FF_FILE * pxFile )
         else
         {
             xError = FF_ERR_NONE;
+        }
+
+        if( ( FF_isERR( xError ) == pdFALSE ) && ( pxFile->ulFileSize != ulOriginalFileSize ) )
+        {
+            pxFile->ulValidFlags |= FF_VALID_FLAG_MODIFIED;
         }
     }
     else

@@ -37,7 +37,10 @@
  * helpers (FF_GetFreeSize / FF_GetVolumeSize) it generates the 64-bit variant.
  * Select the matching 64-bit configuration here so the real declarations agree
  * with the generated mocks. */
-#define ffconfig64_NUM_SUPPORT    ( 1 )
+#define ffconfig64_NUM_SUPPORT                        ( 1 )
+
+#define ffconfigTIME_SUPPORT                          ( 1 )
+#define ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE    ( 1 )
 
 /* All other ffconfig values fall back to FreeRTOSFATConfigDefaults.h. */
 

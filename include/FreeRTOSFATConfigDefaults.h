@@ -218,6 +218,16 @@
     #define ffconfigTIME_SUPPORT    0
 #endif
 
+#if !defined( ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE )
+
+/* Set to 1 to update a file's modified timestamp when closing a file that was
+ * changed through FF_Write(), FF_PutC(), or FF_SetEof().
+ *
+ * Set to 0 to preserve the historical behaviour and avoid extra directory
+ * entry writes on close. */
+    #define ffconfigUPDATE_FILE_MODIFIED_TIME_ON_CLOSE    0
+#endif
+
 #if !defined( ffconfigREMOVABLE_MEDIA )
 
 /* Set to 1 if the media is removable (such as a memory card).
