@@ -238,7 +238,7 @@
  *
  * Set to 0 to find these two values when they	are first needed.  Determining
  * the values can take some time. */
-    #define ffconfigMOUNT_FIND_FREE    0
+    #define ffconfigMOUNT_FIND_FREE    1
 #endif
 
 #if !defined( ffconfigFSINFO_TRUSTED )
@@ -247,7 +247,7 @@
  * ulFreeClusterCount fields.
  *
  * Set to 0 not to 'trust' these fields.*/
-    #define ffconfigFSINFO_TRUSTED    0
+    #define ffconfigFSINFO_TRUSTED    1
 #endif
 
 #if !defined( ffconfigFINDAPI_ALLOW_WILDCARDS )

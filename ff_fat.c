@@ -1448,7 +1448,171 @@ FF_Error_t FF_UnlinkClusterChain( FF_IOManager_t * pxIOManager,
     }
 #endif /* if ( ffconfigFAT12_SUPPORT != 0 ) */
 /*-----------------------------------------------------------*/
+uint32_t FF_FastCountFreeClusters( FF_IOManager_t * pxIOManager,
+                                   FF_Error_t * pxError,
+                                   size_t uxBlockSize )
+{
+    /* The size of hte FAT expressed in number of sectors. */
+    const uint32_t ulSectorsPerFAT = pxIOManager->xPartition.ulSectorsPerFAT;
+    /* The size of the buffer expressed in sector count. */
+    const uint32_t ulSectorsPerBuffer = uxBlockSize / 512U;
+    /* The number of clusters described in this FAT table. */
+    const uint32_t ulNumClusters = pxIOManager->xPartition.ulNumClusters;
+    /* The type of FAT: FF_T_FAT16 or FF_T_FAT32. */
+    const uint8_t ucType = pxIOManager->xPartition.ucType;
+    /* The number of bytes needed for one cluster. */
+    const uint32_t ulEntrySize = ( ucType == FF_T_FAT32 ) ? 4U : 2U;
+    /* A char buffer to read large blocks of FAT entries. */
+    uint8_t * pucBuffer;
+    /* The actual number of clusters encountered. */
+    uint32_t ulClusterNum = 0;
+    /* For iteration through 'pucBuffer'. */
+    uint32_t x;
+    /* For iteration through the FAT. */
+    uint32_t ulSectorNr;
+    /* The number of free clusters. */
+    uint32_t ulFreeClusters = 0U;
+    /* The number of bytes reserved per cluster: 2 or 4. */
+    /* Store any error that occures. */
+    FF_Error_t xError = FF_ERR_NONE;
 
+    /* The block size must be at least 512 and
+     * it must be a multiple of 512 bytes. */
+    configASSERT( uxBlockSize >= 512U );
+    configASSERT( ( uxBlockSize % 512U ) == 0 );
+
+    pucBuffer = ffconfigMALLOC( uxBlockSize );
+
+    if( pucBuffer == NULL )
+    {
+        FF_PRINTF( "FF_FastCountFreeClusters: malloc %u failed\n", ( unsigned ) uxBlockSize );
+        xError = FF_createERR( FF_ERR_NOT_ENOUGH_MEMORY, FF_FAST_COUNT_FREE_CLUSTERS );
+    }
+    else
+    {
+        uint32_t ulSectorsPerBlock = uxBlockSize / 512U;
+        unsigned read_count = 0;
+        unsigned read_total = 0;
+        unsigned read_compares = 0;
+
+        for( ulSectorNr = 0; ulSectorNr < ulSectorsPerFAT; )
+        {
+            int32_t lRetVal;
+            uint32_t uxSectorsLeft = ulSectorsPerFAT - ulSectorNr;
+            uint32_t ulEntriesPerBuffer;
+            uint32_t ulLBA; /* The logical Block Address. */
+
+            if( uxSectorsLeft > ulSectorsPerBuffer )
+            {
+                /* There are more sectors left than we can read. */
+                uxSectorsLeft = ulSectorsPerBuffer;
+            }
+            else
+            {
+                FF_PRINTF( "Reading the last %u sectors\n", uxSectorsLeft );
+            }
+
+            ulLBA = pxIOManager->xPartition.ulFATBeginLBA + ulSectorNr;
+            ulEntriesPerBuffer = ( uxSectorsLeft * 512U ) / ulEntrySize;
+            lRetVal = FF_BlockRead( pxIOManager,
+                                    ulLBA,         /* The current sector number. */
+                                    uxSectorsLeft, /* The number of sectors to read. */
+                                    pucBuffer,     /* The receiving buffer. */
+                                    pdFALSE );     /* Semaphore has not been locked at this point. */
+            read_count++;
+            read_total += 512U * uxSectorsLeft;
+
+            if( lRetVal < 0 )
+            {
+                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_FAST_COUNT_FREE_CLUSTERS );
+                break;
+            }
+
+            #if USE_SOFT_WDT
+            {
+                /* _HT_ : FF_CountFreeClusters was a little too busy, have it call the WDT and sleep */
+                clearWDT();
+
+                if( ( ( ulSectorNr + 1 ) % 32 ) == 0 )
+                {
+                    FF_Sleep( 1 );
+                }
+            }
+            #endif
+
+            for( x = 0; x < ulEntriesPerBuffer; x++ )
+            {
+                uint32_t ulFATEntry;
+
+                if( ucType == FF_T_FAT32 )
+                {
+                    /* Clearing the top 4 bits. */
+                    ulFATEntry = FF_getLong( pucBuffer, x * 4 ) & 0x0fffffff;
+                }
+                else
+                {
+                    ulFATEntry = ( uint32_t ) FF_getShort( pucBuffer, x * 2 );
+                }
+
+                if( ulFATEntry == 0ul )
+                {
+                    ulFreeClusters++;
+                }
+
+                read_compares++;
+
+                /* FAT table might not be cluster aligned. */
+                if( ulClusterNum > ulNumClusters )
+                {
+                    /* Stop counting if that's the case. */
+                    FF_PRINTF( "Break out of 1st loop\n" );
+                    break;
+                }
+
+                ulClusterNum++;
+            }
+
+            if( ulClusterNum > ulNumClusters )
+            {
+                /* Break out of 2nd loop too ^^ */
+                FF_PRINTF( "Break out of 2nd loop\n" );
+                break;
+            }
+
+            /* ulFreeClusters is -2 because the first 2 fat entries in the table are reserved. */
+            if( ulFreeClusters > pxIOManager->xPartition.ulNumClusters )
+            {
+                ulFreeClusters = pxIOManager->xPartition.ulNumClusters;
+            }
+
+            ulSectorNr += ulSectorsPerBlock;
+        } /* for( ulSectorNr = 0; ulSectorNr < ulSectorsPerFAT; ) */
+
+        FF_PRINTF( "Counting read_count = %d SecsPerBlock %d compares %u read_total %u\n",
+                   read_count,
+                   ulSectorsPerBlock,
+                   read_compares,
+                   read_total );
+    }
+
+    if( pucBuffer != NULL )
+    {
+        ffconfigFREE( pucBuffer );
+    }
+
+    if( FF_isERR( xError ) != pdFALSE )
+    {
+        ulFreeClusters = 0U;
+    }
+
+    if( pxError )
+    {
+        /* Pass the error, if any, to the caller. */
+        *pxError = xError;
+    }
+
+    return ulFreeClusters;
+}
 
 uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
                                FF_Error_t * pxError )
@@ -1457,7 +1621,6 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
     FF_Buffer_t * pxBuffer;
     uint32_t ulIndex, x;
     uint32_t ulFATEntry;
-    uint32_t ulEntriesPerSector;
     uint32_t ulFreeClusters = 0;
     uint32_t ClusterNum = 0;
     BaseType_t xInfoKnown = pdFALSE;
@@ -1491,8 +1654,8 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
                 }
                 else
                 {
-                    if( ( FF_getLong( pxBuffer->pucBuffer, 0 ) == 0x41615252 ) &&
-                        ( FF_getLong( pxBuffer->pucBuffer, 484 ) == 0x61417272 ) )
+                    if( ( FF_getLong( pxBuffer->pucBuffer, 0 ) == FS_INFO_SIGNATURE1_0x41615252 ) &&
+                        ( FF_getLong( pxBuffer->pucBuffer, 484 ) == FS_INFO_SIGNATURE2_0x61417272 ) )
                     {
                         ulFreeClusters = FF_getLong( pxBuffer->pucBuffer, 488 );
 
@@ -1517,88 +1680,108 @@ uint32_t FF_CountFreeClusters( FF_IOManager_t * pxIOManager,
             }
         }
         #endif /* if ( ffconfigFSINFO_TRUSTED != 0 ) */
+/*xInfoKnown = pdFALSE; */
+        FF_PRINTF( "Start reading the free space\n" );
 
         if( ( xInfoKnown == pdFALSE ) && ( pxIOManager->xPartition.usBlkSize != 0 ) )
         {
-            if( pxIOManager->xPartition.ucType == FF_T_FAT32 )
+            if( 1 ) /* xFastCount == pdTRUE ) */
             {
-                ulEntriesPerSector = pxIOManager->usSectorSize / 4;
+                ulFreeClusters = FF_FastCountFreeClusters( pxIOManager, &xError, 10*1024U );
             }
             else
             {
-                ulEntriesPerSector = pxIOManager->usSectorSize / 2;
-            }
+                uint32_t ulEntriesPerSector;
 
-            for( ulIndex = 0; ulIndex < pxIOManager->xPartition.ulSectorsPerFAT; ulIndex++ )
-            {
-                pxBuffer = FF_GetBuffer( pxIOManager, pxIOManager->xPartition.ulFATBeginLBA + ulIndex, FF_MODE_READ );
-
-                if( pxBuffer == NULL )
+                if( pxIOManager->xPartition.ucType == FF_T_FAT32 )
                 {
-                    xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_COUNTFREECLUSTERS );
-                    break;
+                    ulEntriesPerSector = pxIOManager->usSectorSize / 4;
+                }
+                else
+                {
+                    ulEntriesPerSector = pxIOManager->usSectorSize / 2;
                 }
 
-                #if USE_SOFT_WDT
+                for( ulIndex = 0; ulIndex < pxIOManager->xPartition.ulSectorsPerFAT; ulIndex++ )
                 {
-                    /* _HT_ : FF_CountFreeClusters was a little too busy, have it call the WDT and sleep */
-                    clearWDT();
+                    pxBuffer = FF_GetBuffer( pxIOManager, pxIOManager->xPartition.ulFATBeginLBA + ulIndex, FF_MODE_READ );
 
-                    if( ( ( ulIndex + 1 ) % 32 ) == 0 )
+                    if( pxBuffer == NULL )
                     {
-                        FF_Sleep( 1 );
-                    }
-                }
-                #endif
-
-                for( x = 0; x < ulEntriesPerSector; x++ )
-                {
-                    if( pxIOManager->xPartition.ucType == FF_T_FAT32 )
-                    {
-                        /* Clearing the top 4 bits. */
-                        ulFATEntry = FF_getLong( pxBuffer->pucBuffer, x * 4 ) & 0x0fffffff;
-                    }
-                    else
-                    {
-                        ulFATEntry = ( uint32_t ) FF_getShort( pxBuffer->pucBuffer, x * 2 );
-                    }
-
-                    if( ulFATEntry == 0ul )
-                    {
-                        ulFreeClusters++;
-                    }
-
-                    /* FAT table might not be cluster aligned. */
-                    if( ClusterNum > pxIOManager->xPartition.ulNumClusters )
-                    {
-                        /* Stop counting if that's the case. */
+                        xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_COUNTFREECLUSTERS );
                         break;
                     }
 
-                    ClusterNum++;
-                }
+                    #if USE_SOFT_WDT
+                    {
+                        /* _HT_ : FF_CountFreeClusters was a little too busy, have it call the WDT and sleep */
+                        clearWDT();
 
-                xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
-                pxBuffer = NULL;
+                        if( ( ( ulIndex + 1 ) % 32 ) == 0 )
+                        {
+                            FF_Sleep( 1 );
+                        }
+                    }
+                    #endif
 
-                if( FF_isERR( xError ) )
+                    for( x = 0; x < ulEntriesPerSector; x++ )
+                    {
+                        if( pxIOManager->xPartition.ucType == FF_T_FAT32 )
+                        {
+                            /* Clearing the top 4 bits. */
+                            ulFATEntry = FF_getLong( pxBuffer->pucBuffer, x * 4 ) & 0x0fffffff;
+                        }
+                        else
+                        {
+                            ulFATEntry = ( uint32_t ) FF_getShort( pxBuffer->pucBuffer, x * 2 );
+                        }
+
+                        if( ulFATEntry == 0ul )
+                        {
+                            ulFreeClusters++;
+                        }
+
+                        /* FAT table might not be cluster aligned. */
+                        if( ClusterNum > pxIOManager->xPartition.ulNumClusters )
+                        {
+                            /* Stop counting if that's the case. */
+                            break;
+                        }
+
+                        ClusterNum++;
+                    }
+
+                    xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
+                    pxBuffer = NULL;
+
+                    if( FF_isERR( xError ) )
+                    {
+                        break;
+                    }
+
+                    if( ClusterNum > pxIOManager->xPartition.ulNumClusters )
+                    {
+                        /* Break out of 2nd loop too ^^ */
+                        break;
+                    }
+
+                    /* ulFreeClusters is -2 because the first 2 fat entries in the table are reserved. */
+                    if( ulFreeClusters > pxIOManager->xPartition.ulNumClusters )
+                    {
+                        ulFreeClusters = pxIOManager->xPartition.ulNumClusters;
+                    }
+                } /* for( ulIndex = 0; ulIndex < pxIOManager->xPartition.ulSectorsPerFAT; ulIndex++ ) */
+            }     /* if( xFastCount == pdTRUE ) */
+
+            #if ( ffconfigFSINFO_TRUSTED != 0 )
+                if( FF_isERR( xError ) == pdFALSE )
                 {
-                    break;
+                    xError = FF_UpdateFSInfo( pxIOManager, pdFALSE );
                 }
+            #endif
+        } /* if( ( xInfoKnown == pdFALSE ) && ( pxIOManager->xPartition.usBlkSize != 0 ) ) */
 
-                if( ClusterNum > pxIOManager->xPartition.ulNumClusters )
-                {
-                    /* Break out of 2nd loop too ^^ */
-                    break;
-                }
-
-                /* ulFreeClusters is -2 because the first 2 fat entries in the table are reserved. */
-                if( ulFreeClusters > pxIOManager->xPartition.ulNumClusters )
-                {
-                    ulFreeClusters = pxIOManager->xPartition.ulNumClusters;
-                }
-            } /* for( ulIndex = 0; ulIndex < pxIOManager->xPartition.ulSectorsPerFAT; ulIndex++ ) */
-        }
+        FF_PRINTF( "Ready reading the free space: %u\n", ulFreeClusters );
     }
 
     if( xTakeLock )

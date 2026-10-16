@@ -238,6 +238,7 @@
 #define FF_ERR_UNICODE_DEST_TOO_SMALL           101 /* Not enough space in the UTF-16 buffer to encode the entire sequence as UTF-16. */
 #define FF_ERR_UNICODE_INVALID_SEQUENCE         102 /* An invalid UTF-16 sequence was encountered. */
 #define FF_ERR_UNICODE_CONVERSION_EXCEEDED      103 /* Filename exceeds MAX long-filename length when converted to UTF-16. */
+#define FF_FAST_COUNT_FREE_CLUSTERS     ( ( 6 << FF_FUNCTION_SHIFT ) | FF_MODULE_FAT )
 
 typedef int32_t FF_Error_t;
 

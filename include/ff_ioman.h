@@ -76,6 +76,9 @@
         #define pdFALSE_UNSIGNED    ( ( UBaseType_t ) 0u )
     #endif
 
+    /*Edited to make it work with latest FreeRTOS kernel*/
+	#define  FS_INFO_SIGNATURE2_0x61417272  0x61417272UL
+	#define  FS_INFO_SIGNATURE1_0x41615252  0x41615252UL
 /**
  *	I/O Driver Definitions
  *	Provide access to any Block Device via the following interfaces.
@@ -175,6 +178,7 @@
          * the media type before they attempt to access the pvTag field, or perform any
          * read and write operations. */
         uint32_t ulSignature;
+        int ulDevAddr;
     };
 
     typedef struct xFFDisk FF_Disk_t;
@@ -409,6 +413,7 @@
 
 /* Needed to make this public/private to be used in FF_Partition/FF_Format. */
     void FF_IOMAN_InitBufferDescriptors( FF_IOManager_t * pxIOManager );
+    FF_Error_t FF_UpdateFSInfo( FF_IOManager_t * pxIOManager, BaseType_t xClearSign );
 
     #ifdef __cplusplus
 }         /* extern "C" */

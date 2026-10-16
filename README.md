@@ -21,6 +21,18 @@ rich set of detailed error codes.
 For more details, please visit
 [FreeRTOS+FAT](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_FAT/index.html) page.
 
+## Current working directory support
+
+Set `ffconfigHAS_CWD` to `1` in `FreeRTOSFATConfig.h` to maintain a current
+working directory (CWD) for each task that accesses the file system. This allows
+file operations to use relative paths and makes the `ff_chdir()` and
+`ff_getcwd()` APIs available. Set it to `0` to disable CWD support; file
+operations must then use full paths.
+
+When CWD support is enabled, `ffconfigCWD_THREAD_LOCAL_INDEX` must identify a
+free slot in the FreeRTOS thread-local storage pointer array. The CWD is stored
+per task, so each task can have its own working directory.
+
 ## To consume FreeRTOS+FAT
 
 ### Consume with CMake

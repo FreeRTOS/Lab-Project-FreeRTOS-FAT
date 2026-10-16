@@ -59,8 +59,8 @@ enum eCACHE_ACTION
     eCACHE_REMOVE,
 };
 
-const char pcDevicePath[] = ffconfigDEV_PATH;
-
+//const char pcDevicePath[] = ffconfigDEV_PATH;
+const char pcDevicePath[] = "/dev";
 struct SFileCache * pxFindFile( const char * pcFname,
                                 enum eCACHE_ACTION eAction )
 {
@@ -170,6 +170,8 @@ size_t FF_Device_Read( void * pvBuf,
                        FF_FILE * pxStream )
 {
     lCount *= lSize;
+    (void)pvBuf; /*SQUASH*/
+    (void)pxStream ; /*SQUASH*/
     return lCount;
 }
 
@@ -179,6 +181,7 @@ size_t FF_Device_Write( const void * pvBuf,
                         FF_FILE * pxStream )
 {
     lCount *= lSize;
+    (void)pvBuf; /*SQUASH*/
 
     if( pxStream->pxDevNode != NULL )
     {
@@ -216,6 +219,7 @@ int FF_Device_GetDirEnt( const char * pcPath,
                          FF_DirEnt_t * pxDirEnt )
 {
     BaseType_t xIsDotDir = 0;
+    (void)pcPath; /*SQUASH*/
 
     if( pxDirEnt->pcFileName[ 0 ] == '.' )
     {

@@ -94,7 +94,7 @@ void FF_PendSemaphore( void * pxSemaphore )
 
     configASSERT( pxSemaphore );
     xSemaphoreTakeRecursive( ( SemaphoreHandle_t ) pxSemaphore, portMAX_DELAY );
-}
+ }
 /*-----------------------------------------------------------*/
 
 void FF_ReleaseSemaphore( void * pxSemaphore )

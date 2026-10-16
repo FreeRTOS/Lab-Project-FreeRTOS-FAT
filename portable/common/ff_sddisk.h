@@ -41,6 +41,8 @@
         BaseType_t xDiskPartition;   /**< Default disk partition number */
     } FFInitSettings_t;
 
+    int32_t FFReadUsb( uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk );
+    int32_t FFWriteUsb( uint8_t *pucBuffer, uint32_t ulSectorNumber, uint32_t ulSectorCount, FF_Disk_t *pxDisk );
 
 /* Return non-zero if the SD-card is present.
  * The parameter 'pxDisk' may be null, unless device locking is necessary. */
@@ -50,9 +52,10 @@
     FF_Disk_t * FF_SDDiskInitWithSettings( const char * pcName,
                                            const FFInitSettings_t * pxSettings );
 
-    FF_Disk_t * FF_SDDiskInit( const char * pcName );
+    FF_Disk_t * FF_SDDiskInit( const char * pcName , int ulDriveNum );
 
     BaseType_t FF_SDDiskReinit( FF_Disk_t * pxDisk );
+    void test_print();
 
 /* Unmount the volume */
     BaseType_t FF_SDDiskUnmount( FF_Disk_t * pDisk );

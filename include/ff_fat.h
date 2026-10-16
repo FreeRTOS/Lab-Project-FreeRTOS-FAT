@@ -132,6 +132,12 @@ uint32_t FF_FindEndOfChain( FF_IOManager_t * pxIOManager,
 FF_Error_t FF_ClearCluster( FF_IOManager_t * pxIOManager,
                             uint32_t ulCluster );
 
+uint32_t FF_FastCountFreeClusters( FF_IOManager_t * pxIOManager,
+                                      FF_Error_t * pxError,
+                                      size_t uxBlockSize );
+
+
+
 #if ( ffconfig64_NUM_SUPPORT != 0 )
     uint64_t FF_GetFreeSize( FF_IOManager_t * pxIOManager,
                              FF_Error_t * pxError );

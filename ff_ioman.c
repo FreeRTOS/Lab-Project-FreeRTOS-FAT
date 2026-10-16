@@ -205,8 +205,10 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
                 }
 
                 pxIOManager->xBlkDevice.fnpReadBlocks = pxParameters->fnReadBlocks;
+
                 pxIOManager->xBlkDevice.fnpWriteBlocks = pxParameters->fnWriteBlocks;
                 pxIOManager->xBlkDevice.pxDisk = pxParameters->pxDisk;
+
             }
         }
         else
@@ -232,6 +234,66 @@ FF_IOManager_t * FF_CreateIOManager( FF_CreationParameters_t * pxParameters,
     return pxIOManager;
 } /* FF_CreateIOManager() */
 /*-----------------------------------------------------------*/
+
+#if ( ffconfigWRITE_FREE_COUNT != 0 ) || ( ffconfigFSINFO_TRUSTED != 0 )
+    FF_Error_t FF_UpdateFSInfo( FF_IOManager_t * pxIOManager,
+                                BaseType_t xClearSign )
+    {
+        FF_Error_t xError = 0;
+
+        /* FAT32 updates the FSINFO sector. */
+        if( pxIOManager->xPartition.ucType == FF_T_FAT32 )
+        {
+            /* Find the FSINFO sector. */
+            FF_Buffer_t * pxBuffer = FF_GetBuffer( pxIOManager, pxIOManager->xPartition.ulFSInfoLBA, FF_MODE_WRITE );
+
+            if( pxBuffer == NULL )
+            {
+                xError = FF_createERR( FF_ERR_DEVICE_DRIVER_FAILED, FF_INCREASEFREECLUSTERS );
+                FF_PRINTF( "FF_UpdateFSInfo: Error %08x\n", xError );
+            }
+            else
+            {
+                uint32_t ulSignatures[ 2 ];
+                ulSignatures[ 0 ] = FF_getLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_SIGNATURE1_000 );
+                ulSignatures[ 1 ] = FF_getLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_SIGNATURE2_484 );
+
+                if( xClearSign != pdFALSE )
+                {
+                    FF_PRINTF( "FF_UpdateFSInfo: writing signature 0 0\n" );
+                    FF_putLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_SIGNATURE1_000, 0U );
+                    FF_putLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_SIGNATURE2_484, 0U );
+                }
+                else
+                if( ( ulSignatures[ 0 ] != FS_INFO_SIGNATURE1_0x41615252 ) ||
+                    ( ulSignatures[ 1 ] != FS_INFO_SIGNATURE2_0x61417272 ) )
+                {
+                    FF_PRINTF( "FF_UpdateFSInfo: %X %X (correcting)\n", ulSignatures[ 0 ], ulSignatures[ 1 ] );
+                    /* FSINFO sector magic nums we're verified. Safe to write. */
+                    FF_putLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_SIGNATURE1_000, FS_INFO_SIGNATURE1_0x41615252 );
+                    FF_putLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_SIGNATURE2_484, FS_INFO_SIGNATURE2_0x61417272 );
+                }
+                else
+                {
+                    FF_PRINTF( "FF_UpdateFSInfo: OK\n" );
+                }
+
+                FF_putLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_FREE_COUNT_488, pxIOManager->xPartition.ulFreeClusterCount );
+                FF_putLong( pxBuffer->pucBuffer, FS_INFO_OFFSET_FREE_CLUSTER_492, pxIOManager->xPartition.ulLastFreeCluster );
+
+                xError = FF_ReleaseBuffer( pxIOManager, pxBuffer );
+            }
+        }
+        else
+        {
+            FF_PRINTF( "FF_UpdateFSInfo: wrong FS type %02X\n", pxIOManager->xPartition.ucType );
+        }
+        return 0;
+    }
+#endif /* ( ffconfigWRITE_FREE_COUNT != 0 ) || ( ffconfigFSINFO_TRUSTED != 0 ) */
+
+
+
 
 /**
  *	@brief	Destroys an FF_IOManager_t object, and frees all assigned memory.
@@ -385,6 +447,7 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
                             uint32_t ulSector,
                             uint8_t ucMode )
 {
+
     FF_Buffer_t * pxBuffer;
 /* Least Recently Used Buffer */
     FF_Buffer_t * pxRLUBuffer;
@@ -393,24 +456,30 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
     BaseType_t xLoopCount = FF_GETBUFFER_WAIT_TIME_MS;
     const FF_Buffer_t * pxLastBuffer = &( pxIOManager->pxBuffers[ pxIOManager->usCacheSize ] );
 
+
     /* 'pxIOManager->usCacheSize' is bigger than zero and it is a multiple of ulSectorSize. */
 
     while( pxMatchingBuffer == NULL )
     {
         xLoopCount--;
 
+
         if( xLoopCount == 0 )
         {
             break;
+
         }
 
         FF_PendSemaphore( pxIOManager->pvSemaphore );
 
+
         for( pxBuffer = pxIOManager->pxBuffers; pxBuffer < pxLastBuffer; pxBuffer++ )
         {
+
             if( ( pxBuffer->ulSector == ulSector ) && ( pxBuffer->bValid ) )
             {
                 pxMatchingBuffer = pxBuffer;
+
                 /* Don't look further if you found a perfect match. */
                 break;
             }
@@ -423,6 +492,7 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
             {
                 pxMatchingBuffer->usNumHandles += 1;
                 pxMatchingBuffer->usPersistence += 1;
+
                 break;
             }
 
@@ -456,26 +526,31 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
                 if( pxBuffer->usNumHandles != 0 )
                 {
                     continue; /* Occupied */
+
                 }
 
                 pxBuffer->ulLRU += 1;
+
 
                 if( ( pxRLUBuffer == NULL ) ||
                     ( pxBuffer->ulLRU > pxRLUBuffer->ulLRU ) ||
                     ( ( pxBuffer->ulLRU == pxRLUBuffer->ulLRU ) && ( pxBuffer->usPersistence > pxRLUBuffer->usPersistence ) ) )
                 {
                     pxRLUBuffer = pxBuffer;
+
                 }
             }
 
             /* A free buffer with the highest value of 'ulLRU' was found: */
             if( pxRLUBuffer != NULL )
             {
+
                 /* Process the suitable candidate. */
                 if( pxRLUBuffer->bModified == pdTRUE )
                 {
                     /* Along with the pdTRUE parameter to indicate semaphore has been claimed already. */
-                    lRetVal = FF_BlockWrite( pxIOManager, pxRLUBuffer->ulSector, 1, pxRLUBuffer->pucBuffer, pdTRUE );
+
+                	lRetVal = FF_BlockWrite( pxIOManager, pxRLUBuffer->ulSector, 1, pxRLUBuffer->pucBuffer, pdTRUE );
 
                     if( lRetVal < 0 )
                     {
@@ -487,9 +562,11 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
                 if( ucMode == FF_MODE_WR_ONLY )
                 {
                     memset( pxRLUBuffer->pucBuffer, '\0', pxIOManager->usSectorSize );
+
                 }
                 else
                 {
+
                     lRetVal = FF_BlockRead( pxIOManager, ulSector, 1, pxRLUBuffer->pucBuffer, pdTRUE );
 
                     if( lRetVal < 0 )
@@ -510,6 +587,7 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
                 pxRLUBuffer->bValid = pdTRUE;
                 pxMatchingBuffer = pxRLUBuffer;
                 break;
+
             } /* if( pxRLUBuffer != NULL ) */
         }     /* else ( pxMatchingBuffer == NULL ) */
 
@@ -591,24 +669,30 @@ int32_t FF_BlockRead( FF_IOManager_t * pxIOManager,
 {
     int32_t slRetVal = 0;
 
+
     if( pxIOManager->xPartition.ulTotalSectors != 0ul )
     {
+
         /* At some point while formatting a partition, ulTotalSectors might be unknown.
          * In that case this test will be skipped. */
         if( ( ulSectorLBA + ulNumSectors ) > ( pxIOManager->xPartition.ulTotalSectors + pxIOManager->xPartition.ulBeginLBA ) )
         {
+
             slRetVal = FF_createERR( FF_ERR_IOMAN_OUT_OF_BOUNDS_READ, FF_BLOCKREAD );
         }
     }
 
     if( ( slRetVal == 0ul ) && ( pxIOManager->xBlkDevice.fnpReadBlocks != NULL ) )
     {
+
         do
         {
+
             /* Make sure we don't execute a NULL. */
             if( ( xSemLocked == pdFALSE ) &&
                 ( ( pxIOManager->ucFlags & FF_IOMAN_BLOCK_DEVICE_IS_REENTRANT ) == pdFALSE ) )
             {
+
                 FF_PendSemaphore( pxIOManager->pvSemaphore );
             }
 
@@ -617,6 +701,7 @@ int32_t FF_BlockRead( FF_IOManager_t * pxIOManager,
             if( ( xSemLocked == pdFALSE ) &&
                 ( ( pxIOManager->ucFlags & FF_IOMAN_BLOCK_DEVICE_IS_REENTRANT ) == pdFALSE ) )
             {
+
                 FF_ReleaseSemaphore( pxIOManager->pvSemaphore );
             }
 
@@ -625,10 +710,13 @@ int32_t FF_BlockRead( FF_IOManager_t * pxIOManager,
              * the actual error code.  See 'ff_error.h' for definitions. */
             if( slRetVal != ( int32_t ) FF_ERR_DRIVER_BUSY )
             {
+
                 break;
             }
 
+
             FF_Sleep( ffconfigDRIVER_BUSY_SLEEP_MS );
+
         } while( pdTRUE );
     }
 
@@ -723,6 +811,8 @@ static FF_Error_t prvDetermineFatType( FF_IOManager_t * pxIOManager )
     FF_Buffer_t * pxBuffer;
     /* The first 32-bits of the FAT. */
     uint32_t ulFirstCluster = 0U;
+    (void)ulFirstCluster;
+
     FF_Error_t xError = FF_ERR_NONE;
 
     pxPartition = &( pxIOManager->xPartition );
@@ -1113,6 +1203,7 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
 
     do
     {
+
         pxBuffer = FF_GetBuffer( pxIOManager, 0, FF_MODE_READ );
 
         if( pxBuffer == NULL )
@@ -1128,6 +1219,8 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
 
         /* Check MBR (Master Boot Record) or
          * PBR (Partition Boot Record) signature. */
+
+
         if( ( FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE ) != 0x55 ) ||
             ( FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE + 1 ) != 0xAA ) )
         {
@@ -1143,20 +1236,23 @@ FF_Error_t FF_PartitionSearch( FF_IOManager_t * pxIOManager,
             }
             else
             {
-                FF_PRINTF( "FF_PartitionSearch: [%02X,%02X] No signature (%02X %02X), no PBR neither\n",
-                           FF_getChar( ucDataBuffer, 0 ),
-                           FF_getChar( ucDataBuffer, 2 ),
-                           FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE ),
-                           FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE + 1 ) );
+//                FF_PRINTF( "FF_PartitionSearch: [%02X,%02X] No signature (%02X %02X), no PBR neither\n",
+//                           FF_getChar( ucDataBuffer, 0 ),
+//                           FF_getChar( ucDataBuffer, 2 ),
+//                           FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE ),
+//                           FF_getChar( ucDataBuffer, FF_FAT_MBR_SIGNATURE + 1 ) );
 
-                /* No MBR and no PBR then no partition found. */
-                xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_PARTITIONSEARCH );
+					/* No MBR and no PBR then no partition found. */
+
+					xError = FF_createERR( FF_ERR_IOMAN_INVALID_FORMAT, FF_PARTITIONSEARCH );
+
                 break;
             }
         }
 
         /* Copy the 4 partition records into 'pxPartitions': */
         FF_ReadParts( ucDataBuffer, pxPartitions );
+
 
         for( xPartNr = 0; ( xPartNr < 4 ) && ( isPBR == pdFALSE ); xPartNr++ )
         {
@@ -1826,10 +1922,13 @@ FF_Error_t FF_IncreaseFreeClusters( FF_IOManager_t * pxIOManager,
         {
             xError = FF_ERR_NONE;
             taskENTER_CRITICAL();
+
+
             {
                 pxIOManager->xPartition.ulFreeClusterCount += Count;
             }
             taskEXIT_CRITICAL();
+
         }
 
         if( pxIOManager->xPartition.ulLastFreeCluster == 0 )
@@ -1911,9 +2010,9 @@ FF_Error_t FF_DecreaseFreeClusters( FF_IOManager_t * pxIOManager,
     else
     {
         taskENTER_CRITICAL();
-        pxIOManager->xPartition.ulFreeClusterCount -= Count;
+         pxIOManager->xPartition.ulFreeClusterCount -= Count;
         taskEXIT_CRITICAL();
-    }
+     }
 
     if( FF_isERR( xError ) == pdFALSE )
     {

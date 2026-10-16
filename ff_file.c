@@ -2447,11 +2447,6 @@ int32_t FF_Write( FF_FILE * pxFile,
                 }
             }
 
-            if( FF_isERR( xError ) )
-            {
-                break;
-            }
-
             /*---------- Write (memcpy) Remaining Bytes */
             if( ulBytesLeft == 0 )
             {
