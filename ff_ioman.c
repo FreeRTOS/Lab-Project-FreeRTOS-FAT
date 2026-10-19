@@ -494,6 +494,9 @@ FF_Buffer_t * FF_GetBuffer( FF_IOManager_t * pxIOManager,
 
                     if( lRetVal < 0 )
                     {
+                        /* The contents of the buffer could be partially overwritten, mark the buffer as invalid. */
+                        pxRLUBuffer->bValid = pdFALSE;
+                        pxRLUBuffer->ulSector = 0;
                         /* 'pxMatchingBuffer' is NULL. */
                         break;
                     }
